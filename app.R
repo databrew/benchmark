@@ -11,13 +11,53 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     id = 'tabs',
     menuItem(
-      text="Main",
-      tabName="main",
-      icon=icon("eye")),
+      text="Instructions",
+      tabName="instructions",
+      icon=icon("leanpub")),
     menuItem(
-      text = 'About',
-      tabName = 'about',
-      icon = icon("cog", lib = "glyphicon"))
+      text="Strategy and Execution",
+      tabName="strategy_and_execution",
+      icon=icon("crosshairs")),
+    menuItem(
+      text="Organization and Governance",
+      tabName="organization_and_governance",
+      icon=icon("sitemap")),
+    menuItem(
+      text="Partnerships",
+      tabName="partnerships",
+      icon=icon("asterisk")),
+    menuItem(
+      text="Products",
+      tabName="products",
+      icon=icon("gift")),
+    menuItem(
+      text="Marketing",
+      tabName="marketing",
+      icon=icon("shopping-cart")),
+    menuItem(
+      text="Distribution and Channels",
+      tabName="distribution_and_channels",
+      icon=icon("exchange")),
+    menuItem(
+      text="Risk Management",
+      tabName="risk_management",
+      icon=icon("tasks")),
+    menuItem(
+      text="IT and MIS",
+      tabName="it_and_mis",
+      icon=icon("laptop")),
+    menuItem(
+      text="Operations and Customer Service",
+      tabName="operations_and_customer_service",
+      icon=icon("users")),
+    menuItem(
+      text="Responsible Finance",
+      tabName="responsible_finance",
+      icon=icon("thumbs-up")),
+    menuItem(
+      text="Graphs",
+      tabName="graphs",
+      icon=icon("signal"))
   )
 )
 
@@ -26,13 +66,12 @@ body <- dashboardBody(
     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
   ),
   useShinyjs(),
+  fluidRow(),
   hidden(
     lapply(seq(n_tabs), function(i) {
-      div(
-        class = "page",
+      div(class = "page",
         id = paste0("step", i),
-        "Step", i
-      )
+        paste("Tab", i, 'of', nrow(tab_dict)))
     })
   ),
   br(),
@@ -40,28 +79,52 @@ body <- dashboardBody(
   actionButton("nextBtn", "Next >"),
   tabItems(
     tabItem(
-      tabName="main",
-      fluidPage(
-        fluidRow()
-      )
+      tabName="instructions",
+      fluidPage()
     ),
     tabItem(
-      tabName = 'about',
-      fluidPage(
-        fluidRow(
-          div(img(src='logo_clear.png', align = "center"), style="text-align: center;"),
-                 h4('Built in partnership with ',
-                   a(href = 'http://databrew.cc',
-                     target='_blank', 'Databrew'),
-                   align = 'center'),
-          p('Empowering research and analysis through collaborative data science.', align = 'center'),
-          div(a(actionButton(inputId = "email", label = "info@databrew.cc", 
-                             icon = icon("envelope", lib = "font-awesome")),
-                href="mailto:info@databrew.cc",
-                align = 'center')), 
-          style = 'text-align:center;'
-          )
-        )
+      tabName="strategy_and_execution",
+      fluidPage()
+    ),
+    tabItem(
+      tabName="organization_and_governance",
+      fluidPage()
+    ),
+    tabItem(
+      tabName="partnerships",
+      fluidPage()
+    ),
+    tabItem(
+      tabName="products",
+      fluidPage()
+    ),
+    tabItem(
+      tabName="marketing",
+      fluidPage()
+    ),
+    tabItem(
+      tabName="distribution_and_channels",
+      fluidPage()
+    ),
+    tabItem(
+      tabName="risk_management",
+      fluidPage()
+    ),
+    tabItem(
+      tabName="it_and_mis",
+      fluidPage()
+    ),
+    tabItem(
+      tabName="operations_and_customer_service",
+      fluidPage()
+    ),
+    tabItem(
+      tabName="responsible_finance",
+      fluidPage()
+    ),
+    tabItem(
+      tabName="graphs",
+      fluidPage()
     )
   )
 )

@@ -42,7 +42,7 @@
 body {
     font-family: 'Lato','Lato',Lato, Lato,sans-serif;
     font-weight: 400;
-    font-size: 16px;
+    font-size: 14px;
     overflow-x: hidden;
     overflow-y: auto}
 .wrapper {
@@ -372,7 +372,7 @@ a:active,a:focus,a:hover {
 .user-panel>.info>a>.fa,.user-panel>.info>a>.glyphicon,.user-panel>.info>a>.ion {
     margin-right: 3px}
 .sidebar-menu {
-    font-size: 16px;
+    font-size: 12px; /* Joe side bar menu size!*/
     font-family: Lato;
     list-style: none;
     margin: 0;
