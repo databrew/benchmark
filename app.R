@@ -66,25 +66,27 @@ body <- dashboardBody(
     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
   ),
   useShinyjs(),
-  fluidRow(),
-  hidden(
-    lapply(seq(n_tabs), function(i) {
-      div(class = "page",
-        id = paste0("step", i),
-        paste("Tab", i, 'of', nrow(tab_dict)))
-    })
+  fluidRow(
+    column(12,
+           hidden(
+             lapply(seq(n_tabs), function(i) {
+               div(class = "page",
+                   id = paste0("step", i),
+                   paste("Tab", i, 'of', nrow(tab_dict)),
+                   style = "font-size: 200%;")
+             })
+           )),
+    actionButton("prevBtn", "< Previous"),
+           actionButton("nextBtn", "Next >")
   ),
-  br(),
-  actionButton("prevBtn", "< Previous"),
-  actionButton("nextBtn", "Next >"),
   tabItems(
     tabItem(
       tabName="instructions",
-      fluidPage()
+      includeMarkdown('includes/instructions.md')
     ),
     tabItem(
       tabName="strategy_and_execution",
-      fluidPage()
+      uiOutput('strategy_and_execution_ui')
     ),
     tabItem(
       tabName="organization_and_governance",
@@ -175,6 +177,27 @@ server <- function(input, output, session) {
     message(paste0('Selected tab is ', input$tabs, '. Number: ', tab_number))
     rv$page <- tab_number
   })
+  
+  # Create reactive values to observe the submissions
+  submissions <- reactiveValues()
+
+  # Generate the reactive objects associated with each tab  
+  for(tn in 1:length(tab_names)){
+    message(tn)
+    this_tab_name <- tab_names[tn]
+    these_competencies <- competency_dict %>% filter(tab_name == this_tab_name) %>% .$competency
+    eval(parse(text = generate_reactivity(tab_name = this_tab_name,
+                                          competencies = these_competencies)))
+  }
+  # eval(parse(text = generate_reactivity()))
+
+  # Render ui for strategy and execution page
+  output$strategy_and_execution_ui <- 
+    renderUI({
+      eval(parse(text = generate_ui()))
+    })
+  
+  
 }
 
 shinyApp(ui, server)
