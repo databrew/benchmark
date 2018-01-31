@@ -5,4 +5,4 @@ library(tidyverse)
 tab_dict <- data_frame(number = 1:2,
                        name = c('main',
                                 'about'))
-NUM_PAGES <- 2
+n_tabs <- nrow(tab_dict)

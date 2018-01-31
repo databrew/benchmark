@@ -2,6 +2,8 @@ library(shiny)
 library(shinydashboard)
 library(shinyjs)
 
+
+
 source('global.R')
 
 header <- dashboardHeader(title="Benchmarking tool")
@@ -25,7 +27,7 @@ body <- dashboardBody(
   ),
   useShinyjs(),
   hidden(
-    lapply(seq(NUM_PAGES), function(i) {
+    lapply(seq(n_tabs), function(i) {
       div(
         class = "page",
         id = paste0("step", i),
@@ -75,7 +77,7 @@ server <- function(input, output, session) {
   
   observe({
     toggleState(id = "prevBtn", condition = rv$page > 1)
-    toggleState(id = "nextBtn", condition = rv$page < NUM_PAGES)
+    toggleState(id = "nextBtn", condition = rv$page < n_tabs)
     hide(selector = ".page")
     show(paste0("step", rv$page))
   })
