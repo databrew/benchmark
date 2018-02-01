@@ -1,0 +1,43 @@
+tab_name,competency
+Strategy and Execution,vision
+Strategy and Execution,strategy_formulation
+Strategy and Execution,management_committment
+Strategy and Execution,execution_capability
+Organization and Governance,culture
+Organization and Governance,people
+Organization and Governance,structure
+Organization and Governance,hr_function
+Organization and Governance,governance
+Partnerships,fintechs
+Partnerships,bigtechs
+Partnerships,regtechs
+Partnerships,maturity_of_ecosystem_partners
+Products,customer_journey
+Products,range_of_products
+Products,product_pricing
+Products,product_development_and_open_innovation
+Marketing,customer_insights
+Marketing,communications
+Marketing,marketing_maturity
+Distribution and Channels,strategy_and_organisation
+Distribution and Channels,physical_network
+Distribution and Channels,apps_webs_and_agents
+Distribution and Channels,sales_function
+Risk Management,management_and_organisation
+Risk Management,regulatory_compliance
+Risk Management,kyc_aml_maturity_model
+Risk Management,fraud_management_capability
+IT and MIS,it_and_mis_strategy
+IT and MIS,hardware_architecture
+IT and MIS,software_architecture
+IT and MIS,it_security
+IT and MIS,reporting_and_analysis
+Operations and Customer Service,customer_perfromance
+Operations and Customer Service,agile_processes
+Operations and Customer Service,process_automation
+Operations and Customer Service,financial_controlling
+Responsible Finance,consumer_protection_strategy
+Responsible Finance,responsible_pricing_and_transparency
+Responsible Finance,complaint_resolution
+Responsible Finance,data_protection
+Responsible Finance,financial_education

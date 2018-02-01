@@ -1,5 +1,10 @@
 # Libraries
 library(tidyverse)
+library(radarchart)
+library(ggradar) # devtools::install_github('ricardo-bion/ggradar')
+# library(d3radarR) # devtools::install_github("timelyportfolio/d3radarR")
+
+
 
 # Create a dictionary of tab names / numbers
 tab_names_full <- c('Instructions',
@@ -19,31 +24,16 @@ tab_dict <- data_frame(number = 1:length(tab_names),
                        name = tab_names,
                        full_name = tab_names_full)
 n_tabs <- nrow(tab_dict)
+# So as to avoid flooding the ui, create dictionaries with text
+# Create main dictionary for associating competencies with tabs
+competency_dict <- readr::read_csv('dictionaries/competency_dict.csv')
+competency_dict$tab_name <- tolower(gsub(' ', '_', competency_dict$tab_name))
+tab_names <- unique(competency_dict$tab_name)
+competency_dict$combined_name <- paste0(competency_dict$tab_name, '_', competency_dict$competency)
 
-# # Heper functions for printing tab layout into ui
-# print_menu_item <- function(i){
-#   cat(paste0('menuItem(
-#   text="', tab_dict$full_name[i],
-# '",
-#   tabName="', tab_dict$name[i], '",
-#   icon=icon("eye")),\n'))
-# }
-# for(i in 1:nrow(tab_dict)){
-#   print_menu_item(i)
-# }
-# 
-# print_tab_item <- function(i){
-#   cat(paste0('tabItem(
-#       tabName="', tab_dict$name[i], '",
-#       fluidPage()
-#     ),\n'))
-# }
-# for(i in 1:nrow(tab_dict)){
-#   print_tab_item(i)
-# }
+# Create dictionary for placing text
+ui_dict <- read_csv('dictionaries/ui_dict.csv')
 
-# So as to avoid flooding the ui, create a dictionary of text to be placed in the ui
-source('ui_dict.R')  
 
 # Define function to get the appropriate text from the ui dict
 get_ui_text <- function(item_name){
@@ -177,3 +167,56 @@ simple_cap <- function(x) {
         sep="", collapse=" ")
 }
 simple_cap <- Vectorize(simple_cap)
+
+# Define function for radar charts
+make_radar_data <- function(input){
+  # Get the auto-generated input objects
+  ip <- reactiveValuesToList(input)
+  ip <- unlist(ip)
+  require(radarchart)
+
+  combined_names <- competency_dict$combined_name
+
+  # Get values for each of the combined names
+  vals_df <-
+    expand.grid(combined_name = combined_names,
+                key = 1:3)
+  # Get broken down names from dict
+  vals_df <- left_join(vals_df,
+                       competency_dict,
+                       by = 'combined_name')
+  vals_df$value <- NA
+  vals_df$value_name <- paste0(vals_df$combined_name, '_', vals_df$key, '_slider')
+  for(i in 1:nrow(vals_df)){
+    the_name <- vals_df$value_name[[i]]
+    if(the_name %in% names(ip)){
+      the_value <- ip[[the_name]]
+      the_value <- as.numeric(the_value)
+    } else {
+      the_value <- 3
+    }
+    vals_df$value[i] <- the_value
+  }
+  
+  # Group by competency
+  out <- vals_df %>%
+    group_by(tab_name, competency) %>%
+    summarise(value = mean(value, na.rm = TRUE)) %>%
+    ungroup
+  
+  # Get in format for charting
+  out$labs <- simple_cap(gsub('_', ' ', out$competency))
+  out$scores <- out$value
+  
+  # Return 
+  return(out)
+  
+  # # Subset for only one tab_name
+  # tn <- out$tab_name[1]
+  # scores <- list(
+  #   'Observed' = out$scores[out$tab_name == tn],
+  #   'Best practice' = rep(5, length(out$scores[out$tab_name == tn]))
+  # )
+  # labs <- out$labs[out$tab_name == tn]
+  # chartJSRadar(scores = scores, labs = labs, maxScale = 5)
+}
