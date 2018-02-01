@@ -161,12 +161,15 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
   b <- paste0(b, collapse = ',')
   
   out <- 
-    paste0("fluidPage(",
+    paste0("output$",tab_name, "_ui <- ",
+           "renderUI({",
+           "fluidPage(",
           a,
           b,
-          ")")
+          ")})")
   return(out)
 }
+
 
 simple_cap <- function(x) {
   s <- strsplit(x, " ")[[1]]

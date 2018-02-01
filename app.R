@@ -90,39 +90,39 @@ body <- dashboardBody(
     ),
     tabItem(
       tabName="organization_and_governance",
-      fluidPage()
+      uiOutput('organization_and_governance_ui')
     ),
     tabItem(
       tabName="partnerships",
-      fluidPage()
+      uiOutput('partnerships_ui')
     ),
     tabItem(
       tabName="products",
-      fluidPage()
+      uiOutput('products_ui')
     ),
     tabItem(
       tabName="marketing",
-      fluidPage()
+      uiOutput('marketing_ui')
     ),
     tabItem(
       tabName="distribution_and_channels",
-      fluidPage()
+      uiOutput('distribution_and_channels_ui')
     ),
     tabItem(
       tabName="risk_management",
-      fluidPage()
+      uiOutput('risk_management_ui')
     ),
     tabItem(
       tabName="it_and_mis",
-      fluidPage()
+      uiOutput('it_and_mis_ui')
     ),
     tabItem(
       tabName="operations_and_customer_service",
-      fluidPage()
+      uiOutput('operations_and_customer_service_ui')
     ),
     tabItem(
       tabName="responsible_finance",
-      fluidPage()
+      uiOutput('responsible_finance_ui')
     ),
     tabItem(
       tabName="graphs",
@@ -189,14 +189,15 @@ server <- function(input, output, session) {
     eval(parse(text = generate_reactivity(tab_name = this_tab_name,
                                           competencies = these_competencies)))
   }
-  # eval(parse(text = generate_reactivity()))
 
-  # Render ui for strategy and execution page
-  output$strategy_and_execution_ui <- 
-    renderUI({
-      eval(parse(text = generate_ui()))
-    })
-  
+  # Generate the uis for each tab
+  for(tn in 1:length(tab_names)){
+    message(tn)
+    this_tab_name <- tab_names[tn]
+    these_competencies <- competency_dict %>% filter(tab_name == this_tab_name) %>% .$competency
+    eval(parse(text = generate_ui(tab_name = this_tab_name,
+                                          competencies = these_competencies)))
+  }
   
 }
 
