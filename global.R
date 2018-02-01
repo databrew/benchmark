@@ -259,15 +259,15 @@ make_radar_chart <- function(data,
   data <- data %>%
     filter(tab_name == tn)
   scores <- list(
-    'Observed' = data$scores,
-    'Best practice' = rep(5, nrow(data))
+    'This Bank' = data$scores,
+    'Best Practice' = rep(5, nrow(data))
   )
   labs <- data$labs
   chartJSRadar(scores = scores, labs = labs, maxScale = 5,
                scaleStepWidth = 1,
                scaleStartValue = 1,
                responsive = TRUE,
-               labelSize = 8,
+               labelSize = 11,
                showLegend = TRUE,
                addDots = TRUE,
                showToolTipLabel = TRUE,
@@ -290,7 +290,7 @@ generate_radar_ui <- function(tab_name = 'organization_and_governance'){
   paste0("box(title = '",title, "',
               status = 'info',
               collapsible = TRUE,
-              width = 4,
+              width = 6,
               chartJSRadarOutput('", tab_name, "_chart'))")
 }
 
