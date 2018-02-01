@@ -59,7 +59,7 @@ sidebar <- dashboardSidebar(
     menuItem(
       text = 'About',
       tabName = 'about',
-      icon = icon('house'))
+      icon = icon('book'))
   )
 )
 
