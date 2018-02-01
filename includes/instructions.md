@@ -1,12 +1,6 @@
+### Filling out the scorecard
 
-# Instructions
-
-1. Review the statements against each capability in each competency. 
-
-2. Pick the statement that best describes the situation in the mobile banking operation. 
-
-3. Score the capability as either a 1 or 2 for formative, a 3 for emerging or a 4 or 5 for developed. 
-
-4. The entered scores are automatically fed into the radar graphs in the end spreadsheet, which allows a visual representation of the performance of the MBO against developed benchmarks. 
-
-5. Please comment if (1) the entity does not fit in any of the proposed options, (2) you believe the categories are not appropriate, or (3) you believe we forgot important aspects of performance in DFS. Your comments will help us improve the tool.
+- This scorecard consists of 10 areas. Each area has several competencies, and each competency has 3 statements.  
+- Go through all the statements and use the slider to indicate the extent to which the statement accurately describes the bank.  
+- 0 means "not at all", whereas 5 means "completely".  
+- The competency statements are ordered from left to right as formative, emerging, and developed.  

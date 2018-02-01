@@ -54,7 +54,11 @@ create_input_list <- function(){
   b <- rep(NA, length(inputs))
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
-    b[i] <- paste0("input_list[['", this_input, "']] <- 3;\n")
+    v <- parse_number(this_input)
+    v <- ifelse(v == 1, 0,
+                ifelse(v == 2, 5, 
+                       ifelse(v == 3, 0)))
+    b[i] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
   }
   # Observe any changes and register them
   z <- rep(NA, length(inputs))
@@ -78,7 +82,6 @@ create_input_list <- function(){
 create_slider <- function(item_name,
                           ip){
   list_name <- paste0(item_name, '_slider')
-  message('Hi Joe, list name is ', list_name)
   ip <- reactiveValuesToList(ip)
   ip <- unlist(ip)
   if(list_name %in% names(ip)){
@@ -94,7 +97,7 @@ create_slider <- function(item_name,
 
   sliderInput(paste0(item_name, '_slider'),
               'Score',
-              min = 1, 
+              min = 0, 
               max = 5,
               value = val)
 }
@@ -156,6 +159,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
                                          'management_committment',
                                          'execution_capability')){
   full_name <- simple_cap(gsub('_', ' ', tab_name))
+  full_name <- convert_capitalization(full_name)
   n_competencies <- length(competencies)
   
   # Start of page
@@ -170,7 +174,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
   for(i in 1:n_competencies){
     this_competency <- competencies[i]
     
-    b[i] <- paste0("box(title = '", simple_cap(gsub('_', ' ', this_competency)), "',
+    b[i] <- paste0("box(title = '", convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), "',
         width = 12,
         solidHeader = TRUE,
         collapsible = TRUE,
@@ -238,18 +242,33 @@ make_radar_data <- function(ip){
     vals_df$value[i] <- the_value
   }
   
-  # Group by competency
+  # Get the "score" of the competency quote in question
+  vals_df$score <- parse_number(vals_df$value_name)
+  vals_df$score <- ifelse(vals_df$score == 1, 1,
+                          ifelse(vals_df$score == 2, 3,
+                                 ifelse(vals_df$score == 3, 5,
+                                        vals_df$score)))
+  # Group by competency and get weighted score
   out <- vals_df %>%
     group_by(tab_name, competency) %>%
-    summarise(value = mean(value, na.rm = TRUE)) %>%
+    summarise(value = weighted.mean(x = score, w = value, na.rm = TRUE)) %>%
     ungroup
   
   # Get in format for charting
   out$labs <- simple_cap(gsub('_', ' ', out$competency))
+  out$labs <- convert_capitalization(out$labs)
   out$scores <- out$value
   
   # Return 
   return(out)
+}
+
+# Define function for converting certain string for case-specific capitalization
+convert_capitalization <- function(x){
+  x <- gsub('It ', 'IT ', x)
+  x <- gsub('Mis', 'MIS', x)
+  x <- gsub('techs', 'Techs', x)
+  return(x)
 }
 
 # Define function for making radar chart
@@ -287,27 +306,10 @@ generate_radar_server <- function(tab_name = 'organization_and_governance'){
 # Define function for generating all the radar charts in the ui
 generate_radar_ui <- function(tab_name = 'organization_and_governance'){
   title <- simple_cap(gsub('_', ' ', tab_name))
+  title <- convert_capitalization(title)
   paste0("box(title = '",title, "',
               status = 'info',
               collapsible = TRUE,
               width = 6,
               chartJSRadarOutput('", tab_name, "_chart'))")
 }
-
-# Define function for generating all the radar charts in the ui
-# Not runnable, since each thing is separated by a comma
-# generate_radar_ui2 <- function(tab_names){
-#   out <- rep(NA, length(tab_names))
-#   for(i in 1:length(tab_names)){
-#     tab_name <- tab_names[i]
-#     title <- simple_cap(gsub('_', ' ', tab_name))
-#     x <- paste0("box(title = '",title, "',
-#               status = 'danger',
-#               collapsible = TRUE,
-#               width = 4,
-#               chartJSRadarOutput('", tab_name, "_chart'))")
-#     out[i] <- x
-#   }
-#   out <- paste0(out, collapse = ',')
-#   return(out)
-# }

@@ -65,7 +65,7 @@ body <- dashboardBody(
   ),
   useShinyjs(),
   fluidRow(
-    column(4,
+    column(5,
            hidden(
              lapply(seq(n_tabs), function(i) {
                div(class = "page",
@@ -74,7 +74,7 @@ body <- dashboardBody(
                    style = "font-size: 200%;")
              })
            )),
-    column(8,
+    column(7,
            actionButton("prevBtn", "< Previous"),
            actionButton("nextBtn", "Next >"))
     
@@ -82,7 +82,35 @@ body <- dashboardBody(
   tabItems(
     tabItem(
       tabName="instructions",
-      includeMarkdown('includes/instructions.md')
+      fluidPage(
+        fluidRow(h1('Instructions', align = 'center')),
+        fluidRow(
+          column(6,
+                 includeMarkdown('includes/instructions.md')),
+          column(6,
+                 includeMarkdown('includes/instructions_b.md'))
+        ),
+        fluidRow(h3('Example', align = 'center')),
+        fluidRow(
+          box(#title = 'Example',
+            fluidPage(
+              column(6,
+                     strong('Staffing'),
+                     p('The bank is well-staffed.'),
+                     sliderInput('example',
+                                 'Score',
+                                 min = 0,
+                                 max = 5,
+                                 value = 3)),
+              column(6,
+                     h4('Meaning:'),
+                     h3(textOutput('example_text')))
+            ),
+            height = '300px'),
+          box(chartJSRadarOutput('example_chart'), height = '300px')
+        )
+      )
+      
     ),
     tabItem(
       tabName="strategy_and_execution",
@@ -136,6 +164,38 @@ ui <- dashboardPage(header, sidebar, body, skin="blue")
 
 # Server
 server <- function(input, output, session) {
+  
+  output$example_text <- renderText({
+    x <- input$example
+    dict <- data_frame(key = 0:5,
+                       value = c('not at all',
+                                 'barely',
+                                 'somewhat',
+                                 'moderately well',
+                                 'well',
+                                 'completely'))
+    val <- dict %>% filter(key == x) %>% .$value
+    paste0('The above statement describes this bank ', val, '.')
+  })
+  
+  output$example_chart <- renderChartJSRadar({
+    x <- input$example
+    scores <- list(
+      'This Bank' = c(x, 3, 5),
+      'Best Practice' = rep(5, 3)
+    )
+    labs <- c('Staffing', 'Dimension B', 'Dimension A')
+    chartJSRadar(scores = scores, labs = labs, maxScale = 5,
+                 scaleStepWidth = 1,
+                 scaleStartValue = 1,
+                 responsive = TRUE,
+                 labelSize = 11,
+                 showLegend = TRUE,
+                 addDots = TRUE,
+                 showToolTipLabel = TRUE,
+                 colMatrix = t(matrix(c(col2rgb('darkorange'), col2rgb('lightblue')), nrow = 2, byrow = TRUE)))
+    
+  })
   
   # Define a reactive value which is the currently selected tab number
   rv <- reactiveValues(page = 1)
@@ -229,8 +289,10 @@ server <- function(input, output, session) {
                       Competency = competency)
       x <- x %>%
         distinct(`Tab name`, Competency, .keep_all = TRUE)
-      missing_table <- DT::datatable(x)
-      the_space <- br()
+      missing_table <- DT::datatable(x, rownames = FALSE,
+                                     options = list(
+                                       pageLength = 5,
+                                       dom = 'tip'))
       the_box <- box(title = 'Warning',
                      status = 'danger',
                      collapsible = TRUE,
@@ -256,9 +318,8 @@ server <- function(input, output, session) {
   output$graphs_ui <-
     renderUI({
       fluidPage(
-        fluidRow(
-          uiOutput('warnings_box')
-          ),
+        fluidRow(h3('Examine your results below:')),
+        
         # Can't run the below in loop due to comma separation
         eval(parse(text = generate_radar_ui(tab_name = tab_names[1]))),
         eval(parse(text = generate_radar_ui(tab_name = tab_names[2]))),
@@ -269,7 +330,10 @@ server <- function(input, output, session) {
         eval(parse(text = generate_radar_ui(tab_name = tab_names[7]))),
         eval(parse(text = generate_radar_ui(tab_name = tab_names[8]))),
         eval(parse(text = generate_radar_ui(tab_name = tab_names[9]))),
-        eval(parse(text = generate_radar_ui(tab_name = tab_names[10])))
+        eval(parse(text = generate_radar_ui(tab_name = tab_names[10]))),
+        fluidRow(
+          uiOutput('warnings_box')
+        )
       )
     })
   
