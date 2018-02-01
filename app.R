@@ -126,7 +126,7 @@ body <- dashboardBody(
     ),
     tabItem(
       tabName="graphs",
-      fluidPage()
+      uiOutput('graphs_ui')
     )
   )
 )
@@ -198,6 +198,59 @@ server <- function(input, output, session) {
     eval(parse(text = generate_ui(tab_name = this_tab_name,
                                           competencies = these_competencies)))
   }
+  
+  # Create the graphs page
+  output$graphs_ui <-
+    renderUI({
+      the_submissions <- reactiveValuesToList(submissions)
+      the_submissions <- unlist(the_submissions)
+      print(the_submissions)
+      all_checked <- all(the_submissions)
+      print(all_checked)
+      if(!all_checked){
+        still_missing <- which(!the_submissions)
+        still_missing <- names(still_missing)
+        still_missing <- unlist(lapply(strsplit(still_missing, '[[:digit:]]'), function(x){
+          substr(x[1], 1, nchar(x[1]) - 1)}))
+        still_missing <- data.frame(combined_name = still_missing)
+        still_missing <- left_join(still_missing, 
+                                   competency_dict %>%
+                                     mutate(combined_name = tolower(combined_name)))
+        print(still_missing)
+        missing_text <- 'Interpret results with caution: you did not submit responses for the below areas:'
+        x <- still_missing %>%
+          dplyr::select(tab_name,
+                        competency) %>%
+          mutate(tab_name = simple_cap(gsub('_', ' ', tab_name)),
+                 competency = simple_cap(gsub('_', ' ', competency))) %>%
+          dplyr::rename(`Tab name` = tab_name,
+                        Competency = competency)
+        x <- x %>%
+          distinct(`Tab name`, Competency, .keep_all = TRUE)
+        missing_table <- DT::datatable(x)
+        the_space <- br()
+        the_box <- box(title = 'Warning',
+                       status = 'danger',
+                       collapsible = TRUE,
+                       width = 12,
+                       fluidPage(
+                         fluidRow(p(missing_text)),
+                         fluidRow(missing_table))
+        )
+        
+        
+      } else {
+        the_space <- NULL
+        the_box <- NULL
+      }
+      fluidPage(
+        fluidRow(
+          the_space,
+          the_box
+          )
+      )
+      
+    })
   
 }
 

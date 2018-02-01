@@ -23,15 +23,13 @@ competency_dict <-
     data_frame(tab_name = 'Operations and Customer Service',
                competency = c('customer_perfromance', 'agile_processes', 'process_automation', 'financial_controlling')),
     data_frame(tab_name = 'Responsible Finance',
-               competency = c('consumer_protection_strategy', 'responsible_pricing_and_transparency', 'complain_resolution', 'data_protection', 'financial_education'))
+               competency = c('consumer_protection_strategy', 'responsible_pricing_and_transparency', 'complaint_resolution', 'data_protection', 'financial_education'))
   )
 competency_dict$tab_name <- tolower(gsub(' ', '_', competency_dict$tab_name))
 tab_names <- unique(competency_dict$tab_name)
+competency_dict$combined_name <- paste0(competency_dict$tab_name, '_', competency_dict$competency)
   
-
-
-
-
+# Create dictionary for placing text
 ui_dict <- 
   bind_rows(data_frame(name = c('strategy_and_execution_vision_1'),
                        text = c(paste0("There are diverse perspectives about what a digital bank means ",

@@ -51,7 +51,7 @@ get_ui_text <- function(item_name){
     filter(name == item_name) %>%
     .$text
   if(length(out) == 0){
-    out <- 'NOTHING YET'
+    out <- paste0('No text yet has been filled out for ', item_name, ' in the ui_dict.')
   }
   return(out)
 }
@@ -176,3 +176,4 @@ simple_cap <- function(x) {
   paste(toupper(substring(s, 1,1)), substring(s, 2),
         sep="", collapse=" ")
 }
+simple_cap <- Vectorize(simple_cap)
