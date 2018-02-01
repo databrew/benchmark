@@ -423,11 +423,24 @@ server <- function(input, output, session) {
         eval(parse(text = generate_radar_ui(tab_name = tab_names[10]))),
         fluidRow(
           uiOutput('warnings_box')
+        ),
+        fluidRow(
+          downloadButton('downloadData', 'Download your responses as raw data')
+
         )
       )
     })
   
-  
+  # Download data
+  output$downloadData <- downloadHandler(
+    filename = function() { paste('raw_data', '.csv', sep='') },
+    content = function(file, ip = input_list) {
+      ip <- reactiveValuesToList(ip)
+      ip <- unlist(ip)
+      df <- data.frame(key = names(ip),
+                       value = ip)
+      print(head(df))
+      write.csv(df, file, row.names = FALSE)})
   
   # Create reactive dataset for plotting radar
   radar_data <- reactive({
