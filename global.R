@@ -18,7 +18,8 @@ tab_names_full <- c('Instructions',
                'IT and MIS',
                'Operations and Customer Service',
                'Responsible Finance',
-               'Graphs')
+               'Graphs',
+               'About')
 tab_names <- tolower(gsub(' ', '_', tab_names_full))
 tab_dict <- data_frame(number = 1:length(tab_names),
                        name = tab_names,
