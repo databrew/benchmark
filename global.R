@@ -46,13 +46,57 @@ get_ui_text <- function(item_name){
   return(out)
 }
 
+# Define function for keeping an eye on inputs, so that they don't get reset when the ui gets re-rendered
+create_input_list <- function(){
+
+  a <- paste0("input_list <- reactiveValues();\n")
+  inputs <- paste0(ui_dict$name, '_slider')
+  b <- rep(NA, length(inputs))
+  for(i in 1:length(inputs)){
+    this_input <- inputs[i]
+    b[i] <- paste0("input_list[['", this_input, "']] <- 3;\n")
+  }
+  # Observe any changes and register them
+  z <- rep(NA, length(inputs))
+  for(i in 1:length(inputs)){
+    this_input <- inputs[i]
+    this_event <- paste0('input$', this_input)
+    # Observe buttons rather than sliders
+    this_observation <- gsub('_slider', '_submit', this_event)
+    z[i] <- 
+      paste0("observeEvent(",this_observation,", { ;
+ input_list[['", this_input, "']] <- ", this_event,"
+    });\n")
+  }
+  paste0(a,
+         paste0(b,
+         z, collapse = ''),
+         collapse = '')
+}
+
 # Define function for creating a 1-5 slider for a given item
-create_slider <- function(item_name){
+create_slider <- function(item_name,
+                          ip){
+  list_name <- paste0(item_name, '_slider')
+  message('Hi Joe, list name is ', list_name)
+  ip <- reactiveValuesToList(ip)
+  ip <- unlist(ip)
+  if(list_name %in% names(ip)){
+    val <- ip[names(ip) == list_name]
+  } else {
+    message('PROBLEM')
+    message(' this is list name: ', list_name)
+    message('it is not in names of ip: ')
+    print(sort(names(ip)))
+    val <- 3
+  }
+
+
   sliderInput(paste0(item_name, '_slider'),
               'Score',
               min = 1, 
               max = 5,
-              value = 3)
+              value = val)
 }
 
 # Define function for creating a submit button to follow each slider
@@ -133,17 +177,17 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         collapsed = ", tab_name, "_", this_competency, "_submitted(),
         column(4,
                p(get_ui_text('", tab_name, "_", this_competency, "_1')),
-               create_slider('", tab_name, "_", this_competency, "_1'),
+               create_slider('", tab_name, "_", this_competency, "_1', ip = input_list),
                create_submit('", tab_name, "_", this_competency, "_1', 
                              show_icon = submissions$", tab_name, "_", this_competency, "_1_submit)),
         column(4,
                p(get_ui_text('", tab_name, "_", this_competency, "_2')),
-               create_slider('", tab_name, "_", this_competency, "_2'),
+               create_slider('", tab_name, "_", this_competency, "_2', ip = input_list),
                create_submit('", tab_name, "_", this_competency, "_2',
                              show_icon = submissions$", tab_name, "_", this_competency, "_2_submit)),
         column(4,
                p(get_ui_text('", tab_name, "_", this_competency, "_3')),
-               create_slider('", tab_name, "_", this_competency, "_3'),
+               create_slider('", tab_name, "_", this_competency, "_3', ip = input_list),
                create_submit('", tab_name, "_", this_competency, "_3',
                              show_icon = submissions$", tab_name, "_", this_competency, "_3_submit))
     )")
@@ -169,11 +213,11 @@ simple_cap <- function(x) {
 simple_cap <- Vectorize(simple_cap)
 
 # Define function for radar charts
-make_radar_data <- function(input){
-  # Get the auto-generated input objects
-  ip <- reactiveValuesToList(input)
-  ip <- unlist(ip)
+make_radar_data <- function(ip){
   require(radarchart)
+
+  ip <- reactiveValuesToList(ip)
+  ip <- unlist(ip)
 
   combined_names <- competency_dict$combined_name
 
@@ -189,12 +233,8 @@ make_radar_data <- function(input){
   vals_df$value_name <- paste0(vals_df$combined_name, '_', vals_df$key, '_slider')
   for(i in 1:nrow(vals_df)){
     the_name <- vals_df$value_name[[i]]
-    if(the_name %in% names(ip)){
-      the_value <- ip[[the_name]]
-      the_value <- as.numeric(the_value)
-    } else {
-      the_value <- 3
-    }
+    the_value <- ip[names(ip) == the_name]
+    the_value <- as.numeric(the_value)
     vals_df$value[i] <- the_value
   }
   
@@ -210,13 +250,64 @@ make_radar_data <- function(input){
   
   # Return 
   return(out)
-  
-  # # Subset for only one tab_name
-  # tn <- out$tab_name[1]
-  # scores <- list(
-  #   'Observed' = out$scores[out$tab_name == tn],
-  #   'Best practice' = rep(5, length(out$scores[out$tab_name == tn]))
-  # )
-  # labs <- out$labs[out$tab_name == tn]
-  # chartJSRadar(scores = scores, labs = labs, maxScale = 5)
 }
+
+# Define function for making radar chart
+make_radar_chart <- function(data,
+                             tn = 'organization_and_governance'){
+  # Subset to the tab in question
+  data <- data %>%
+    filter(tab_name == tn)
+  scores <- list(
+    'Observed' = data$scores,
+    'Best practice' = rep(5, nrow(data))
+  )
+  labs <- data$labs
+  chartJSRadar(scores = scores, labs = labs, maxScale = 5,
+               scaleStepWidth = 1,
+               scaleStartValue = 1,
+               responsive = TRUE,
+               labelSize = 8,
+               showLegend = TRUE,
+               addDots = TRUE,
+               showToolTipLabel = TRUE,
+               colMatrix = t(matrix(c(col2rgb('darkorange'), col2rgb('lightblue')), nrow = 2, byrow = TRUE)))
+}
+
+
+# Define function for generating all the radar charts in the server
+generate_radar_server <- function(tab_name = 'organization_and_governance'){
+  paste0("output$", tab_name, "_chart <- renderChartJSRadar({
+    data <- radar_data()
+    make_radar_chart(data,
+                     tn = '", tab_name, "')
+  })")
+}
+
+# Define function for generating all the radar charts in the ui
+generate_radar_ui <- function(tab_name = 'organization_and_governance'){
+  title <- simple_cap(gsub('_', ' ', tab_name))
+  paste0("box(title = '",title, "',
+              status = 'info',
+              collapsible = TRUE,
+              width = 4,
+              chartJSRadarOutput('", tab_name, "_chart'))")
+}
+
+# Define function for generating all the radar charts in the ui
+# Not runnable, since each thing is separated by a comma
+# generate_radar_ui2 <- function(tab_names){
+#   out <- rep(NA, length(tab_names))
+#   for(i in 1:length(tab_names)){
+#     tab_name <- tab_names[i]
+#     title <- simple_cap(gsub('_', ' ', tab_name))
+#     x <- paste0("box(title = '",title, "',
+#               status = 'danger',
+#               collapsible = TRUE,
+#               width = 4,
+#               chartJSRadarOutput('", tab_name, "_chart'))")
+#     out[i] <- x
+#   }
+#   out <- paste0(out, collapse = ',')
+#   return(out)
+# }

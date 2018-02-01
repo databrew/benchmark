@@ -180,6 +180,9 @@ server <- function(input, output, session) {
   
   # Create reactive values to observe the submissions
   submissions <- reactiveValues()
+  
+  # Generate reactive input list for submission numbers saving
+  eval(parse(text = create_input_list()))
 
   # Generate the reactive objects associated with each tab  
   for(tn in 1:length(tab_names)){
@@ -198,15 +201,6 @@ server <- function(input, output, session) {
     eval(parse(text = generate_ui(tab_name = this_tab_name,
                                           competencies = these_competencies)))
   }
-  
-  
-  # Reactive chart data
-  output$rdt <- DT::renderDataTable({
-    # Chart data
-    rd <- radar_data()
-    print(rd)
-    rd
-  })
   
   # Box with warnings for incomplete data
   output$warnings_box <- renderUI({
@@ -253,6 +247,11 @@ server <- function(input, output, session) {
     return(the_box)
   })
   
+  # Radar charts
+  for(i in 1:length(tab_names)){
+    eval(parse(text = generate_radar_server(tab_name = tab_names[i])))
+  }
+
   # Create the graphs page
   output$graphs_ui <-
     renderUI({
@@ -260,16 +259,23 @@ server <- function(input, output, session) {
         fluidRow(
           uiOutput('warnings_box')
           ),
-        fluidRow(
-          DT::dataTableOutput('rdt')
-        )
+        # Can't run the below in loop due to comma separation
+        eval(parse(text = generate_radar_ui(tab_name = tab_names[1]))),
+        eval(parse(text = generate_radar_ui(tab_name = tab_names[2]))),
+        eval(parse(text = generate_radar_ui(tab_name = tab_names[3]))),
+        eval(parse(text = generate_radar_ui(tab_name = tab_names[4]))),
+        eval(parse(text = generate_radar_ui(tab_name = tab_names[5]))),
+        eval(parse(text = generate_radar_ui(tab_name = tab_names[6]))),
+        eval(parse(text = generate_radar_ui(tab_name = tab_names[7]))),
+        eval(parse(text = generate_radar_ui(tab_name = tab_names[8]))),
+        eval(parse(text = generate_radar_ui(tab_name = tab_names[9]))),
+        eval(parse(text = generate_radar_ui(tab_name = tab_names[10])))
       )
-      
     })
   
   # Create reactive dataset for plotting radar
   radar_data <- reactive({
-    make_radar_data(input = input)
+    make_radar_data(ip = input_list)
   })
   
 }
