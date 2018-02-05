@@ -274,7 +274,9 @@ convert_capitalization <- function(x){
 
 # Define function for making radar chart
 make_radar_chart <- function(data,
-                             tn = 'organization_and_governance'){
+                             tn = 'organization_and_governance',
+                             label_size = 11,
+                             height = NULL){
   # Subset to the tab in question
   data <- data %>%
     filter(tab_name == tn)
@@ -284,10 +286,11 @@ make_radar_chart <- function(data,
   )
   labs <- data$labs
   chartJSRadar(scores = scores, labs = labs, maxScale = 5,
+               height = height,
                scaleStepWidth = 1,
                scaleStartValue = 1,
                responsive = TRUE,
-               labelSize = 11,
+               labelSize = label_size,
                showLegend = TRUE,
                addDots = TRUE,
                showToolTipLabel = TRUE,
