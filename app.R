@@ -4,7 +4,24 @@ library(shinyjs)
 
 source('global.R')
 
-header <- dashboardHeader(title="Benchmarking tool")
+header <- dashboardHeader(title="Benchmarking tool", 
+                          dropdownMenu(type = "tasks", badgeStatus = "success",
+                                       taskItem(value = 90, color = "green",
+                                                "Documentation"
+                                       ),
+                                       taskItem(value = 17, color = "aqua",
+                                                "Project X"
+                                       ),
+                                       taskItem(value = 75, color = "yellow",
+                                                "Server deployment"
+                                       ),
+                                       taskItem(value = 80, color = "red",
+                                                "Overall project"
+                                       )
+                          ))
+                          
+                          
+                          # tags$li(class = "dropdown", plotOutput('xxx',height = '40px')))
 sidebar <- dashboardSidebar(
   sidebarMenu(
     id = 'tabs',
@@ -67,6 +84,7 @@ body <- dashboardBody(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
   ),
+
   useShinyjs(),
   fluidRow(
     column(5,
@@ -498,6 +516,9 @@ server <- function(input, output, session) {
   radar_data <- reactive({
     make_radar_data(ip = input_list)
   })
+
+
+  
   
   # Download visualizations
   output$download_visualizations <-
