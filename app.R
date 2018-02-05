@@ -409,6 +409,8 @@ server <- function(input, output, session) {
     renderUI({
       fluidPage(
         fluidRow(h3('Examine your results below:')),
+        fluidRow(downloadButton("download_visualizations", "Download all charts!")),
+        br(),
         
         # Can't run the below in loop due to comma separation
         eval(parse(text = generate_radar_ui(tab_name = tab_names[1]))),
@@ -439,13 +441,36 @@ server <- function(input, output, session) {
       ip <- unlist(ip)
       df <- data.frame(key = names(ip),
                        value = ip)
-      print(head(df))
       write.csv(df, file, row.names = FALSE)})
   
   # Create reactive dataset for plotting radar
   radar_data <- reactive({
     make_radar_data(ip = input_list)
   })
+  
+  # Download visualizations
+  output$download_visualizations <-
+    downloadHandler(filename = "visualizations.html",
+                    content = function(file){
+                      
+                      # Get data for radar charts
+                      rd <- radar_data()
+                      rd <- data.frame(rd)
+                      print(head(rd))
+                      
+                      # generate html
+                      rmarkdown::render('visualizations.Rmd',
+                                        params = list(rd = rd,
+                                                      ip = input_list))
+
+                      # copy html to 'file'
+                      file.copy("visualizations.html", file)
+                      
+                      # # delete folder with plots
+                      # unlink("figure", recursive = TRUE)
+                    },
+                    contentType = "application/html"
+    )
   
 }
 

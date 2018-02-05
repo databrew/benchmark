@@ -1,0 +1,89 @@
+---
+params:
+  rd: !r data.frame(a = 1:3) # plotting data
+  ip: ! list(a = 1:5) # input list
+title: "Test"
+fig_height: 2.6
+fig_width: 4
+output:
+  html_document:
+    css: www/custom.css
+    pandoc_args: [
+      "+RTS", "-K16000m",
+      "-RTS"
+    ]
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+library(knitr)# Basic knitr options
+opts_chunk$set(comment = NA, 
+               echo = FALSE, 
+               warning = FALSE, 
+               message = FALSE, 
+               error = TRUE, 
+               cache = F)
+knit_engines$set(asis = function(options) {
+  if (options$echo && options$eval) knit_child(text = options$code)
+})
+
+# Specify paramaters
+for (i in 1:length(params)){
+  assign(names(params)[i],
+         params[[i]],
+         env = .GlobalEnv)
+}
+
+
+library(radarchart)
+source('global.R')
+```
+
+# Data downoad {.tabset .tabset-fade}
+
+## Radar charts charts
+
+```{r}
+chunks <- rep(NA, length(tab_names))
+for (i in 1:length(tab_names)){
+  tab_name <- tab_names[i]
+  title <- simple_cap(gsub('_', ' ', tab_name))
+  title <- convert_capitalization(title)
+  chunks[i] <- paste0('### ', title, '\n\n```{r}\n',
+         'make_radar_chart(rd, tn = "', tab_name, '")\n```\n\n')
+}
+```
+
+```{r}
+chunks <- paste0(chunks, collapse = '')
+
+## Add raw data
+ip <- reactiveValuesToList(ip)
+ip <- unlist(ip)
+df <- data.frame(key = names(ip),
+                 value = ip)
+final_chunk <- paste0("## Raw data\n\n```{r}\nprettify(df, download_options = TRUE)\n```\n"
+  
+)
+chunks <- paste0(chunks, final_chunk, collapse = '')
+```
+
+```{r}
+# Write our order / child-calls to a doc
+file_connection <- file('children.Rmd')
+writeLines(paste0('---\noutput: html_document\n---\n\n', 
+                  chunks), 
+           file_connection)
+close(file_connection)
+```
+
+```{r child='children.Rmd', echo = FALSE}
+# Now, we simply include "children.Rmd" to construct our doc
+# (ie, children is the child doc, and each section is a grandchild)
+```
+
+```{r, results='hide'}
+# Having already called the auto-generated children.Rmd, we can delete it
+file.remove('children.Rmd')
+```
+
