@@ -57,9 +57,7 @@ create_input_list <- function(){
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
     v <- parse_number(this_input)
-    v <- ifelse(v == 1, 0,
-                ifelse(v == 2, 5, 
-                       ifelse(v == 3, 0)))
+    v <- 0
     b[i] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
   }
   # Observe any changes and register them
@@ -67,8 +65,10 @@ create_input_list <- function(){
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
     this_event <- paste0('input$', this_input)
-    # Observe buttons rather than sliders
-    this_observation <- gsub('_slider', '_submit', this_event)
+    # # Observe buttons rather than sliders
+    # this_observation <- gsub('_slider', '_submit', this_event)
+    # Observe sliders rather than buttons
+    this_observation <- this_event
     z[i] <- 
       paste0("observeEvent(",this_observation,", { ;
  input_list[['", this_input, "']] <- ", this_event,"
@@ -107,12 +107,9 @@ create_slider <- function(item_name,
 # Define function for creating a submit button to follow each slider
 create_submit <- function(item_name, show_icon = FALSE){
   if(show_icon){
-    actionButton(paste0(item_name, '_submit'),
-                 label = 'Submitted',
-                 icon = icon('check'))
+    icon("check", "fa-3x")
   } else {
-    actionButton(paste0(item_name, '_submit'),
-                 label = 'Submit')
+    icon('exclamation-circle', 'fa-3x')
   }
 }
 
@@ -134,12 +131,21 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
              submissions$', tab_name, '_', competencies[i], '_3_submit <- FALSE;
              
              # Observe submissions
-             observeEvent(input$', tab_name, '_', competencies[i], '_1_submit,{
-             submissions$', tab_name, '_', competencies[i], '_1_submit <- TRUE})
-             observeEvent(input$', tab_name, '_', competencies[i], '_2_submit,{
-             submissions$', tab_name, '_', competencies[i], '_2_submit <- TRUE})
-             observeEvent(input$', tab_name, '_', competencies[i], '_3_submit,{
-             submissions$', tab_name, '_', competencies[i], '_3_submit <- TRUE})
+             observeEvent(input$', tab_name, '_', competencies[i], '_1_slider,{message("OBSERVED");
+                if(input$', tab_name, '_', competencies[i], '_1_slider > 0){
+                  submissions$', tab_name, '_', competencies[i], '_1_submit <- TRUE
+                }
+              })
+             observeEvent(input$', tab_name, '_', competencies[i], '_2_slider,{message("OBSERVED");
+                if(input$', tab_name, '_', competencies[i], '_2_slider > 0){
+                  submissions$', tab_name, '_', competencies[i], '_2_submit <- TRUE
+                }
+              })
+              observeEvent(input$', tab_name, '_', competencies[i], '_3_slider,{message("OBSERVED");
+                if(input$', tab_name, '_', competencies[i], '_3_slider > 0){
+                  submissions$', tab_name, '_', competencies[i], '_3_submit <- TRUE
+                }
+              })
              
              # Reactives saying whether the entire competency has been submitted
              ', tab_name, '_', competencies[i], '_submitted <- reactive({
