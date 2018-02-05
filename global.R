@@ -174,13 +174,19 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
   b <- rep(NA, n_competencies)
   for(i in 1:n_competencies){
     this_competency <- competencies[i]
-    
-    b[i] <- paste0("box(title = '", convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), "',
-        width = 12,
+    this_title <- convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))
+    competency_done <- paste0(tab_name, "_", this_competency, "_submitted()")
+    b[i] <- paste0("\ntabPanel(paste0('", this_title, 
+                   "'),",
+# "', ifelse(", competency_done, ", ' (Completed)', '')), 
+
+        "fluidPage(br()\n,box(title = paste0('", this_title, "', ifelse(", competency_done, ", ' (Completed)', '')),        width = 12,
         solidHeader = TRUE,
         collapsible = TRUE,
-        collapsed = ", tab_name, "_", this_competency, "_submitted(),
-        column(4,
+        collapsed = FALSE,
+                   ",
+        # collapsed = ", competency_done, ",
+        "column(4,
                p(get_ui_text('", tab_name, "_", this_competency, "_1')),
                create_slider('", tab_name, "_", this_competency, "_1', ip = input_list),
                create_submit('", tab_name, "_", this_competency, "_1', 
@@ -195,9 +201,10 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
                create_slider('", tab_name, "_", this_competency, "_3', ip = input_list),
                create_submit('", tab_name, "_", this_competency, "_3',
                              show_icon = submissions$", tab_name, "_", this_competency, "_3_submit))
-    )")
+    )))")
   }
   b <- paste0(b, collapse = ',')
+  b <- paste0('fluidPage(tabsetPanel(', b, ',id = "sub_tab", selected = sub_tab_selected()))', collapse = '')
   
   out <- 
     paste0("output$",tab_name, "_ui <- ",
@@ -269,6 +276,7 @@ convert_capitalization <- function(x){
   x <- gsub('It ', 'IT ', x)
   x <- gsub('Mis', 'MIS', x)
   x <- gsub('techs', 'Techs', x)
+  x <- gsub('Hr ', 'HR ', x)
   return(x)
 }
 

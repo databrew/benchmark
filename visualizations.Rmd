@@ -40,7 +40,7 @@ source('global.R')
 ```
 
 
-## Radar charts charts {.tabset .tabset-fade}
+## Radar charts {.tabset .tabset-fade}
 
 ```{r}
 chunks <- rep(NA, length(tab_names))

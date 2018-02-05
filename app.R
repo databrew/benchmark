@@ -404,6 +404,53 @@ server <- function(input, output, session) {
     eval(parse(text = generate_radar_server(tab_name = tab_names[i])))
   }
 
+  # Reactive objecting observing the selected sub tab
+  sub_tab_selected <- reactiveVal(value = NULL)
+  observeEvent(input$tabs, {
+    message('Changed tabs. Setting sub_tab to NULL ')
+    sub_tab_selected(NULL)
+  })
+  observeEvent({input$sub_tab}, {
+    x <- input$sub_tab
+    message('Selected sub_tab is ', x)
+    if(!is.null(x)){
+      sub_tab_selected(x)
+    }
+  })
+  
+  # # Observe any changes to submissions, and get the first non-submitted sub-tab to show up
+  # # Not working properly, so commenting out
+  # observeEvent(input$tabs, {
+  #   tn <- input$tabs
+  #   
+  #   s <- reactiveValuesToList(submissions)
+  #   s <- unlist(s)
+  #   d <- data.frame(key = names(s),
+  #                    value = s) %>%
+  #     mutate(key = gsub('_3_submit', '', key),
+  #            key = gsub('_2_submit', '', key),
+  #            key = gsub('_1_submit', '', key)) %>%
+  #     group_by(key) %>%
+  #     summarise(value = all(value)) %>% ungroup %>%
+  #   # Join to competencies dict to get tab / sub_tab name
+  #   left_join(competency_dict, by = c('key' = 'combined_name')) %>%
+  #   # filter to only keep those with this same tab name
+  #     dplyr::filter(tab_name == tn) %>%
+  #     # filter to keep only those who are not submitted
+  #     dplyr::filter(!value) %>%
+  #     # capture the first competency (equivalent to sub tab)
+  #     .$competency
+  #   if(length(d) > 0){
+  #     d <- d[1]
+  #     d <- convert_capitalization(simple_cap(gsub('_', ' ', d)))
+  #     message('forcing sub-tab selection to ', d)
+  #     sub_tab_selected(d)
+  #   } else {
+  #     message('No more unsubmitted areas')
+  #   }
+  # })
+
+
   # Create the graphs page
   output$graphs_ui <-
     renderUI({
