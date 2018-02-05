@@ -406,18 +406,20 @@ server <- function(input, output, session) {
 
   # Reactive objecting observing the selected sub tab
   sub_tab_selected <- reactiveVal(value = NULL)
+  ## Use the first sub_tab upon changing tabs
   observeEvent(input$tabs, {
     message('Changed tabs. Setting sub_tab to NULL ')
-    sub_tab_selected(NULL)
+    sub_tab_selected(input$sub_tab)
   })
-  observeEvent({input$sub_tab}, {
+  # If a sub tab is clicked, save that click
+  observeEvent(input$sub_tab, {
     x <- input$sub_tab
     message('Selected sub_tab is ', x)
     if(!is.null(x)){
       sub_tab_selected(x)
     }
   })
-  
+
   # # Observe any changes to submissions, and get the first non-submitted sub-tab to show up
   # # Not working properly, so commenting out
   # observeEvent(input$tabs, {
@@ -459,17 +461,19 @@ server <- function(input, output, session) {
         fluidRow(downloadButton("download_visualizations", "Download all charts!")),
         br(),
         
-        # Can't run the below in loop due to comma separation
-        eval(parse(text = generate_radar_ui(tab_name = tab_names[1]))),
-        eval(parse(text = generate_radar_ui(tab_name = tab_names[2]))),
-        eval(parse(text = generate_radar_ui(tab_name = tab_names[3]))),
-        eval(parse(text = generate_radar_ui(tab_name = tab_names[4]))),
-        eval(parse(text = generate_radar_ui(tab_name = tab_names[5]))),
-        eval(parse(text = generate_radar_ui(tab_name = tab_names[6]))),
-        eval(parse(text = generate_radar_ui(tab_name = tab_names[7]))),
-        eval(parse(text = generate_radar_ui(tab_name = tab_names[8]))),
-        eval(parse(text = generate_radar_ui(tab_name = tab_names[9]))),
-        eval(parse(text = generate_radar_ui(tab_name = tab_names[10]))),
+        tabsetPanel(
+          # Can't run the below in loop due to comma separation
+          eval(parse(text = generate_radar_ui(tab_name = tab_names[1]))),
+          eval(parse(text = generate_radar_ui(tab_name = tab_names[2]))),
+          eval(parse(text = generate_radar_ui(tab_name = tab_names[3]))),
+          eval(parse(text = generate_radar_ui(tab_name = tab_names[4]))),
+          eval(parse(text = generate_radar_ui(tab_name = tab_names[5]))),
+          eval(parse(text = generate_radar_ui(tab_name = tab_names[6]))),
+          eval(parse(text = generate_radar_ui(tab_name = tab_names[7]))),
+          eval(parse(text = generate_radar_ui(tab_name = tab_names[8]))),
+          eval(parse(text = generate_radar_ui(tab_name = tab_names[9]))),
+          eval(parse(text = generate_radar_ui(tab_name = tab_names[10])))
+        ),
         fluidRow(
           uiOutput('warnings_box')
         ),
