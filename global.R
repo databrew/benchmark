@@ -5,6 +5,7 @@ library(shinyWidgets)
 # library(ggradar) # devtools::install_github('ricardo-bion/ggradar')
 # library(d3radarR) # devtools::install_github("timelyportfolio/d3radarR")
 
+source('gg_radar.R')
 
 
 # Create a dictionary of tab names / numbers
@@ -291,7 +292,8 @@ convert_capitalization <- function(x){
 make_radar_chart <- function(data,
                              tn = 'organization_and_governance',
                              label_size = 11,
-                             height = NULL){
+                             height = NULL,
+                             gg = FALSE){
   # Subset to the tab in question
   data <- data %>%
     filter(tab_name == tn)
@@ -300,16 +302,46 @@ make_radar_chart <- function(data,
     'Best Practice' = rep(5, nrow(data))
   )
   labs <- data$labs
-  chartJSRadar(scores = scores, labs = labs, maxScale = 5,
-               height = height,
-               scaleStepWidth = 1,
-               scaleStartValue = 1,
-               responsive = TRUE,
-               labelSize = label_size,
-               showLegend = TRUE,
-               addDots = TRUE,
-               showToolTipLabel = TRUE,
-               colMatrix = t(matrix(c(col2rgb('darkorange'), col2rgb('lightblue')), nrow = 2, byrow = TRUE)))
+  if(gg){
+    pd <- data %>%
+      dplyr::select(labs, scores) %>%
+      mutate(group = 'This bank') %>%
+      mutate(scores = ifelse(is.na(scores), 0, scores))
+    benchmark <- pd %>%
+      mutate(scores = 5,
+             group = 'Benchmark')
+    pd <- bind_rows(pd, benchmark) %>% mutate(scores = scores)
+    pd <- pd %>% spread(key = labs, value = scores)
+    # pd$group <- gsub(' ', '\n', pd$group)
+    names(pd) <- gsub(' ', '\n', names(pd))
+    ggradar(plot.data = pd,
+            axis.label.size = 3,
+            grid.max = 5,
+            gridline.max.colour = NA,
+            gridline.mid.colour = NA,
+            gridline.min.colour = NA,
+            group.point.size = 2,
+            grid.label.size = 0,
+            centre.y = 0,
+            group.colours = c('lightblue', 'darkorange'),
+            group.line.width = 1,
+            line_alpha = 0.8,
+            legend.text.size = 10)
+    
+    
+  } else {
+    chartJSRadar(scores = scores, labs = labs, maxScale = 5,
+                 height = height,
+                 scaleStepWidth = 1,
+                 scaleStartValue = 1,
+                 responsive = TRUE,
+                 labelSize = label_size,
+                 showLegend = TRUE,
+                 addDots = TRUE,
+                 showToolTipLabel = TRUE,
+                 colMatrix = t(matrix(c(col2rgb('darkorange'), col2rgb('lightblue')), nrow = 2, byrow = TRUE)))
+  }
+  
 }
 
 

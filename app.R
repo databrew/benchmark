@@ -522,7 +522,7 @@ server <- function(input, output, session) {
   
   # Download visualizations
   output$download_visualizations <-
-    downloadHandler(filename = "visualizations.html",
+    downloadHandler(filename = "visualizations.pdf",
                     content = function(file){
                       
                       # Get data for radar charts
@@ -536,12 +536,12 @@ server <- function(input, output, session) {
                                                       ip = input_list))
 
                       # copy html to 'file'
-                      file.copy("visualizations.html", file)
+                      file.copy("visualizations.pdf", file)
                       
                       # # delete folder with plots
                       # unlink("figure", recursive = TRUE)
                     },
-                    contentType = "application/html"
+                    contentType = "application/pdf"
     )
   
 }

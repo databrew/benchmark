@@ -5,24 +5,24 @@ params:
 title: "Benchmark report"
 fig_height: 2.6
 fig_width: 4
-output:
-  html_document:
-    css: www/custom.css
-    pandoc_args: [
-      "+RTS", "-K16000m",
-      "-RTS"
-    ]
-    theme: flatly
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
+# output: 
+#   pdf_document:
+#     latex_engine: xelatex
+#     template: pdf/layout.tex
+#     includes:
+#       in_header: pdf/preamble.sty
 library(knitr)# Basic knitr options
 opts_chunk$set(comment = NA, 
                echo = FALSE, 
                warning = FALSE, 
                message = FALSE, 
                error = TRUE, 
-               cache = F)
+               cache = F,
+               fig.height = 6)
 knit_engines$set(asis = function(options) {
   if (options$echo && options$eval) knit_child(text = options$code)
 })
@@ -40,7 +40,7 @@ source('global.R')
 ```
 
 
-## Radar charts {.tabset .tabset-fade}
+## Radar charts
 
 ```{r}
 chunks <- rep(NA, length(tab_names))
@@ -48,8 +48,8 @@ for (i in 1:length(tab_names)){
   tab_name <- tab_names[i]
   title <- simple_cap(gsub('_', ' ', tab_name))
   title <- convert_capitalization(title)
-  chunks[i] <- paste0('### ', title, '\n\n```{r}\n',
-         'make_radar_chart(rd, tn = "', tab_name, '", label_size = 14, height = 250)\n```\n\n')
+  chunks[i] <- paste0('### ', title, '\n\n```{r, fig.height = 6, fig.width = 7}\n',
+         'make_radar_chart(rd, tn = "', tab_name, '", label_size = 14, height = 250, gg = TRUE)\n```\n\n')
 }
 ```
 
@@ -61,7 +61,12 @@ ip <- reactiveValuesToList(ip)
 ip <- unlist(ip)
 df <- data.frame(key = names(ip),
                  value = ip)
-final_chunk <- paste0("### Raw data\n\n```{r}\nprettify(df, download_options = TRUE)\n```\n"
+df$key <- as.character(df$key)
+df$combined_name <- substr(df$key, 1, nchar(df$key) - 9)
+df <- left_join(df, competency_dict, by = 'combined_name') %>%
+  dplyr::select(tab_name, competency, value)
+names(df) <- c('Area', 'Competency', 'Score')
+final_chunk <- paste0("### Raw data\n\n```{r}\nkable(df, row.names = FALSE)\n```\n"
   
 )
 chunks <- paste0(chunks, final_chunk, collapse = '')
@@ -70,7 +75,7 @@ chunks <- paste0(chunks, final_chunk, collapse = '')
 ```{r}
 # Write our order / child-calls to a doc
 file_connection <- file('children.Rmd')
-writeLines(paste0('---\noutput: html_document\n---\n\n', 
+writeLines(paste0('---\noutput: pdf_document\n---\n\n', 
                   chunks), 
            file_connection)
 close(file_connection)
