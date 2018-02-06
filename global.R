@@ -96,7 +96,7 @@ create_slider <- function(item_name,
     message('PROBLEM')
     message(' this is list name: ', list_name)
     message('it is not in names of ip: ')
-    print(sort(names(ip)))
+    # print(sort(names(ip)))
     val <- 3
   }
 
@@ -135,17 +135,17 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
              submissions$', tab_name, '_', competencies[i], '_3_submit <- FALSE;
              
              # Observe submissions
-             observeEvent(input$', tab_name, '_', competencies[i], '_1_slider,{message("OBSERVED");
+             observeEvent(input$', tab_name, '_', competencies[i], '_1_slider,{
                 if(input$', tab_name, '_', competencies[i], '_1_slider > 0){
                   submissions$', tab_name, '_', competencies[i], '_1_submit <- TRUE
                 }
               })
-             observeEvent(input$', tab_name, '_', competencies[i], '_2_slider,{message("OBSERVED");
+             observeEvent(input$', tab_name, '_', competencies[i], '_2_slider,{
                 if(input$', tab_name, '_', competencies[i], '_2_slider > 0){
                   submissions$', tab_name, '_', competencies[i], '_2_submit <- TRUE
                 }
               })
-              observeEvent(input$', tab_name, '_', competencies[i], '_3_slider,{message("OBSERVED");
+              observeEvent(input$', tab_name, '_', competencies[i], '_3_slider,{
                 if(input$', tab_name, '_', competencies[i], '_3_slider > 0){
                   submissions$', tab_name, '_', competencies[i], '_3_submit <- TRUE
                 }
@@ -185,6 +185,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
   b <- rep(NA, n_competencies)
   for(i in 1:n_competencies){
     this_competency <- competencies[i]
+    this_combined_name <- paste0(tab_name, '_', this_competency)
     this_title <- convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))
     competency_done <- paste0(tab_name, "_", this_competency, "_submitted()")
     b[i] <- paste0("\ntabPanel(paste0('", this_title, 
@@ -215,7 +216,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
     )))")
   }
   b <- paste0(b, collapse = ',')
-  b <- paste0('fluidPage(tabsetPanel(', b, ',id = "sub_tab", selected = sub_tab_selected()))', collapse = '')
+  b <- paste0('fluidPage(tabsetPanel(', b, ',id = "',paste0('sub_tab_', tab_name), '", selected = sub_tab_selected()))', collapse = '')
   
   out <- 
     paste0("output$",tab_name, "_ui <- ",
@@ -224,6 +225,27 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
           a,
           b,
           ")})")
+  return(out)
+}
+
+# Text for observing all of the sub_tab selections
+observe_sub_tab <- function(){
+  cn <- competency_dict$tab_name
+  cn <- unique(cn)
+  cnt <- paste0('sub_tab_', cn)
+  sub_tabs <- paste0('input$', cnt)
+  out <- list()
+  for(i in 1:length(sub_tabs)){
+    this_sub_tab <- sub_tabs[i]
+    this_name <- cnt[i]
+    out[[i]] <- paste0("observeEvent({",this_sub_tab,"; input$tabs}, { message('The following sub_tab id was just clicked: ", cnt[i],"' );
+        sub_tab_selected(", this_sub_tab,");
+        message('---Overwriting the sub_tab_selected with: ', sub_tab_selected())
+      });"
+    )
+  }
+  out <- unlist(out)
+  out <- paste0(out, collapse = '\n')
   return(out)
 }
 

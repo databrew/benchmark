@@ -97,8 +97,8 @@ body <- dashboardBody(
              })
            )),
     column(7,
-           actionButton("prevBtn", "< Previous"),
-           actionButton("nextBtn", "Next >"))
+           actionButton("prevBtn", "Previous", icon = icon("arrow-circle-left", "fa-2x")),
+           actionButton("nextBtn", "Next", icon = icon("arrow-circle-right", "fa-2x")))
     
   ),
   tabItems(
@@ -375,9 +375,9 @@ server <- function(input, output, session) {
     
     the_submissions <- reactiveValuesToList(submissions)
     the_submissions <- unlist(the_submissions)
-    print(the_submissions)
+    # print(the_submissions)
     all_checked <- all(the_submissions)
-    print(all_checked)
+    # print(all_checked)
     if(!all_checked){
       still_missing <- which(!the_submissions)
       still_missing <- names(still_missing)
@@ -425,51 +425,23 @@ server <- function(input, output, session) {
   # Reactive objecting observing the selected sub tab
   sub_tab_selected <- reactiveVal(value = NULL)
   ## Use the first sub_tab upon changing tabs
-  observeEvent(input$tabs, {
-    message('Changed tabs. Setting sub_tab to NULL ')
-    sub_tab_selected(input$sub_tab)
-  })
-  # If a sub tab is clicked, save that click
-  observeEvent(input$sub_tab, {
-    x <- input$sub_tab
-    message('Selected sub_tab is ', x)
-    if(!is.null(x)){
-      sub_tab_selected(x)
-    }
+  observeEvent({input$tabs;
+    input$prevBtn;
+    input$nextBtn}, {
+      message('Changed tabs to ', input$tabs)
+      # Get the name of the first sub tab associated with the clicked tab
+      x <- competency_dict %>%
+        filter(tab_name == input$tabs)
+      if(nrow(x) > 0){
+        x <- x[1,]
+        the_new_one <- convert_capitalization(simple_cap(gsub('_', ' ', x$competency))) %>% as.character
+        message('Overwriting the selected sub tab with: ', the_new_one)
+        sub_tab_selected(the_new_one)
+      }
   })
 
-  # # Observe any changes to submissions, and get the first non-submitted sub-tab to show up
-  # # Not working properly, so commenting out
-  # observeEvent(input$tabs, {
-  #   tn <- input$tabs
-  #   
-  #   s <- reactiveValuesToList(submissions)
-  #   s <- unlist(s)
-  #   d <- data.frame(key = names(s),
-  #                    value = s) %>%
-  #     mutate(key = gsub('_3_submit', '', key),
-  #            key = gsub('_2_submit', '', key),
-  #            key = gsub('_1_submit', '', key)) %>%
-  #     group_by(key) %>%
-  #     summarise(value = all(value)) %>% ungroup %>%
-  #   # Join to competencies dict to get tab / sub_tab name
-  #   left_join(competency_dict, by = c('key' = 'combined_name')) %>%
-  #   # filter to only keep those with this same tab name
-  #     dplyr::filter(tab_name == tn) %>%
-  #     # filter to keep only those who are not submitted
-  #     dplyr::filter(!value) %>%
-  #     # capture the first competency (equivalent to sub tab)
-  #     .$competency
-  #   if(length(d) > 0){
-  #     d <- d[1]
-  #     d <- convert_capitalization(simple_cap(gsub('_', ' ', d)))
-  #     message('forcing sub-tab selection to ', d)
-  #     sub_tab_selected(d)
-  #   } else {
-  #     message('No more unsubmitted areas')
-  #   }
-  # })
-
+  # Observe any clicks on the sub-tabs, and update the subtab accordingly
+  eval(parse(text = observe_sub_tab()))
 
   # Create the graphs page
   output$graphs_ui <-
@@ -528,7 +500,7 @@ server <- function(input, output, session) {
                       # Get data for radar charts
                       rd <- radar_data()
                       rd <- data.frame(rd)
-                      print(head(rd))
+                      # print(head(rd))
                       
                       # generate html
                       rmarkdown::render('visualizations.Rmd',
