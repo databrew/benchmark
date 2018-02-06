@@ -2,13 +2,7 @@
 library(tidyverse)
 library(radarchart)
 library(shinyWidgets)
-library(qdap)
-
-# Handle fonts
-
-# library(ggradar) # devtools::install_github('ricardo-bion/ggradar')
-# library(d3radarR) # devtools::install_github("timelyportfolio/d3radarR")
-
+source('replace_number.R')
 source('gg_radar.R')
 
 
@@ -250,11 +244,11 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         "fluidRow(column(4, p(get_ui_text('", tab_name, "_", this_competency, "_1'))), 
                   column(4, p(get_ui_text('", tab_name, "_", this_competency, "_2'))),
                   column(4, p(get_ui_text('", tab_name, "_", this_competency, "_3')))),",
-        "fluidRow(actionButton('show', 'Leave a comment'), style = 'text-align:center;')",
+        "fluidRow(actionButton('", paste0('show_', tab_name), "', 'Leave a comment'), style = 'text-align:center;')",
         ")))")
   }
   b <- paste0(b, collapse = ',')
-  b <- paste0('fluidPage(navlistPanel("', paste0(simple_cap(qdap::replace_number(n_competencies)), ' competencies'), '", fluid = TRUE, widths = c(2, 10),', b, ',id = "',paste0('sub_tab_', tab_name), '", selected = sub_tab_selected()))', collapse = '')
+  b <- paste0('fluidPage(navlistPanel("', paste0(simple_cap(replace_number(n_competencies)), ' competencies'), '", fluid = TRUE, widths = c(2, 10),', b, ',id = "',paste0('sub_tab_', tab_name), '", selected = sub_tab_selected()))', collapse = '')
   
   out <- 
     paste0("output$",tab_name, "_ui <- ",
@@ -263,6 +257,26 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
           a,
           b,
           ")})")
+  return(out)
+}
+
+# Generate modals for adding comments
+generate_modals <- function(){
+  tab_names <- tab_dict$name
+  out <- list()
+  for(i in 1:length(tab_names)){
+    this_tab_name <- tab_names[i]
+    comment_name <- paste0('comment_', this_tab_name)
+    out[[i]] <- paste0('observeEvent(input$show_', this_tab_name, ', { message("MODAL TIME");
+    x <- sub_tab_selected()
+message("Sub tab selected worked and it is ", x);
+    showModal(modalDialog(title = paste0("Leave a comment about ", x), footer = modalButton("Submit"),
+      easyClose = TRUE, 
+      fluidPage(fluidRow(textInput("', comment_name, '", label = "")))))
+  })')
+  }
+  out <- unlist(out)
+  out <- paste0(out, collapse = '\n')
   return(out)
 }
 

@@ -494,16 +494,9 @@ server <- function(input, output, session) {
   })
 
 
-  # Modal dialog for adding comment
-  observeEvent(input$show, {
-    x <- sub_tab_selected()
-    showModal(modalDialog(
-      title = paste0("Leave a comment about ", x),
-      footer = modalButton('Submit'),
-      easyClose = TRUE,
-      fluidPage(fluidRow(textInput('comment', '')))
-    ))
-  })
+  # Modal dialogs for adding comment
+  eval(parse(text = generate_modals()))
+
   
   
   # Download visualizations
