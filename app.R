@@ -294,6 +294,7 @@ server <- function(input, output, session) {
     )
     labs <- c('Staffing', 'Dimension B', 'Dimension A')
     chartJSRadar(scores = scores, labs = labs, maxScale = 5,
+                 # height = '150px',
                  scaleStepWidth = 1,
                  scaleStartValue = 1,
                  responsive = TRUE,
