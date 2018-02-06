@@ -66,6 +66,11 @@ df$combined_name <- substr(df$key, 1, nchar(df$key) - 9)
 df <- left_join(df, competency_dict, by = 'combined_name') %>%
   dplyr::select(tab_name, competency, value)
 names(df) <- c('Area', 'Competency', 'Score')
+df$Area <- simple_cap(gsub('_', ' ', df$Area))
+df$Area <- convert_capitalization(df$Area)
+df$Competency <- simple_cap(gsub('_', ' ', df$Competency))
+df$Competency <- convert_capitalization(df$Competency)
+
 final_chunk <- paste0("### Raw data\n\n```{r}\nkable(df, row.names = FALSE)\n```\n"
   
 )
