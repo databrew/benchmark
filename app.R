@@ -444,6 +444,9 @@ server <- function(input, output, session) {
   # Observe any clicks on the sub-tabs, and update the subtab accordingly
   eval(parse(text = observe_sub_tab()))
 
+  # Observe any full completions of a competency, and navigate to next one
+  eval(parse(text = sub_tab_completer()))
+  
   # Create the graphs page
   output$graphs_ui <-
     renderUI({

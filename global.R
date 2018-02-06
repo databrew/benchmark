@@ -162,6 +162,40 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
   paste0(out, collapse = '\n')
 }
 
+# Function to observe when an entire sub_tab gets submitted and move the sub_tab accordingly
+sub_tab_completer <- function(){
+  submission_objects <- paste0(competency_dict$combined_name, '_submitted()')
+  sub_tabs <- convert_capitalization(simple_cap(gsub('_', ' ', competency_dict$competency)))
+  tabs <- competency_dict$tab_name
+  out <- list()
+  for(i in 1:length(submission_objects)){
+    out[[i]] <- 
+      paste0(
+        "observeEvent(", submission_objects[i], ", { 
+        sts <- sub_tab_selected();
+        sm <- ", submission_objects[i], "
+        if(!is.null(sts)){
+          if(sm & sts == '", sub_tabs[i], "'){
+          this_tab <- '", tabs[i], "'
+          this_sub_tab <- '", sub_tabs[i], "'
+          next_tab <- '", tabs[i + 1], "'
+          next_sub_tab <- '", sub_tabs[i + 1], "'
+          if(next_tab != this_tab){
+            navPage(1)
+          } else {
+            sub_tab_selected(next_sub_tab)
+          }
+        }
+        }
+        
+      })"
+      )
+  }
+  out <- unlist(out)
+  out <- paste0(out, collapse = ';\n')
+  return(out)
+}
+
 
 
 # Define function for generating ui inputs
@@ -216,7 +250,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
     )))")
   }
   b <- paste0(b, collapse = ',')
-  b <- paste0('fluidPage(tabsetPanel(', b, ',id = "',paste0('sub_tab_', tab_name), '", selected = sub_tab_selected()))', collapse = '')
+  b <- paste0('fluidPage(navlistPanel(widths = c(2, 10),', b, ',id = "',paste0('sub_tab_', tab_name), '", selected = sub_tab_selected()))', collapse = '')
   
   out <- 
     paste0("output$",tab_name, "_ui <- ",
