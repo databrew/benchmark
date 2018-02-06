@@ -93,12 +93,12 @@ body <- dashboardBody(
                div(class = "page",
                    id = paste0("step", i),
                    paste("Tab", i, 'of', nrow(tab_dict)),
-                   style = "font-size: 200%;")
+                   style = "font-size: 140%;")
              })
            )),
     column(7,
-           actionButton("prevBtn", "Previous", icon = icon("arrow-circle-left", "fa-2x")),
-           actionButton("nextBtn", "Next", icon = icon("arrow-circle-right", "fa-2x")))
+           actionButton("prevBtn", "Previous", icon = icon("arrow-circle-left", "fa-1x")),
+           actionButton("nextBtn", "Next", icon = icon("arrow-circle-right", "fa-1x")))
     
   ),
   tabItems(
@@ -494,6 +494,16 @@ server <- function(input, output, session) {
   })
 
 
+  # Modal dialog for adding comment
+  observeEvent(input$show, {
+    x <- sub_tab_selected()
+    showModal(modalDialog(
+      title = paste0("Leave a comment about ", x),
+      footer = modalButton('Submit'),
+      easyClose = TRUE,
+      fluidPage(fluidRow(textInput('comment', '')))
+    ))
+  })
   
   
   # Download visualizations

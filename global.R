@@ -2,6 +2,7 @@
 library(tidyverse)
 library(radarchart)
 library(shinyWidgets)
+library(qdap)
 
 # Handle fonts
 
@@ -105,7 +106,8 @@ create_slider <- function(item_name,
               'Score',
               min = 0, 
               max = 5,
-              value = val)
+              value = val,
+              step = 0.25)
 }
 
 # Define function for creating a submit button to follow each slider
@@ -176,6 +178,7 @@ sub_tab_completer <- function(){
         sm <- ", submission_objects[i], "
         if(!is.null(sts)){
           if(sm & sts == '", sub_tabs[i], "'){
+          Sys.sleep(0.25)
           this_tab <- '", tabs[i], "'
           this_sub_tab <- '", sub_tabs[i], "'
           next_tab <- '", tabs[i + 1], "'
@@ -209,11 +212,11 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
   n_competencies <- length(competencies)
   
   # Start of page
-  a <- 
-    paste0("
-           h1('", full_name, "'),
-    fluidRow(p('", full_name, " is divided into ", n_competencies, " competencies')),
-           ")
+  a <- ''
+    # paste0("
+    #        h1('", full_name, "'),
+    # fluidRow(p('", full_name, " is divided into ", n_competencies, " competencies')),
+    #        ")
   
   # Each box
   b <- rep(NA, n_competencies)
@@ -232,25 +235,26 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         collapsed = FALSE,
                    ",
         # collapsed = ", competency_done, ",
-        "column(4,
-               p(get_ui_text('", tab_name, "_", this_competency, "_1')),
-               create_slider('", tab_name, "_", this_competency, "_1', ip = input_list),
-               create_submit('", tab_name, "_", this_competency, "_1', 
-                             show_icon = submissions$", tab_name, "_", this_competency, "_1_submit)),
-        column(4,
-               p(get_ui_text('", tab_name, "_", this_competency, "_2')),
-               create_slider('", tab_name, "_", this_competency, "_2', ip = input_list),
-               create_submit('", tab_name, "_", this_competency, "_2',
+        "fluidRow(column(4, h5('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'),
+                        create_slider('", tab_name, "_", this_competency, "_1', ip = input_list),
+                        create_submit('", tab_name, "_", this_competency, "_1', 
+                             show_icon = submissions$", tab_name, "_", this_competency, "_1_submit)), 
+                  column(4, h5('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'),
+                        create_slider('", tab_name, "_", this_competency, "_2', ip = input_list),
+                        create_submit('", tab_name, "_", this_competency, "_2',
                              show_icon = submissions$", tab_name, "_", this_competency, "_2_submit)),
-        column(4,
-               p(get_ui_text('", tab_name, "_", this_competency, "_3')),
-               create_slider('", tab_name, "_", this_competency, "_3', ip = input_list),
-               create_submit('", tab_name, "_", this_competency, "_3',
-                             show_icon = submissions$", tab_name, "_", this_competency, "_3_submit))
-    )))")
+                  column(4, h5('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'),
+                        create_slider('", tab_name, "_", this_competency, "_3', ip = input_list),
+                        create_submit('", tab_name, "_", this_competency, "_3',
+                             show_icon = submissions$", tab_name, "_", this_competency, "_3_submit))),",
+        "fluidRow(column(4, p(get_ui_text('", tab_name, "_", this_competency, "_1'))), 
+                  column(4, p(get_ui_text('", tab_name, "_", this_competency, "_2'))),
+                  column(4, p(get_ui_text('", tab_name, "_", this_competency, "_3')))),",
+        "fluidRow(actionButton('show', 'Leave a comment'), style = 'text-align:center;')",
+        ")))")
   }
   b <- paste0(b, collapse = ',')
-  b <- paste0('fluidPage(navlistPanel(widths = c(2, 10),', b, ',id = "',paste0('sub_tab_', tab_name), '", selected = sub_tab_selected()))', collapse = '')
+  b <- paste0('fluidPage(navlistPanel("', paste0(simple_cap(qdap::replace_number(n_competencies)), ' competencies'), '", fluid = TRUE, widths = c(2, 10),', b, ',id = "',paste0('sub_tab_', tab_name), '", selected = sub_tab_selected()))', collapse = '')
   
   out <- 
     paste0("output$",tab_name, "_ui <- ",
