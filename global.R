@@ -2,8 +2,9 @@
 library(tidyverse)
 library(radarchart)
 library(shinyWidgets)
-library(extrafont)
-loadfonts()
+
+# Handle fonts
+
 # library(ggradar) # devtools::install_github('ricardo-bion/ggradar')
 # library(d3radarR) # devtools::install_github("timelyportfolio/d3radarR")
 

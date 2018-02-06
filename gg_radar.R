@@ -2,7 +2,6 @@
 # but with some improvements / customizations
 
 ggradar <- function(plot.data, 
-                    font.radar = "DejaVu Sans", 
                     values.radar = c("0%","50%", "100%"), 
                     axis.labels = colnames(plot.data)[-1], 
                     grid.min = 0, 
@@ -130,15 +129,15 @@ ggradar <- function(plot.data,
   base <- ggplot(axis$label) + xlab(NULL) + ylab(NULL) + coord_equal() + 
     geom_text(data = subset(axis$label, axis$label$x < (-x.centre.range)), 
               aes(x = x, y = y, label = text), size = axis.label.size, 
-              hjust = 1, family = font.radar) + scale_x_continuous(limits = c(-1.5 * 
+              hjust = 1) + scale_x_continuous(limits = c(-1.5 * 
                                                                                 plot.extent.x, 1.5 * plot.extent.x)) + scale_y_continuous(limits = c(-plot.extent.y, 
                                                                                                                                                      plot.extent.y))
   base <- base + geom_text(data = subset(axis$label, abs(axis$label$x) <= 
                                            x.centre.range), aes(x = x, y = y, label = text), size = axis.label.size, 
-                           hjust = 0.5, family = font.radar)
+                           hjust = 0.5)
   base <- base + geom_text(data = subset(axis$label, axis$label$x > 
                                            x.centre.range), aes(x = x, y = y, label = text), size = axis.label.size, 
-                           hjust = 0, family = font.radar)
+                           hjust = 0)
   base <- base + theme_clear
   base <- base + geom_polygon(data = gridline$max$path, aes(x, 
                                                             y), fill = background.circle.colour, alpha = background.circle.transparency)
@@ -166,19 +165,18 @@ ggradar <- function(plot.data,
   if (label.gridline.min == TRUE) {
     base <- base + geom_text(aes(x = x, y = y, label = values.radar[1]), 
                              data = gridline$min$label, size = grid.label.size * 
-                               0.8, hjust = 1, family = font.radar)
+                               0.8, hjust = 1)
   }
   base <- base + geom_text(aes(x = x, y = y, label = values.radar[2]), 
                            data = gridline$mid$label, size = grid.label.size * 0.8, 
-                           hjust = 1, family = font.radar)
+                           hjust = 1)
   base <- base + geom_text(aes(x = x, y = y, label = values.radar[3]), 
                            data = gridline$max$label, size = grid.label.size * 0.8, 
-                           hjust = 1, family = font.radar)
+                           hjust = 1)
   if (label.centre.y == TRUE) {
     centre.y.label <- data.frame(x = 0, y = 0, text = as.character(centre.y))
     base <- base + geom_text(aes(x = x, y = y, label = text), 
-                             data = centre.y.label, size = grid.label.size, hjust = 0.5, 
-                             family = font.radar)
+                             data = centre.y.label, size = grid.label.size, hjust = 0.5)
   }
   if (!is.null(group.colours)) {
     colour_values = rep(group.colours, 100)
@@ -189,11 +187,10 @@ ggradar <- function(plot.data,
                           "#9CA299", "#565A5C", "#00A04B", "#E54C20"), 100)
   }
   base <- base + theme(legend.key.width = unit(3, "line")) + 
-    theme(text = element_text(size = 20, family = font.radar)) + 
+    theme(text = element_text(size = 20)) + 
     theme(legend.text = element_text(size = legend.text.size), 
           legend.position = "left") + theme(legend.key.height = unit(2, 
-                                                                     "line")) + scale_colour_manual(values = colour_values) + 
-    theme(text = element_text(family = font.radar)) + theme(legend.title = element_blank())
+                                                                     "line")) + scale_colour_manual(values = colour_values)  + theme(legend.title = element_blank())
   if (plot.title != "") {
     base <- base + ggtitle(plot.title)
   }
