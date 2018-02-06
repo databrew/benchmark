@@ -483,11 +483,11 @@ prettify <- function (the_table, remove_underscores_columns = TRUE, cap_columns 
 generate_radar_ui <- function(tab_name = 'organization_and_governance'){
   title <- simple_cap(gsub('_', ' ', tab_name))
   title <- convert_capitalization(title)
-  paste0("tabPanel(title = '",title, "',column(2), box(title = '",title, "',
+  paste0("box(title = '",title, "',
               status = 'info',
               collapsible = TRUE,
-              width = 8,
-              chartJSRadarOutput('", tab_name, "_chart')), column(2))")
+              width = 6,
+              chartJSRadarOutput('", tab_name, "_chart'))")
 }
 
 

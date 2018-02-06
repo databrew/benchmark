@@ -451,7 +451,7 @@ server <- function(input, output, session) {
         fluidRow(downloadButton("download_visualizations", "Download all charts!")),
         br(),
         
-        tabsetPanel(
+        fluidRow(
           # Can't run the below in loop due to comma separation
           eval(parse(text = generate_radar_ui(tab_name = tab_names[1]))),
           eval(parse(text = generate_radar_ui(tab_name = tab_names[2]))),
