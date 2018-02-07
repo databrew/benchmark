@@ -244,9 +244,9 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
                   column(4, p(get_ui_text('", tab_name, "_", this_competency, "_2'))),
                   column(4, p(get_ui_text('", tab_name, "_", this_competency, "_3')))),",
         "fluidRow(
-            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Rating rationale')), 
-            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Rating rationale')), 
-            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Rating rationale')), style = 'text-align:center;')",
+            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency, '_1'), "', 'Rating rationale')), 
+            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency, '_2'), "', 'Rating rationale')), 
+            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency, '_3'), "', 'Rating rationale')), style = 'text-align:center;')",
         ")))")
   }
   b <- paste0(b, collapse = ',')
@@ -264,7 +264,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
 
 # Generate modals for adding comments
 generate_modals <- function(){
-  button_names <- competency_dict$combined_name
+  button_names <- ui_dict$name
   out <- list()
   for(i in 1:length(button_names)){
     this_tab_name <- button_names[i]
