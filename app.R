@@ -81,6 +81,8 @@ sidebar <- dashboardSidebar(
 )
 
 body <- dashboardBody(
+  tags$style(".fa-check {color:#0000FF}"),
+  tags$style(".fa-exclamation-circle {color:#B22222}"),
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
   ),
@@ -96,9 +98,12 @@ body <- dashboardBody(
                    style = "font-size: 140%;")
              })
            )),
-    column(7,
+    column(3,
            actionButton("prevBtn", "Previous", icon = icon("arrow-circle-left", "fa-1x")),
-           actionButton("nextBtn", "Next", icon = icon("arrow-circle-right", "fa-1x")))
+           actionButton("nextBtn", "Next", icon = icon("arrow-circle-right", "fa-1x"))),
+    column(4,
+           plotOutput('progress_plot', height = '50px')),
+    height = '50px'
     
   ),
   tabItems(
@@ -498,6 +503,41 @@ server <- function(input, output, session) {
   eval(parse(text = generate_modals()))
 
   
+  
+  # Progress plot
+  output$progress_plot <-
+    renderPlot({
+      
+      the_submissions <- reactiveValuesToList(submissions)
+      the_submissions <- unlist(the_submissions)
+      numerator <- length(which(the_submissions))
+      denominator <- length(the_submissions)
+      df <- data.frame(key = c('Finished', 'All'),
+                       value = c(numerator, denominator),
+                       dummy = 'a')
+      p <- numerator / denominator * 100 
+      p <- round(p, digits = 1)
+      ggplot(data = df,
+            aes(x = dummy,
+                y = value,
+                fill = key)) +
+        geom_bar(stat = 'identity',
+                 position = 'stack',
+                 alpha = 0.9) +
+      coord_flip() +
+        labs(x = '',
+             y = '') +
+        ggthemes::theme_map() +
+        # cowplot::theme_nothing() +
+        scale_fill_manual(name = '', values = c('darkorange', 'lightblue')) +
+        theme(legend.position = 'none') +
+        labs(title = paste0(p, '% completed')) +
+        theme(plot.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5')) +
+        theme(panel.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5'))
+      
+      
+      
+    })
   
   # Download visualizations
   output$download_visualizations <-

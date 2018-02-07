@@ -108,7 +108,7 @@ create_submit <- function(item_name, show_icon = FALSE){
   if(show_icon){
     icon("check", "fa-3x")
   } else {
-    icon('exclamation-circle', 'fa-3x')
+    icon('exclamation-circle', 'fas fa-spinner fa-pulse')
   }
 }
 
