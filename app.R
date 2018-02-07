@@ -120,7 +120,7 @@ body <- dashboardBody(
                      strong('Staffing'),
                      p('The bank is well-staffed.'),
                      sliderInput('example',
-                                 'Score',
+                                 'Score (1-5)',
                                  min = 0,
                                  max = 5,
                                  value = 3)),

@@ -95,9 +95,8 @@ create_slider <- function(item_name,
     val <- 3
   }
 
-
   sliderInput(paste0(item_name, '_slider'),
-              'Score',
+              'Score (1-5)',
               min = 0, 
               max = 5,
               value = val,
@@ -132,17 +131,17 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
              
              # Observe submissions
              observeEvent(input$', tab_name, '_', competencies[i], '_1_slider,{
-                if(input$', tab_name, '_', competencies[i], '_1_slider > 0){
+                if(input$', tab_name, '_', competencies[i], '_1_slider >= 1){
                   submissions$', tab_name, '_', competencies[i], '_1_submit <- TRUE
                 }
               })
              observeEvent(input$', tab_name, '_', competencies[i], '_2_slider,{
-                if(input$', tab_name, '_', competencies[i], '_2_slider > 0){
+                if(input$', tab_name, '_', competencies[i], '_2_slider >= 1){
                   submissions$', tab_name, '_', competencies[i], '_2_submit <- TRUE
                 }
               })
               observeEvent(input$', tab_name, '_', competencies[i], '_3_slider,{
-                if(input$', tab_name, '_', competencies[i], '_3_slider > 0){
+                if(input$', tab_name, '_', competencies[i], '_3_slider >= 1){
                   submissions$', tab_name, '_', competencies[i], '_3_submit <- TRUE
                 }
               })
