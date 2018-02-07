@@ -244,7 +244,10 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         "fluidRow(column(4, p(get_ui_text('", tab_name, "_", this_competency, "_1'))), 
                   column(4, p(get_ui_text('", tab_name, "_", this_competency, "_2'))),
                   column(4, p(get_ui_text('", tab_name, "_", this_competency, "_3')))),",
-        "fluidRow(actionButton('", paste0('show_', tab_name), "', 'Leave a comment'), style = 'text-align:center;')",
+        "fluidRow(
+            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Rating rationale')), 
+            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Rating rationale')), 
+            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Rating rationale')), style = 'text-align:center;')",
         ")))")
   }
   b <- paste0(b, collapse = ',')
@@ -262,15 +265,15 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
 
 # Generate modals for adding comments
 generate_modals <- function(){
-  tab_names <- tab_dict$name
+  button_names <- competency_dict$combined_name
   out <- list()
-  for(i in 1:length(tab_names)){
-    this_tab_name <- tab_names[i]
+  for(i in 1:length(button_names)){
+    this_tab_name <- button_names[i]
     comment_name <- paste0('comment_', this_tab_name)
     out[[i]] <- paste0('observeEvent(input$show_', this_tab_name, ', { message("MODAL TIME");
     x <- sub_tab_selected()
 message("Sub tab selected worked and it is ", x);
-    showModal(modalDialog(title = paste0("Leave a comment about ", x), footer = modalButton("Submit"),
+    showModal(modalDialog(title = paste0("Entering a qualitative rationale on the rating for ", x), footer = modalButton("Submit"),
       easyClose = TRUE, 
       fluidPage(fluidRow(textInput("', comment_name, '", label = "")))))
   })')
