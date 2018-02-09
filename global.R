@@ -51,11 +51,10 @@ get_ui_text <- function(item_name){
 create_input_list <- function(){
 
   a <- paste0("input_list <- reactiveValues();\n")
-  inputs <- paste0(ui_dict$name, '_slider')
+  inputs <- paste0(competency_dict$combined_name, '_slider')
   b <- rep(NA, length(inputs))
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
-    v <- parse_number(this_input)
     v <- 0
     b[i] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
   }
@@ -96,11 +95,11 @@ create_slider <- function(item_name,
   }
 
   sliderInput(paste0(item_name, '_slider'),
-              'Score (1-5)',
+              'Score (1-7)',
               min = 0, 
-              max = 5,
+              max = 7,
               value = val,
-              step = 0.25)
+              step = 0.5)
 }
 
 # Define function for creating a submit button to follow each slider
@@ -300,32 +299,23 @@ make_radar_data <- function(ip){
 
   # Get values for each of the combined names
   vals_df <-
-    expand.grid(combined_name = combined_names,
-                key = 1:3)
+    data.frame(combined_name = combined_names)
   # Get broken down names from dict
   vals_df <- left_join(vals_df,
                        competency_dict,
                        by = 'combined_name')
   vals_df$value <- NA
-  vals_df$value_name <- paste0(vals_df$combined_name, '_', vals_df$key, '_slider')
+  vals_df$value_name <- paste0(vals_df$combined_name, '_slider')
   for(i in 1:nrow(vals_df)){
     the_name <- vals_df$value_name[[i]]
     the_value <- ip[names(ip) == the_name]
     the_value <- as.numeric(the_value)
     vals_df$value[i] <- the_value
   }
-  
-  # Get the "score" of the competency quote in question
-  vals_df$score <- parse_number(vals_df$value_name)
-  vals_df$score <- ifelse(vals_df$score == 1, 1,
-                          ifelse(vals_df$score == 2, 3,
-                                 ifelse(vals_df$score == 3, 5,
-                                        vals_df$score)))
+
   # Group by competency and get weighted score
   out <- vals_df %>%
-    group_by(tab_name, competency) %>%
-    summarise(value = weighted.mean(x = score, w = value, na.rm = TRUE)) %>%
-    ungroup
+    dplyr::select(tab_name, competency, value)
   
   # Get in format for charting
   out$labs <- simple_cap(gsub('_', ' ', out$competency))
@@ -356,7 +346,7 @@ make_radar_chart <- function(data,
     filter(tab_name == tn)
   scores <- list(
     'This Bank' = data$scores,
-    'Best Practice' = rep(5, nrow(data))
+    'Best Practice' = rep(7, nrow(data))
   )
   labs <- data$labs
   if(gg){
@@ -365,7 +355,7 @@ make_radar_chart <- function(data,
       mutate(group = 'This bank') %>%
       mutate(scores = ifelse(is.na(scores), 0, scores))
     benchmark <- pd %>%
-      mutate(scores = 5,
+      mutate(scores = 7,
              group = 'Benchmark')
     pd <- bind_rows(pd, benchmark) %>% mutate(scores = scores)
     pd <- pd %>% spread(key = labs, value = scores)
@@ -373,7 +363,7 @@ make_radar_chart <- function(data,
     names(pd) <- gsub(' ', '\n', names(pd))
     ggradar(plot.data = pd,
             axis.label.size = 3,
-            grid.max = 5,
+            grid.max = 7,
             gridline.max.colour = NA,
             gridline.mid.colour = NA,
             gridline.min.colour = NA,
@@ -387,7 +377,7 @@ make_radar_chart <- function(data,
     
     
   } else {
-    chartJSRadar(scores = scores, labs = labs, maxScale = 5,
+    chartJSRadar(scores = scores, labs = labs, maxScale = 7,
                  height = height,
                  scaleStepWidth = 1,
                  scaleStartValue = 1,

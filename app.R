@@ -121,18 +121,26 @@ body <- dashboardBody(
         fluidRow(
           box(#title = 'Example',
             fluidPage(
-              column(6,
-                     strong('Staffing'),
-                     p('The bank is well-staffed.'),
-                     sliderInput('example',
-                                 'Score (1-5)',
-                                 min = 0,
-                                 max = 5,
-                                 value = 3)),
-              column(6,
-                     h4('Meaning:'),
-                     h3(textOutput('example_text')))
-            ),
+              fluidRow(column(3),
+                       column(6, sliderInput('example',
+                                             'Score (1-7)',
+                                             min = 0,
+                                             max = 7,
+                                             value = 0,
+                                             step = 0.5)),
+                       column(3)),
+              fluidRow(column(4,
+                              h4('Formative staffing'),
+                              p('The bank is poorly-staffed.')),
+                       column(4,
+                              h4('Emerging staffing'),
+                              p('The bank has sufficient staff.')),
+                       column(4,
+                              h4('Developed staffing'),
+                              p('The bank is well-staffed.'))),
+              fluidRow(column(12,
+                              h4('Meaning:'),
+                              p(textOutput('example_text'))))),
             height = '300px'),
           box(chartJSRadarOutput('example_chart'), height = '300px')
         )
@@ -280,15 +288,17 @@ server <- function(input, output, session) {
   
   output$example_text <- renderText({
     x <- input$example
-    dict <- data_frame(key = 0:5,
-                       value = c('not at all',
-                                 'barely',
-                                 'somewhat',
-                                 'moderately well',
-                                 'well',
-                                 'completely'))
-    val <- dict %>% filter(key == x) %>% .$value
-    paste0('The above statement describes this bank ', val, '.')
+    dict <- data_frame(key = 0:7,
+                       value = c('(no answer)',
+                                 'inimally formative',
+                                 'Formative',
+                                 'Minimally emerging',
+                                 'Emerging',
+                                 'Emerged',
+                                 'Minimally developed',
+                                 'Developed'))
+    val <- dict %>% filter(key == round(x)) %>% .$value
+    paste0('In this competency, the bank is ', tolower(val), '.')
   })
   
   output$example_chart <- renderChartJSRadar({
@@ -495,7 +505,8 @@ server <- function(input, output, session) {
   
   # Create reactive dataset for plotting radar
   radar_data <- reactive({
-    make_radar_data(ip = input_list)
+    x <- make_radar_data(ip = input_list)
+    x
   })
 
 
