@@ -397,8 +397,7 @@ server <- function(input, output, session) {
     if(!all_checked){
       still_missing <- which(!the_submissions)
       still_missing <- names(still_missing)
-      still_missing <- unlist(lapply(strsplit(still_missing, '[[:digit:]]'), function(x){
-        substr(x[1], 1, nchar(x[1]) - 1)}))
+      still_missing <- gsub('_submit', '', still_missing)
       still_missing <- data.frame(combined_name = still_missing)
       still_missing <- left_join(still_missing, 
                                  competency_dict %>%

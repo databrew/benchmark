@@ -214,7 +214,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
 
 
 
-        "fluidRow(column(4, h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "')), 
+        "fluidRow(column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style=\"color:red\")), 
                   column(4, h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "')),
                   column(4, h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'))),",
         "fluidRow(column(4, p(get_ui_text('", tab_name, "_", this_competency, "_1'))), 
@@ -380,7 +380,7 @@ make_radar_chart <- function(data,
     chartJSRadar(scores = scores, labs = labs, maxScale = 7,
                  height = height,
                  scaleStepWidth = 1,
-                 scaleStartValue = 1,
+                 scaleStartValue = 0,
                  responsive = TRUE,
                  labelSize = label_size,
                  showLegend = TRUE,
