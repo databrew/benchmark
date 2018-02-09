@@ -380,7 +380,7 @@ server <- function(input, output, session) {
   # Generate the uis for each tab
   for(tn in 1:length(tab_names)){
     message(tn)
-    this_tab_name <- tab_names[tn]
+      this_tab_name <- tab_names[tn]
     these_competencies <- competency_dict %>% filter(tab_name == this_tab_name) %>% .$competency
     eval(parse(text = generate_ui(tab_name = this_tab_name,
                                           competencies = these_competencies)))

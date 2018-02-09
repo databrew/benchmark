@@ -126,18 +126,28 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
              # Create reactive values
              submissions$', tab_name, '_', competencies[i], '_submit <- FALSE; # NEW ONE!
 
+            # Create reactive colors
+            ', tab_name, '_', competencies[i], '_colors <- reactiveValues()
+            ', tab_name, '_', competencies[i], '_colors[["a"]] <- "black"
+            ', tab_name, '_', competencies[i], '_colors[["b"]] <- "black"
+            ', tab_name, '_', competencies[i], '_colors[["c"]] <- "black"
+
              # Observe submissions
             observeEvent(input$', tab_name, '_', competencies[i], '_slider,{
                 if(input$', tab_name, '_', competencies[i], '_slider >= 1){
                   submissions$', tab_name, '_', competencies[i], '_submit <- TRUE
+                  # Colors
+                  x <- input$', tab_name, '_', competencies[i], '_slider
+                  new_value <- ceiling(x / 2.6)
+                  lt <- letters[new_value]
+                  ', tab_name, '_', competencies[i], '_colors[[lt]] <- "red"
                 }
               })
              
              # Reactives saying whether the entire competency has been submitted
              ', tab_name, '_', competencies[i], '_submitted <- reactive({
             submissions$', tab_name, '_', competencies[i], '_submit
-             })
-             ')
+             })')
   }
   paste0(out, collapse = '\n')
 }
@@ -198,6 +208,10 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
     this_combined_name <- paste0(tab_name, '_', this_competency)
     this_title <- convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))
     competency_done <- paste0(tab_name, "_", this_competency, "_submitted()")
+    colors_one <- paste0(tab_name, '_', competencies[i], '_colors[["a"]]')
+    colors_two <- paste0(tab_name, '_', competencies[i], '_colors[["b"]]')
+    colors_three <- paste0(tab_name, '_', competencies[i], '_colors[["c"]]')
+    
     b[i] <- paste0("\ntabPanel(paste0('", this_title, 
                    "'),",
 # "', ifelse(", competency_done, ", ' (Completed)', '')), 
@@ -213,10 +227,9 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
                              show_icon = ", competency_done, "), column(4))),",
 
 
-
-        "fluidRow(column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style=\"color:red\")), 
-                  column(4, h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "')),
-                  column(4, h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'))),",
+        "fluidRow(column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_one, "))), 
+                  column(4, span(h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_two, "))),
+                  column(4, span(h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_three, ")))),",
         "fluidRow(column(4, p(get_ui_text('", tab_name, "_", this_competency, "_1'))), 
                   column(4, p(get_ui_text('", tab_name, "_", this_competency, "_2'))),
                   column(4, p(get_ui_text('", tab_name, "_", this_competency, "_3')))),",
@@ -269,9 +282,9 @@ observe_sub_tab <- function(){
   for(i in 1:length(sub_tabs)){
     this_sub_tab <- sub_tabs[i]
     this_name <- cnt[i]
-    out[[i]] <- paste0("observeEvent({",this_sub_tab,"; input$tabs}, { message('The following sub_tab id was just clicked: ", cnt[i],"' );
+    out[[i]] <- paste0("observeEvent({",this_sub_tab,"; input$tabs}, { #message('The following sub_tab id was just clicked: ", cnt[i],"' );
         sub_tab_selected(", this_sub_tab,");
-        message('---Overwriting the sub_tab_selected with: ', sub_tab_selected())
+        #message('---Overwriting the sub_tab_selected with: ', sub_tab_selected())
       });"
     )
   }
