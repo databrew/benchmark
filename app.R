@@ -121,18 +121,26 @@ body <- dashboardBody(
         fluidRow(
           box(#title = 'Example',
             fluidPage(
-              column(6,
-                     strong('Staffing'),
-                     p('The bank is well-staffed.'),
-                     sliderInput('example',
-                                 'Score (1-5)',
-                                 min = 0,
-                                 max = 5,
-                                 value = 3)),
-              column(6,
-                     h4('Meaning:'),
-                     h3(textOutput('example_text')))
-            ),
+              fluidRow(column(3),
+                       column(6, sliderInput('example',
+                                             'Score (1-7)',
+                                             min = 0,
+                                             max = 7,
+                                             value = 0,
+                                             step = 0.5)),
+                       column(3)),
+              fluidRow(column(4,
+                              h4('Formative staffing'),
+                              p('The bank is poorly-staffed.')),
+                       column(4,
+                              h4('Emerging staffing'),
+                              p('The bank has sufficient staff.')),
+                       column(4,
+                              h4('Developed staffing'),
+                              p('The bank is well-staffed.'))),
+              fluidRow(column(12,
+                              h4('Meaning:'),
+                              p(textOutput('example_text'))))),
             height = '300px'),
           box(chartJSRadarOutput('example_chart'), height = '300px')
         )
@@ -280,28 +288,30 @@ server <- function(input, output, session) {
   
   output$example_text <- renderText({
     x <- input$example
-    dict <- data_frame(key = 0:5,
-                       value = c('not at all',
-                                 'barely',
-                                 'somewhat',
-                                 'moderately well',
-                                 'well',
-                                 'completely'))
-    val <- dict %>% filter(key == x) %>% .$value
-    paste0('The above statement describes this bank ', val, '.')
+    dict <- data_frame(key = 0:7,
+                       value = c('(no answer)',
+                                 'inimally formative',
+                                 'Formative',
+                                 'Minimally emerging',
+                                 'Emerging',
+                                 'Emerged',
+                                 'Minimally developed',
+                                 'Developed'))
+    val <- dict %>% filter(key == round(x)) %>% .$value
+    paste0('In this competency, the bank is ', tolower(val), '.')
   })
   
   output$example_chart <- renderChartJSRadar({
     x <- input$example
     scores <- list(
       'This Bank' = c(x, 3, 5),
-      'Best Practice' = rep(5, 3)
+      'Best Practice' = rep(7, 3)
     )
     labs <- c('Staffing', 'Dimension B', 'Dimension A')
-    chartJSRadar(scores = scores, labs = labs, maxScale = 5,
+    chartJSRadar(scores = scores, labs = labs, maxScale = 7,
                  # height = '150px',
                  scaleStepWidth = 1,
-                 scaleStartValue = 1,
+                 scaleStartValue = 0,
                  responsive = TRUE,
                  labelSize = 11,
                  showLegend = TRUE,
@@ -370,7 +380,7 @@ server <- function(input, output, session) {
   # Generate the uis for each tab
   for(tn in 1:length(tab_names)){
     message(tn)
-    this_tab_name <- tab_names[tn]
+      this_tab_name <- tab_names[tn]
     these_competencies <- competency_dict %>% filter(tab_name == this_tab_name) %>% .$competency
     eval(parse(text = generate_ui(tab_name = this_tab_name,
                                           competencies = these_competencies)))
@@ -387,8 +397,7 @@ server <- function(input, output, session) {
     if(!all_checked){
       still_missing <- which(!the_submissions)
       still_missing <- names(still_missing)
-      still_missing <- unlist(lapply(strsplit(still_missing, '[[:digit:]]'), function(x){
-        substr(x[1], 1, nchar(x[1]) - 1)}))
+      still_missing <- gsub('_submit', '', still_missing)
       still_missing <- data.frame(combined_name = still_missing)
       still_missing <- left_join(still_missing, 
                                  competency_dict %>%
@@ -449,9 +458,6 @@ server <- function(input, output, session) {
   # Observe any clicks on the sub-tabs, and update the subtab accordingly
   eval(parse(text = observe_sub_tab()))
 
-  # Observe any full completions of a competency, and navigate to next one
-  eval(parse(text = sub_tab_completer()))
-  
   # Create the graphs page
   output$graphs_ui <-
     renderUI({
@@ -482,7 +488,11 @@ server <- function(input, output, session) {
         )
       )
     })
+
+  # # Observe any full completions of a competency, and navigate to next one
+  eval(parse(text = sub_tab_completer()))
   
+    
   # Download data
   output$downloadData <- downloadHandler(
     filename = function() { paste('raw_data', '.csv', sep='') },
@@ -495,7 +505,8 @@ server <- function(input, output, session) {
   
   # Create reactive dataset for plotting radar
   radar_data <- reactive({
-    make_radar_data(ip = input_list)
+    x <- make_radar_data(ip = input_list)
+    x
   })
 
 

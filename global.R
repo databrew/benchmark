@@ -51,11 +51,10 @@ get_ui_text <- function(item_name){
 create_input_list <- function(){
 
   a <- paste0("input_list <- reactiveValues();\n")
-  inputs <- paste0(ui_dict$name, '_slider')
+  inputs <- paste0(competency_dict$combined_name, '_slider')
   b <- rep(NA, length(inputs))
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
-    v <- parse_number(this_input)
     v <- 0
     b[i] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
   }
@@ -92,15 +91,19 @@ create_slider <- function(item_name,
     message(' this is list name: ', list_name)
     message('it is not in names of ip: ')
     # print(sort(names(ip)))
-    val <- 3
+    val <- 0
   }
 
   sliderInput(paste0(item_name, '_slider'),
-              'Score (1-5)',
+              'Score (1-7)',
+              label = div(style='width:330px;align=right', 
+                          div(style='float:left;', 'Formative'), 
+                          # div(style='float:middle;', 'Emerging'), 
+                          div(style='float:right;', 'Developed')),
               min = 0, 
-              max = 5,
+              max = 7,
               value = val,
-              step = 0.25)
+              step = 0.5)
 }
 
 # Define function for creating a submit button to follow each slider
@@ -125,34 +128,33 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
       paste0('
              
              # Create reactive values
-             submissions$', tab_name, '_', competencies[i], '_1_submit <- FALSE;
-             submissions$', tab_name, '_', competencies[i], '_2_submit <- FALSE;
-             submissions$', tab_name, '_', competencies[i], '_3_submit <- FALSE;
-             
+             submissions$', tab_name, '_', competencies[i], '_submit <- FALSE; # NEW ONE!
+
+            # Create reactive colors
+            ', tab_name, '_', competencies[i], '_colors <- reactiveValues()
+            ', tab_name, '_', competencies[i], '_colors[["a"]] <- "black"
+            ', tab_name, '_', competencies[i], '_colors[["b"]] <- "black"
+            ', tab_name, '_', competencies[i], '_colors[["c"]] <- "black"
+
              # Observe submissions
-             observeEvent(input$', tab_name, '_', competencies[i], '_1_slider,{
-                if(input$', tab_name, '_', competencies[i], '_1_slider >= 1){
-                  submissions$', tab_name, '_', competencies[i], '_1_submit <- TRUE
-                }
-              })
-             observeEvent(input$', tab_name, '_', competencies[i], '_2_slider,{
-                if(input$', tab_name, '_', competencies[i], '_2_slider >= 1){
-                  submissions$', tab_name, '_', competencies[i], '_2_submit <- TRUE
-                }
-              })
-              observeEvent(input$', tab_name, '_', competencies[i], '_3_slider,{
-                if(input$', tab_name, '_', competencies[i], '_3_slider >= 1){
-                  submissions$', tab_name, '_', competencies[i], '_3_submit <- TRUE
+            observeEvent(input$', tab_name, '_', competencies[i], '_slider,{
+                if(input$', tab_name, '_', competencies[i], '_slider >= 1){
+                  submissions$', tab_name, '_', competencies[i], '_submit <- TRUE
+                  # Colors
+                  x <- input$', tab_name, '_', competencies[i], '_slider
+                  new_value <- ceiling(x / 2.4)
+                  lt <- letters[new_value]
+                  other_letters <- letters[1:3][letters[1:3] != lt]
+                  ', tab_name, '_', competencies[i], '_colors[[lt]] <- ifelse(new_value == 1, "red", ifelse(new_value == 2, "orange", "green"))
+                  ', tab_name, '_', competencies[i], '_colors[[other_letters[1]]] <- "black"
+                  ', tab_name, '_', competencies[i], '_colors[[other_letters[2]]] <- "black"
                 }
               })
              
              # Reactives saying whether the entire competency has been submitted
              ', tab_name, '_', competencies[i], '_submitted <- reactive({
-             submissions$', tab_name, '_', competencies[i], '_1_submit &
-             submissions$', tab_name, '_', competencies[i], '_2_submit &
-             submissions$', tab_name, '_', competencies[i], '_3_submit
-             })
-             ')
+            submissions$', tab_name, '_', competencies[i], '_submit
+             })')
   }
   paste0(out, collapse = '\n')
 }
@@ -162,16 +164,29 @@ sub_tab_completer <- function(){
   submission_objects <- paste0(competency_dict$combined_name, '_submitted()')
   sub_tabs <- convert_capitalization(simple_cap(gsub('_', ' ', competency_dict$competency)))
   tabs <- competency_dict$tab_name
+  competency_objects <- paste0('input$', competency_dict$combined_name, '_next_competency')
   out <- list()
-  for(i in 1:length(submission_objects)){
+  for(i in 1:length(competency_objects)){
+    # for(i in 1:length(submission_objects)){
     out[[i]] <- 
       paste0(
-        "observeEvent(", submission_objects[i], ", { 
+        "observeEvent(", 
+        # The below observes the completion of the sub-tab
+        #submission_objects[i], ", { 
+        
+        # Alternative is to observe the click ofthe action button
+        competency_objects[i], ", {
+        
         sts <- sub_tab_selected();
-        sm <- ", submission_objects[i], "
+        # sm <- ", submission_objects[i], "
+
+        # Action button approach
+        sm <- TRUE
+        message('CLICKED!')
+
         if(!is.null(sts)){
           if(sm & sts == '", sub_tabs[i], "'){
-          Sys.sleep(0.25)
+          # Sys.sleep(0.5)
           this_tab <- '", tabs[i], "'
           this_sub_tab <- '", sub_tabs[i], "'
           next_tab <- '", tabs[i + 1], "'
@@ -206,11 +221,6 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
   
   # Start of page
   a <- ''
-    # paste0("
-    #        h1('", full_name, "'),
-    # fluidRow(p('", full_name, " is divided into ", n_competencies, " competencies')),
-    #        ")
-  
   # Each box
   b <- rep(NA, n_competencies)
   for(i in 1:n_competencies){
@@ -218,6 +228,12 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
     this_combined_name <- paste0(tab_name, '_', this_competency)
     this_title <- convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))
     competency_done <- paste0(tab_name, "_", this_competency, "_submitted()")
+    
+    # Define colors
+    colors_one <- paste0(tab_name, '_', competencies[i], '_colors[["a"]]')
+    colors_two <- paste0(tab_name, '_', competencies[i], '_colors[["b"]]')
+    colors_three <- paste0(tab_name, '_', competencies[i], '_colors[["c"]]')
+    
     b[i] <- paste0("\ntabPanel(paste0('", this_title, 
                    "'),",
 # "', ifelse(", competency_done, ", ' (Completed)', '')), 
@@ -228,25 +244,21 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         collapsed = FALSE,
                    ",
         # collapsed = ", competency_done, ",
-        "fluidRow(column(4, h5('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'),
-                        create_slider('", tab_name, "_", this_competency, "_1', ip = input_list),
-                        create_submit('", tab_name, "_", this_competency, "_1', 
-                             show_icon = submissions$", tab_name, "_", this_competency, "_1_submit)), 
-                  column(4, h5('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'),
-                        create_slider('", tab_name, "_", this_competency, "_2', ip = input_list),
-                        create_submit('", tab_name, "_", this_competency, "_2',
-                             show_icon = submissions$", tab_name, "_", this_competency, "_2_submit)),
-                  column(4, h5('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'),
-                        create_slider('", tab_name, "_", this_competency, "_3', ip = input_list),
-                        create_submit('", tab_name, "_", this_competency, "_3',
-                             show_icon = submissions$", tab_name, "_", this_competency, "_3_submit))),",
-        "fluidRow(column(4, p(get_ui_text('", tab_name, "_", this_competency, "_1'))), 
-                  column(4, p(get_ui_text('", tab_name, "_", this_competency, "_2'))),
-                  column(4, p(get_ui_text('", tab_name, "_", this_competency, "_3')))),",
+        "fluidRow(column(9), column(3, actionButton('", paste0(tab_name, "_", this_competency, "_next_competency"), "', 'Next competency'))),",
+        "fluidRow(column(3), column(6,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(3, create_submit('", tab_name, "_", this_competency, "', 
+                             show_icon = ", competency_done, "))),",
+
+
+        "fluidRow(column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_one, "))), 
+                  column(4, span(h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_two, "))),
+                  column(4, span(h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_three, ")))),",
+        "fluidRow(column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_1')), style= paste0('color:',", colors_one, "))), 
+                  column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_2')), style= paste0('color:',", colors_two, "))),
+                  column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_3')), style= paste0('color:',", colors_three, ")))),",
         "fluidRow(
-            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency, '_1'), "', 'Rating rationale')), 
-            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency, '_2'), "', 'Rating rationale')), 
-            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency, '_3'), "', 'Rating rationale')), style = 'text-align:center;')",
+            column(4), 
+            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Rating rationale')), 
+            column(4), style = 'text-align:center;')",
         ")))")
   }
   b <- paste0(b, collapse = ',')
@@ -264,7 +276,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
 
 # Generate modals for adding comments
 generate_modals <- function(){
-  button_names <- ui_dict$name
+  button_names <- competency_dict$combined_name
   out <- list()
   for(i in 1:length(button_names)){
     this_tab_name <- button_names[i]
@@ -292,9 +304,9 @@ observe_sub_tab <- function(){
   for(i in 1:length(sub_tabs)){
     this_sub_tab <- sub_tabs[i]
     this_name <- cnt[i]
-    out[[i]] <- paste0("observeEvent({",this_sub_tab,"; input$tabs}, { message('The following sub_tab id was just clicked: ", cnt[i],"' );
+    out[[i]] <- paste0("observeEvent({",this_sub_tab,"; input$tabs}, { #message('The following sub_tab id was just clicked: ", cnt[i],"' );
         sub_tab_selected(", this_sub_tab,");
-        message('---Overwriting the sub_tab_selected with: ', sub_tab_selected())
+        #message('---Overwriting the sub_tab_selected with: ', sub_tab_selected())
       });"
     )
   }
@@ -322,32 +334,23 @@ make_radar_data <- function(ip){
 
   # Get values for each of the combined names
   vals_df <-
-    expand.grid(combined_name = combined_names,
-                key = 1:3)
+    data.frame(combined_name = combined_names)
   # Get broken down names from dict
   vals_df <- left_join(vals_df,
                        competency_dict,
                        by = 'combined_name')
   vals_df$value <- NA
-  vals_df$value_name <- paste0(vals_df$combined_name, '_', vals_df$key, '_slider')
+  vals_df$value_name <- paste0(vals_df$combined_name, '_slider')
   for(i in 1:nrow(vals_df)){
     the_name <- vals_df$value_name[[i]]
     the_value <- ip[names(ip) == the_name]
     the_value <- as.numeric(the_value)
     vals_df$value[i] <- the_value
   }
-  
-  # Get the "score" of the competency quote in question
-  vals_df$score <- parse_number(vals_df$value_name)
-  vals_df$score <- ifelse(vals_df$score == 1, 1,
-                          ifelse(vals_df$score == 2, 3,
-                                 ifelse(vals_df$score == 3, 5,
-                                        vals_df$score)))
+
   # Group by competency and get weighted score
   out <- vals_df %>%
-    group_by(tab_name, competency) %>%
-    summarise(value = weighted.mean(x = score, w = value, na.rm = TRUE)) %>%
-    ungroup
+    dplyr::select(tab_name, competency, value)
   
   # Get in format for charting
   out$labs <- simple_cap(gsub('_', ' ', out$competency))
@@ -378,7 +381,7 @@ make_radar_chart <- function(data,
     filter(tab_name == tn)
   scores <- list(
     'This Bank' = data$scores,
-    'Best Practice' = rep(5, nrow(data))
+    'Best Practice' = rep(7, nrow(data))
   )
   labs <- data$labs
   if(gg){
@@ -387,7 +390,7 @@ make_radar_chart <- function(data,
       mutate(group = 'This bank') %>%
       mutate(scores = ifelse(is.na(scores), 0, scores))
     benchmark <- pd %>%
-      mutate(scores = 5,
+      mutate(scores = 7,
              group = 'Benchmark')
     pd <- bind_rows(pd, benchmark) %>% mutate(scores = scores)
     pd <- pd %>% spread(key = labs, value = scores)
@@ -395,7 +398,7 @@ make_radar_chart <- function(data,
     names(pd) <- gsub(' ', '\n', names(pd))
     ggradar(plot.data = pd,
             axis.label.size = 3,
-            grid.max = 5,
+            grid.max = 7,
             gridline.max.colour = NA,
             gridline.mid.colour = NA,
             gridline.min.colour = NA,
@@ -409,10 +412,10 @@ make_radar_chart <- function(data,
     
     
   } else {
-    chartJSRadar(scores = scores, labs = labs, maxScale = 5,
+    chartJSRadar(scores = scores, labs = labs, maxScale = 7,
                  height = height,
                  scaleStepWidth = 1,
-                 scaleStartValue = 1,
+                 scaleStartValue = 0,
                  responsive = TRUE,
                  labelSize = label_size,
                  showLegend = TRUE,
