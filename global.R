@@ -228,25 +228,22 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         collapsed = FALSE,
                    ",
         # collapsed = ", competency_done, ",
-        "fluidRow(column(4, h5('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'),
-                        create_slider('", tab_name, "_", this_competency, "_1', ip = input_list),
-                        create_submit('", tab_name, "_", this_competency, "_1', 
-                             show_icon = submissions$", tab_name, "_", this_competency, "_1_submit)), 
-                  column(4, h5('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'),
-                        create_slider('", tab_name, "_", this_competency, "_2', ip = input_list),
-                        create_submit('", tab_name, "_", this_competency, "_2',
-                             show_icon = submissions$", tab_name, "_", this_competency, "_2_submit)),
-                  column(4, h5('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'),
-                        create_slider('", tab_name, "_", this_competency, "_3', ip = input_list),
-                        create_submit('", tab_name, "_", this_competency, "_3',
-                             show_icon = submissions$", tab_name, "_", this_competency, "_3_submit))),",
+        "fluidRow(column(2), column(8,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(2)),",
+        "fluidRow(column(4), column(4, create_submit('", tab_name, "_", this_competency, "', 
+                             show_icon = TRUE), column(4))),",
+
+
+
+        "fluidRow(column(4, h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "')), 
+                  column(4, h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "')),
+                  column(4, h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'))),",
         "fluidRow(column(4, p(get_ui_text('", tab_name, "_", this_competency, "_1'))), 
                   column(4, p(get_ui_text('", tab_name, "_", this_competency, "_2'))),
                   column(4, p(get_ui_text('", tab_name, "_", this_competency, "_3')))),",
         "fluidRow(
-            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency, '_1'), "', 'Rating rationale')), 
-            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency, '_2'), "', 'Rating rationale')), 
-            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency, '_3'), "', 'Rating rationale')), style = 'text-align:center;')",
+            column(4), 
+            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Rating rationale')), 
+            column(4), style = 'text-align:center;')",
         ")))")
   }
   b <- paste0(b, collapse = ',')
@@ -264,7 +261,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
 
 # Generate modals for adding comments
 generate_modals <- function(){
-  button_names <- ui_dict$name
+  button_names <- competency_dict$combined_name
   out <- list()
   for(i in 1:length(button_names)){
     this_tab_name <- button_names[i]
