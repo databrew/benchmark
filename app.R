@@ -305,13 +305,13 @@ server <- function(input, output, session) {
     x <- input$example
     scores <- list(
       'This Bank' = c(x, 3, 5),
-      'Best Practice' = rep(5, 3)
+      'Best Practice' = rep(7, 3)
     )
     labs <- c('Staffing', 'Dimension B', 'Dimension A')
-    chartJSRadar(scores = scores, labs = labs, maxScale = 5,
+    chartJSRadar(scores = scores, labs = labs, maxScale = 7,
                  # height = '150px',
                  scaleStepWidth = 1,
-                 scaleStartValue = 1,
+                 scaleStartValue = 0,
                  responsive = TRUE,
                  labelSize = 11,
                  showLegend = TRUE,
