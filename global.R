@@ -140,7 +140,10 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
                   x <- input$', tab_name, '_', competencies[i], '_slider
                   new_value <- ceiling(x / 2.6)
                   lt <- letters[new_value]
+                  other_letters <- letters[1:3][letters[1:3] != lt]
                   ', tab_name, '_', competencies[i], '_colors[[lt]] <- "red"
+                  ', tab_name, '_', competencies[i], '_colors[[other_letters[1]]] <- "black"
+                  ', tab_name, '_', competencies[i], '_colors[[other_letters[2]]] <- "black"
                 }
               })
              
@@ -157,16 +160,29 @@ sub_tab_completer <- function(){
   submission_objects <- paste0(competency_dict$combined_name, '_submitted()')
   sub_tabs <- convert_capitalization(simple_cap(gsub('_', ' ', competency_dict$competency)))
   tabs <- competency_dict$tab_name
+  competency_objects <- paste0('input$', competency_dict$combined_name, '_next_competency')
   out <- list()
-  for(i in 1:length(submission_objects)){
+  for(i in 1:length(competency_objects)){
+    # for(i in 1:length(submission_objects)){
     out[[i]] <- 
       paste0(
-        "observeEvent(", submission_objects[i], ", { 
+        "observeEvent(", 
+        # The below observes the completion of the sub-tab
+        #submission_objects[i], ", { 
+        
+        # Alternative is to observe the click ofthe action button
+        competency_objects[i], ", {
+        
         sts <- sub_tab_selected();
-        sm <- ", submission_objects[i], "
+        # sm <- ", submission_objects[i], "
+
+        # Action button approach
+        sm <- TRUE
+        message('CLICKED!')
+
         if(!is.null(sts)){
           if(sm & sts == '", sub_tabs[i], "'){
-          Sys.sleep(0.25)
+          # Sys.sleep(0.5)
           this_tab <- '", tabs[i], "'
           this_sub_tab <- '", sub_tabs[i], "'
           next_tab <- '", tabs[i + 1], "'
@@ -208,6 +224,8 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
     this_combined_name <- paste0(tab_name, '_', this_competency)
     this_title <- convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))
     competency_done <- paste0(tab_name, "_", this_competency, "_submitted()")
+    
+    # Define colors
     colors_one <- paste0(tab_name, '_', competencies[i], '_colors[["a"]]')
     colors_two <- paste0(tab_name, '_', competencies[i], '_colors[["b"]]')
     colors_three <- paste0(tab_name, '_', competencies[i], '_colors[["c"]]')
@@ -222,17 +240,17 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         collapsed = FALSE,
                    ",
         # collapsed = ", competency_done, ",
-        "fluidRow(column(2), column(8,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(2)),",
-        "fluidRow(column(4), column(4, create_submit('", tab_name, "_", this_competency, "', 
-                             show_icon = ", competency_done, "), column(4))),",
+        "fluidRow(column(9), column(3, actionButton('", paste0(tab_name, "_", this_competency, "_next_competency"), "', 'Next competency'))),",
+        "fluidRow(column(3), column(6,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(3, create_submit('", tab_name, "_", this_competency, "', 
+                             show_icon = ", competency_done, "))),",
 
 
         "fluidRow(column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_one, "))), 
                   column(4, span(h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_two, "))),
                   column(4, span(h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_three, ")))),",
-        "fluidRow(column(4, p(get_ui_text('", tab_name, "_", this_competency, "_1'))), 
-                  column(4, p(get_ui_text('", tab_name, "_", this_competency, "_2'))),
-                  column(4, p(get_ui_text('", tab_name, "_", this_competency, "_3')))),",
+        "fluidRow(column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_1')), style= paste0('color:',", colors_one, "))), 
+                  column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_2')), style= paste0('color:',", colors_two, "))),
+                  column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_3')), style= paste0('color:',", colors_three, ")))),",
         "fluidRow(
             column(4), 
             column(4, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Rating rationale')), 
