@@ -92,7 +92,7 @@ create_slider <- function(item_name,
     message(' this is list name: ', list_name)
     message('it is not in names of ip: ')
     # print(sort(names(ip)))
-    val <- 3
+    val <- 0
   }
 
   sliderInput(paste0(item_name, '_slider'),
@@ -125,32 +125,18 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
       paste0('
              
              # Create reactive values
-             submissions$', tab_name, '_', competencies[i], '_1_submit <- FALSE;
-             submissions$', tab_name, '_', competencies[i], '_2_submit <- FALSE;
-             submissions$', tab_name, '_', competencies[i], '_3_submit <- FALSE;
-             
+             submissions$', tab_name, '_', competencies[i], '_submit <- FALSE; # NEW ONE!
+
              # Observe submissions
-             observeEvent(input$', tab_name, '_', competencies[i], '_1_slider,{
-                if(input$', tab_name, '_', competencies[i], '_1_slider >= 1){
-                  submissions$', tab_name, '_', competencies[i], '_1_submit <- TRUE
-                }
-              })
-             observeEvent(input$', tab_name, '_', competencies[i], '_2_slider,{
-                if(input$', tab_name, '_', competencies[i], '_2_slider >= 1){
-                  submissions$', tab_name, '_', competencies[i], '_2_submit <- TRUE
-                }
-              })
-              observeEvent(input$', tab_name, '_', competencies[i], '_3_slider,{
-                if(input$', tab_name, '_', competencies[i], '_3_slider >= 1){
-                  submissions$', tab_name, '_', competencies[i], '_3_submit <- TRUE
+            observeEvent(input$', tab_name, '_', competencies[i], '_slider,{
+                if(input$', tab_name, '_', competencies[i], '_slider >= 1){
+                  submissions$', tab_name, '_', competencies[i], '_submit <- TRUE
                 }
               })
              
              # Reactives saying whether the entire competency has been submitted
              ', tab_name, '_', competencies[i], '_submitted <- reactive({
-             submissions$', tab_name, '_', competencies[i], '_1_submit &
-             submissions$', tab_name, '_', competencies[i], '_2_submit &
-             submissions$', tab_name, '_', competencies[i], '_3_submit
+            submissions$', tab_name, '_', competencies[i], '_submit
              })
              ')
   }
@@ -206,11 +192,6 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
   
   # Start of page
   a <- ''
-    # paste0("
-    #        h1('", full_name, "'),
-    # fluidRow(p('", full_name, " is divided into ", n_competencies, " competencies')),
-    #        ")
-  
   # Each box
   b <- rep(NA, n_competencies)
   for(i in 1:n_competencies){
@@ -230,7 +211,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         # collapsed = ", competency_done, ",
         "fluidRow(column(2), column(8,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(2)),",
         "fluidRow(column(4), column(4, create_submit('", tab_name, "_", this_competency, "', 
-                             show_icon = TRUE), column(4))),",
+                             show_icon = ", competency_done, "), column(4))),",
 
 
 
