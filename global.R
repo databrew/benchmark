@@ -96,6 +96,10 @@ create_slider <- function(item_name,
 
   sliderInput(paste0(item_name, '_slider'),
               'Score (1-7)',
+              label = div(style='width:330px;align=right', 
+                          div(style='float:left;', 'Formative'), 
+                          # div(style='float:middle;', 'Emerging'), 
+                          div(style='float:right;', 'Developed')),
               min = 0, 
               max = 7,
               value = val,
@@ -138,10 +142,10 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
                   submissions$', tab_name, '_', competencies[i], '_submit <- TRUE
                   # Colors
                   x <- input$', tab_name, '_', competencies[i], '_slider
-                  new_value <- ceiling(x / 2.6)
+                  new_value <- ceiling(x / 2.4)
                   lt <- letters[new_value]
                   other_letters <- letters[1:3][letters[1:3] != lt]
-                  ', tab_name, '_', competencies[i], '_colors[[lt]] <- "red"
+                  ', tab_name, '_', competencies[i], '_colors[[lt]] <- ifelse(new_value == 1, "red", ifelse(new_value == 2, "orange", "green"))
                   ', tab_name, '_', competencies[i], '_colors[[other_letters[1]]] <- "black"
                   ', tab_name, '_', competencies[i], '_colors[[other_letters[2]]] <- "black"
                 }
