@@ -129,15 +129,7 @@ body <- dashboardBody(
                                              value = 0,
                                              step = 0.5)),
                        column(3)),
-              fluidRow(column(4,
-                              h4(span('Formative staffing', style = "color:red"), span('(score 1-3)', style = "color:red")),
-                              p('The bank is poorly-staffed.')),
-                       column(4,
-                              h4(span('Emerging staffing', style = "color:yellow"), span('(score 4-5)', style = "color:yellow")),
-                              p('The bank has sufficient staff.')),
-                       column(4,
-                              h4(span('Developed staffing', style = "color:green"), span('(score 6-7)', style = "color:green")),
-                              p('The bank is well-staffed.'))),
+              uiOutput('example_ui'),
               fluidRow(column(12,
                               h4('Meaning:'),
                               p(textOutput('example_text'))))),
@@ -285,6 +277,30 @@ ui <- dashboardPage(header, sidebar, body, skin="blue")
 
 # Server
 server <- function(input, output, session) {
+  
+  output$example_ui <- renderUI({
+    
+    ie <- input$example
+    colors <- rep('black', 3)
+    make_red <- ifelse(ie > 0 & ie <=3, 1,
+                       ifelse(ie > 0 & ie <=5, 2,
+                              ifelse( ie > 0  & ie <= 7, 3, NA)))
+    cols <- c('red', 'orange', 'green')
+    if(!is.na(make_red)){
+      colors[make_red] <- cols[make_red]
+    }
+    print(colors)
+    
+    fluidRow(column(4,
+                    h4(span('Formative staffing', style = paste0("color:", colors[1])), span('(score 1-3)', style = paste0("color:", colors[1]))),
+                    p(span('The bank is poorly-staffed.',style = paste0("color:", colors[1])))),
+             column(4,
+                    h4(span('Emerging staffing', style = paste0("color:", colors[2])), span('(score 4-5)', style = paste0("color:", colors[2]))),
+                    p(span('The bank has sufficient staff.', style=paste0("color:", colors[2])))),
+             column(4,
+                    h4(span('Developed staffing', style = paste0("color:", colors[3])), span('(score 6-7)', style = paste0("color:", colors[3]))),
+                    p(span('The bank is well-staffed.', style = paste0("color:", colors[3])))))
+  })
   
   output$example_text <- renderText({
     x <- input$example
