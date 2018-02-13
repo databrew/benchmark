@@ -479,7 +479,7 @@ server <- function(input, output, session) {
     renderUI({
       fluidPage(
         fluidRow(h3('Examine your results below:')),
-        fluidRow(downloadButton("download_visualizations", "Download all charts!")),
+        fluidRow(downloadButton('download_charts', 'Download all charts')),
         br(),
         
         fluidRow(
@@ -566,29 +566,23 @@ server <- function(input, output, session) {
       
     })
   
-  # Download visualizations
-  output$download_visualizations <-
-    downloadHandler(filename = "visualizations.pdf",
-                    content = function(file){
-                      
-                      # Get data for radar charts
-                      rd <- radar_data()
-                      rd <- data.frame(rd)
-                      # print(head(rd))
-                      
-                      # generate html
-                      rmarkdown::render('visualizations.Rmd',
-                                        params = list(rd = rd,
-                                                      ip = input_list))
-
-                      # copy html to 'file'
-                      file.copy("visualizations.pdf", file)
-                      
-                      # # delete folder with plots
-                      # unlink("figure", recursive = TRUE)
-                    },
-                    contentType = "application/pdf"
-    )
+  # Download charts
+  output$download_charts <- downloadHandler(
+    filename = function(){
+      paste("output", "zip", sep=".")
+    },
+    content = function(file) {
+      # Get data for radar charts
+      rd <- radar_data()
+      rd <- data.frame(rd)
+      download_all(rd = rd,
+                   ip = input_list)
+      zip("out.zip",
+          files = paste0('charts/', dir('charts')))
+          # files =paste0('charts/', input$filenames))
+      file.copy("out.zip", file)
+    },
+    contentType = 'application/zip')
   
 }
 

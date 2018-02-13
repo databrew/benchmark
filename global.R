@@ -554,3 +554,23 @@ generate_radar_html <- function(rd, # radar data
     make_radar_chart(rd,
                      tn = '", tab_name, "')
 }
+
+# Define function for downloading all charts
+download_all <- function(rd, ip){
+  require(radarchart)
+  message('Creating charts')
+  
+  chunks <- rep(NA, length(tab_names))
+  for (i in 1:length(tab_names)){
+    tab_name <- tab_names[i]
+    title <- simple_cap(gsub('_', ' ', tab_name))
+    title <- convert_capitalization(title)
+    title <- paste0(title, '.png')
+    message('Creating chart for ', title)
+    make_radar_chart(rd, tn = tab_name, label_size = 14, height = 250, gg = TRUE)
+    ggsave(filename = paste0('charts/', title),
+           plot = last_plot())
+  }
+  
+  
+}
