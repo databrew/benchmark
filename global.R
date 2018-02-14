@@ -186,7 +186,6 @@ sub_tab_completer <- function(){
 
         if(!is.null(sts)){
           if(sm & sts == '", sub_tabs[i], "'){
-          # Sys.sleep(0.5)
           this_tab <- '", tabs[i], "'
           this_sub_tab <- '", sub_tabs[i], "'
           next_tab <- '", tabs[i + 1], "'
