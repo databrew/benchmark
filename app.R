@@ -133,8 +133,8 @@ body <- dashboardBody(
               fluidRow(column(12,
                               h4('Meaning:'),
                               p(textOutput('example_text'))))),
-            height = '300px'),
-          box(chartJSRadarOutput('example_chart'), height = '300px')
+            height = '350px'),
+          box(chartJSRadarOutput('example_chart'), height = '350px')
         )
       )
       
@@ -293,13 +293,13 @@ server <- function(input, output, session) {
     
     fluidRow(column(4,
                     h4(span('Formative staffing', style = paste0("color:", colors[1])), span('(score 1-3)', style = paste0("color:", colors[1]))),
-                    p(span('The bank is poorly-staffed.',style = paste0("color:", colors[1])))),
+                    p(span('The mobile banking operation is poorly-staffed.',style = paste0("color:", colors[1])))),
              column(4,
                     h4(span('Emerging staffing', style = paste0("color:", colors[2])), span('(score 4-5)', style = paste0("color:", colors[2]))),
-                    p(span('The bank has sufficient staff.', style=paste0("color:", colors[2])))),
+                    p(span('The mobile banking operation has sufficient staff.', style=paste0("color:", colors[2])))),
              column(4,
                     h4(span('Developed staffing', style = paste0("color:", colors[3])), span('(score 6-7)', style = paste0("color:", colors[3]))),
-                    p(span('The bank is well-staffed.', style = paste0("color:", colors[3])))))
+                    p(span('The mobile banking operation is well-staffed.', style = paste0("color:", colors[3])))))
   })
   
   output$example_text <- renderText({
@@ -314,13 +314,13 @@ server <- function(input, output, session) {
                                  'Minimally developed',
                                  'Developed'))
     val <- dict %>% filter(key == round(x)) %>% .$value
-    paste0('In this competency, the bank is ', tolower(val), '.')
+    paste0('In this competency, the mobile banking operation is ', tolower(val), '.')
   })
   
   output$example_chart <- renderChartJSRadar({
     x <- input$example
     scores <- list(
-      'This Bank' = c(x, 3, 5),
+      'This Mobile Banking Operation' = c(x, 3, 5),
       'Best Practice' = rep(7, 3)
     )
     labs <- c('Staffing', 'Dimension B', 'Dimension A')
