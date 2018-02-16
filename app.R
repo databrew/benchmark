@@ -577,12 +577,12 @@ server <- function(input, output, session) {
                       # print(head(rd))
                       
                       # generate html
-                      rmarkdown::render('visualizations.Rmd',
+                      rmarkdown::render('rmds/visualizations.Rmd',
                                         params = list(rd = rd,
                                                       ip = input_list))
 
                       # copy html to 'file'
-                      file.copy("visualizations.pdf", file)
+                      file.copy("rmds/visualizations.pdf", file)
                       
                       # # delete folder with plots
                       # unlink("figure", recursive = TRUE)
