@@ -1,31 +1,18 @@
 library(shiny)
 library(shinydashboard)
-# library(shinyjs)
+library(shinyjs)
 source('global.R')
 
 the_width <- 350
 header <- dashboardHeader(title="DFS Benchmarking Tool",
                           titleWidth = the_width)
+# sidebar <- uiOutput('dashboard_sidebar')
 sidebar <- dashboardSidebar(
   width = the_width,
-  sidebarMenu(
-    id = 'tabs',
-    menuItemOutput('menu_instructions'),
-    menuItemOutput('menu_strategy_and_execution'),
-    menuItemOutput('menu_organization_and_governance'),
-    menuItemOutput('menu_partnerships'),
-    menuItemOutput('menu_products'),
-    menuItemOutput('menu_marketing'),
-    menuItemOutput('menu_distribution_and_channels'),
-    menuItemOutput('menu_risk_management'),
-    menuItemOutput('menu_it_and_mis'),
-    menuItemOutput('menu_operations_and_customer_service'),
-    menuItemOutput('menu_responsible_finance'),
-    menuItemOutput('menu_graphs'),
-    menuItemOutput('about')
+  sidebarMenu(id="tabs",
+              sidebarMenuOutput("menu")
   )
 )
-
 body <- dashboardBody(
   tags$style(".fa-check {color:#0000FF}"),
   tags$style(".fa-exclamation-circle {color:#B22222}"),
@@ -45,9 +32,7 @@ body <- dashboardBody(
                    style = "font-size: 140%;")
              })
            )),
-    column(3,
-           actionButton("prevBtn", "Previous", icon = icon("arrow-circle-left", "fa-1x")),
-           actionButton("nextBtn", "Next", icon = icon("arrow-circle-right", "fa-1x"))),
+    column(3),
     column(4,
            plotOutput('progress_plot', height = '50px')),
     height = '50px'
@@ -236,8 +221,7 @@ server <- function(input, output, session) {
     if(!is.na(make_red)){
       colors[make_red] <- cols[make_red]
     }
-    print(colors)
-    
+
     fluidRow(column(4,
                     h4(span('Formative staffing', style = paste0("color:", colors[1])), span('(score 1-3)', style = paste0("color:", colors[1]))),
                     p(span('The mobile banking operation is poorly-staffed.',style = paste0("color:", colors[1])))),
@@ -286,45 +270,16 @@ server <- function(input, output, session) {
   
   # Define a reactive value which is the currently selected tab number
   rv <- reactiveValues(page = 1)
-  
-  observe({
-    toggleState(id = "prevBtn", condition = rv$page > 1)
-    toggleState(id = "nextBtn", condition = rv$page < n_tabs)
-    hide(selector = ".page")
-    show(paste0("step", rv$page))
-  })
-  
+
   # Define function for changing the tab number in one direction or the 
   # other as a function of forward/back clicks
   navPage <- function(direction) {
     rv$page <- rv$page + direction
   }
   
-  # Observe the forward/back clicks, and update rv$page accordingly
-  observeEvent(input$prevBtn, {
-    # Update rv$page
-    navPage(-1)
-    })
-  observeEvent(input$nextBtn, {
-    # Update rv$page
-    navPage(1)
-  })
-  
-  # Observe any changes to rv$page, and update the selected tab accordingly
-  observeEvent(rv$page, {
-    tab_number <- rv$page
-    tab_name <- tab_dict %>% filter(number == tab_number) %>% .$name
-    updateTabsetPanel(session, inputId="tabs", selected=tab_name)
-  })
-  
-  # Observe any click on the left tab menu, and update accordingly the rv$page object
-  observeEvent(input$tabs, {
-    tab_name <- input$tabs
-    tab_number <- tab_dict %>% filter(name == tab_name) %>% .$number
-    message(paste0('Selected tab is ', input$tabs, '. Number: ', tab_number))
-    rv$page <- tab_number
-  })
-  
+  ## Get main tab
+  main_tab <- reactiveVal(value = 'instructions')
+
   # Create reactive values to observe the submissions
   submissions <- reactiveValues()
   
@@ -333,7 +288,6 @@ server <- function(input, output, session) {
 
   # Generate the reactive objects associated with each tab  
   for(tn in 1:length(tab_names)){
-    message(tn)
     this_tab_name <- tab_names[tn]
     these_competencies <- competency_dict %>% filter(tab_name == this_tab_name) %>% .$competency
     eval(parse(text = generate_reactivity(tab_name = this_tab_name,
@@ -342,7 +296,6 @@ server <- function(input, output, session) {
 
   # Generate the uis for each tab
   for(tn in 1:length(tab_names)){
-    message(tn)
       this_tab_name <- tab_names[tn]
     these_competencies <- competency_dict %>% filter(tab_name == this_tab_name) %>% .$competency
     eval(parse(text = generate_ui(tab_name = this_tab_name,
@@ -399,21 +352,23 @@ server <- function(input, output, session) {
 
   # Reactive objecting observing the selected sub tab
   sub_tab_selected <- reactiveVal(value = NULL)
-  ## Use the first sub_tab upon changing tabs
-  observeEvent({input$tabs;
-    input$prevBtn;
-    input$nextBtn}, {
-      message('Changed tabs to ', input$tabs)
-      # Get the name of the first sub tab associated with the clicked tab
-      x <- competency_dict %>%
-        filter(tab_name == input$tabs)
-      if(nrow(x) > 0){
-        x <- x[1,]
-        the_new_one <- convert_capitalization(simple_cap(gsub('_', ' ', x$competency))) %>% as.character
-        message('Overwriting the selected sub tab with: ', the_new_one)
-        sub_tab_selected(the_new_one)
-      }
-  })
+  
+  # observeEvent({
+  #   # main_tab();
+  #   input$tabs;
+  #   }, {
+  #     mt <- main_tab()
+  #     message('Changed tabs to ', mt)
+  #     # Get the name of the first sub tab associated with the clicked tab
+  #     x <- competency_dict %>%
+  #       filter(tab_name == mt)
+  #     if(nrow(x) > 0){
+  #       x <- x[1,]
+  #       the_new_one <- convert_capitalization(simple_cap(gsub('_', ' ', x$competency))) %>% as.character
+  #       message('Overwriting the selected sub tab with: ', the_new_one)
+  #       sub_tab_selected(the_new_one)
+  #     }
+  # })
 
   # Observe any clicks on the sub-tabs, and update the subtab accordingly
   eval(parse(text = observe_sub_tab()))
@@ -534,73 +489,92 @@ server <- function(input, output, session) {
                     contentType = "application/pdf"
     )
   
-  # Dynamic menus
-  output$menu_instructions <- 
-    renderMenu({generate_menu(text="Instructions",
-                              tabName="instructions",
-                              icon=icon("leanpub"),
-                              submissions = submissions,
-                              pass = TRUE)})
-  output$menu_strategy_and_execution <- 
-    renderMenu({generate_menu(text="Strategy and execution",
-                              tabName="strategy_and_execution",
-                              icon=icon("crosshairs"),
-                              submissions = submissions)})
-  output$menu_organization_and_governance <- 
-    renderMenu({generate_menu(text="Organization and governance",
-                              tabName="organization_and_governance",
-                              icon=icon("sitemap"),
-                              submissions = submissions)})
-  output$menu_partnerships <- 
-    renderMenu({generate_menu(text="Partnerships",
-                              tabName="partnerships",
-                              icon=icon("asterisk"),
-                              submissions = submissions)})
-  output$menu_products <- 
-    renderMenu({generate_menu(text="Products",
-                              tabName="products",
-                              icon=icon("gift"),
-                              submissions = submissions)})
-  output$menu_ <- 
-    renderMenu({generate_menu(text="Marketing",
-                              tabName="marketing",
-                              icon=icon("shopping-cart"),
-                              submissions = submissions)})
-  output$menu_distribution_and_channels <- 
-    renderMenu({generate_menu(text="Distribution and channels",
-                              tabName="distribution_and_channels",
-                              icon=icon("exchange"),
-                              submissions = submissions)})
-  output$menu_risk_management <- 
-    renderMenu({generate_menu(text="Risk management",
-                              tabName="risk_management",
-                              icon=icon("tasks"),
-                              submissions = submissions)})
-  output$menu_it_and_mis <- 
-    renderMenu({generate_menu(text="IT and MIS",
-                              tabName="it_and_mis",
-                              icon=icon("laptop"),
-                              submissions = submissions)})
-  output$menu_ <- 
-    renderMenu({generate_menu(text="Operations and customer service",
-                              tabName="operations_and_customer_service",
-                              icon=icon("users"),
-                              submissions = submissions)})
-  output$menu_responsible_finance <- 
-    renderMenu({generate_menu(text="Responsible finance",
-                              tabName="responsible_finance",
-                              icon=icon("thumbs-up"),
-                              submissions = submissions)})
-  output$menu_graphs <- 
-    renderMenu({generate_menu(text="Graphs",
-                              tabName="graphs",
-                              icon=icon("signal"),
-                              submissions = submissions)})
-  output$menu_about <- 
-    renderMenu({generate_menu(text = 'About',
-                              tabName = 'about',
-                              icon = icon('book'),
-                              submissions = submissions)})
+  output$menu <- renderMenu({
+
+    mt <- main_tab()
+    print(paste0('mt is ', mt))
+    sidebarMenu(
+      generate_menu(text="Instructions",
+                    tabName="instructions",
+                    icon=icon("leanpub"),
+                    submissions = submissions, mt = mt,
+                    pass = TRUE),
+      generate_menu(text="Strategy and execution",
+                    tabName="strategy_and_execution",
+                    icon=icon("crosshairs"),
+                    submissions = submissions, mt = mt),
+      generate_menu(text="Organization and governance",
+                    tabName="organization_and_governance",
+                    icon=icon("sitemap"),
+                    submissions = submissions, mt = mt),
+      
+      generate_menu(text="Partnerships",
+                    tabName="partnerships",
+                    icon=icon("asterisk"),
+                    submissions = submissions, mt = mt),
+      generate_menu(text="Products",
+                    tabName="products",
+                    icon=icon("gift"),
+                    submissions = submissions, mt = mt),
+      generate_menu(text="Marketing",
+                    tabName="marketing",
+                    icon=icon("shopping-cart"),
+                    submissions = submissions, mt = mt),
+      generate_menu(text="Distribution and channels",
+                    tabName="distribution_and_channels",
+                    icon=icon("exchange"),
+                    submissions = submissions, mt = mt),
+      generate_menu(text="Risk management",
+                    tabName="risk_management",
+                    icon=icon("tasks"),
+                    submissions = submissions, mt = mt),
+      generate_menu(text="IT and MIS",
+                    tabName="it_and_mis",
+                    icon=icon("laptop"),
+                    submissions = submissions, mt = mt),
+      generate_menu(text="Operations and customer service",
+                    tabName="operations_and_customer_service",
+                    icon=icon("users"),
+                    submissions = submissions, mt = mt),
+      generate_menu(text="Responsible finance",
+                    tabName="responsible_finance",
+                    icon=icon("thumbs-up"),
+                    submissions = submissions, mt = mt),
+      generate_menu(text="Graphs",
+                    tabName="graphs",
+                    icon=icon("signal"),
+                    submissions = submissions, mt = mt,
+                    pass = TRUE),
+      generate_menu(text = 'About',
+                    tabName = 'about',
+                    icon = icon('book'),
+                    submissions = submissions, mt = mt,
+                    pass = TRUE)
+    )
+  })
+  # isolate({
+  #   mt <- main_tab()
+  #   updateTabItems(session, "tabs", mt)
+  # })
+  
+  the_time <- reactiveVal(value = Sys.time())
+  observeEvent(input$tabs, {
+    it <- input$tabs
+    new_time <- Sys.time()
+    old_time <- the_time()
+    difference <- as.numeric(old_time - new_time)
+    message('difference is ', difference)
+    if(difference < -1){
+      message('That was slow. Setting it to ', it)
+      main_tab(it)
+    }
+    
+    
+  })
+  # observe(print(paste0('THE TAB SELECTED IS ', input$tabs)))
+  
+
+
   
 }
 

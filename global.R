@@ -236,7 +236,6 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
     
     b[i] <- paste0("\ntabPanel(paste0('", this_title, 
                    "'),",
-# "', ifelse(", competency_done, ", ' (Completed)', '')), 
 
         "fluidPage(br()\n,box(title = paste0('", this_title, "', ifelse(", competency_done, ", ' (Completed)', '')),        width = 12,
         solidHeader = TRUE,
@@ -557,33 +556,43 @@ generate_menu <- function(done = FALSE,
                           text = 'Some name',
                           tabName = 'some_name',
                           submissions,
-                          pass = FALSE){
+                          pass = FALSE,
+                          selected = NULL,
+                          mt = ''){
+  
+  if(mt == tabName){
+    selected <- TRUE
+  } else {
+    selected<- FALSE
+  }
   
   if(pass){
     menuItem(
       text = text,
       tabName = tabName,
-      icon = icon)
+      icon = icon,
+      selected = selected)
   } else {
     subs <- reactiveValuesToList(submissions)
     subs <- unlist(subs)
-    print(subs)
     
     # See if the entire tab's competencies have been submitted
     if(!tabName %in% c('instructions', 'graphs', 'about'))
       these_competencies <- competency_dict %>%
       filter(tab_name == tabName) %>%
       .$combined_name
-    # paste0('_submitted()')
+    these_competencies <- paste0(these_competencies, '_submit')
     these_competencies <- subs[names(subs) %in% these_competencies]
     all_ok <- all(these_competencies)
     done <- FALSE
-    if(length(these_competencies) > 0){
-      if(all_ok){
-        message('Everything is done.')
-        print(these_competencies)
-        
-        done <- TRUE
+    if(exists('these_competencies')){
+      if(length(these_competencies) > 0){
+        if(all_ok){
+          message('Everything is done.')
+          print(these_competencies)
+          
+          done <- TRUE
+        }
       }
     }
 
@@ -599,6 +608,7 @@ generate_menu <- function(done = FALSE,
       tabName = tabName,
       icon = icon,
       badgeLabel = bl,
-      badgeColor = bc)
+      badgeColor = bc,
+      selected = selected)
   }
 }
