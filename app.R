@@ -1,91 +1,38 @@
 library(shiny)
 library(shinydashboard)
-library(shinyjs)
-
+# library(shinyjs)
 source('global.R')
 
-header <- dashboardHeader(title="Benchmarking tool", 
-                          dropdownMenu(type = "tasks", badgeStatus = "success",
-                                       taskItem(value = 90, color = "green",
-                                                "Documentation"
-                                       ),
-                                       taskItem(value = 17, color = "aqua",
-                                                "Project X"
-                                       ),
-                                       taskItem(value = 75, color = "yellow",
-                                                "Server deployment"
-                                       ),
-                                       taskItem(value = 80, color = "red",
-                                                "Overall project"
-                                       )
-                          ))
-                          
-                          
-                          # tags$li(class = "dropdown", plotOutput('xxx',height = '40px')))
+the_width <- 350
+header <- dashboardHeader(title="DFS Benchmarking Tool",
+                          titleWidth = the_width)
 sidebar <- dashboardSidebar(
+  width = the_width,
   sidebarMenu(
     id = 'tabs',
-    menuItem(
-      text="Instructions",
-      tabName="instructions",
-      icon=icon("leanpub")),
-    menuItem(
-      text="Strategy and Execution",
-      tabName="strategy_and_execution",
-      icon=icon("crosshairs")),
-    menuItem(
-      text="Organization and Governance",
-      tabName="organization_and_governance",
-      icon=icon("sitemap")),
-    menuItem(
-      text="Partnerships",
-      tabName="partnerships",
-      icon=icon("asterisk")),
-    menuItem(
-      text="Products",
-      tabName="products",
-      icon=icon("gift")),
-    menuItem(
-      text="Marketing",
-      tabName="marketing",
-      icon=icon("shopping-cart")),
-    menuItem(
-      text="Distribution and Channels",
-      tabName="distribution_and_channels",
-      icon=icon("exchange")),
-    menuItem(
-      text="Risk Management",
-      tabName="risk_management",
-      icon=icon("tasks")),
-    menuItem(
-      text="IT and MIS",
-      tabName="it_and_mis",
-      icon=icon("laptop")),
-    menuItem(
-      text="Operations and Customer Service",
-      tabName="operations_and_customer_service",
-      icon=icon("users")),
-    menuItem(
-      text="Responsible Finance",
-      tabName="responsible_finance",
-      icon=icon("thumbs-up")),
-    menuItem(
-      text="Graphs",
-      tabName="graphs",
-      icon=icon("signal")),
-    menuItem(
-      text = 'About',
-      tabName = 'about',
-      icon = icon('book'))
+    menuItemOutput('menu_instructions'),
+    menuItemOutput('menu_strategy_and_execution'),
+    menuItemOutput('menu_organization_and_governance'),
+    menuItemOutput('menu_partnerships'),
+    menuItemOutput('menu_products'),
+    menuItemOutput('menu_marketing'),
+    menuItemOutput('menu_distribution_and_channels'),
+    menuItemOutput('menu_risk_management'),
+    menuItemOutput('menu_it_and_mis'),
+    menuItemOutput('menu_operations_and_customer_service'),
+    menuItemOutput('menu_responsible_finance'),
+    menuItemOutput('menu_graphs'),
+    menuItemOutput('about')
   )
 )
 
 body <- dashboardBody(
   tags$style(".fa-check {color:#0000FF}"),
   tags$style(".fa-exclamation-circle {color:#B22222}"),
-  tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
-  ),
+  # Conflicted with width
+  # tags$head(
+  #   tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+  # ),
 
   useShinyjs(),
   fluidRow(
@@ -409,42 +356,39 @@ server <- function(input, output, session) {
     the_submissions <- unlist(the_submissions)
     # print(the_submissions)
     all_checked <- all(the_submissions)
-    # print(all_checked)
-    if(!all_checked){
-      still_missing <- which(!the_submissions)
-      still_missing <- names(still_missing)
-      still_missing <- gsub('_submit', '', still_missing)
-      still_missing <- data.frame(combined_name = still_missing)
-      still_missing <- left_join(still_missing, 
-                                 competency_dict %>%
-                                   mutate(combined_name = tolower(combined_name)))
-      missing_text <- 'Interpret results with caution - you did not submit responses for the below areas:'
-      x <- still_missing %>%
-        dplyr::select(tab_name,
-                      competency) %>%
-        mutate(tab_name = simple_cap(gsub('_', ' ', tab_name)),
-               competency = simple_cap(gsub('_', ' ', competency))) %>%
-        dplyr::rename(`Tab name` = tab_name,
-                      Competency = competency)
-      x <- x %>%
-        distinct(`Tab name`, Competency, .keep_all = TRUE)
-      missing_table <- DT::datatable(x, rownames = FALSE,
-                                     options = list(
-                                       pageLength = 5,
-                                       dom = 'tip'))
-      the_box <- box(title = 'Warning',
-                     status = 'danger',
-                     collapsible = TRUE,
-                     width = 12,
-                     fluidPage(
-                       fluidRow(p(missing_text)),
-                       fluidRow(missing_table))
-      )
-      
-      
-    } else {
+    # if(!all_checked){
+      # still_missing <- which(!the_submissions)
+      # still_missing <- names(still_missing)
+      # still_missing <- gsub('_submit', '', still_missing)
+      # still_missing <- data.frame(combined_name = still_missing)
+      # still_missing <- left_join(still_missing, 
+      #                            competency_dict %>%
+      #                              mutate(combined_name = tolower(combined_name)))
+      # missing_text <- 'Interpret results with caution - you did not submit responses for the below areas:'
+      # x <- still_missing %>%
+      #   dplyr::select(tab_name,
+      #                 competency) %>%
+      #   mutate(tab_name = simple_cap(gsub('_', ' ', tab_name)),
+      #          competency = simple_cap(gsub('_', ' ', competency))) %>%
+      #   dplyr::rename(`Tab name` = tab_name,
+      #                 Competency = competency)
+      # x <- x %>%
+      #   distinct(`Tab name`, Competency, .keep_all = TRUE)
+      # missing_table <- DT::datatable(x, rownames = FALSE,
+      #                                options = list(
+      #                                  pageLength = 5,
+      #                                  dom = 'tip'))
+      # the_box <- box(title = 'Warning',
+      #                status = 'danger',
+      #                collapsible = TRUE,
+      #                width = 12,
+      #                fluidPage(
+      #                  fluidRow(p(missing_text)),
+      #                  fluidRow(missing_table))
+      # )
+    # } else {
       the_box <- NULL
-    }
+    # }
     return(the_box)
   })
   
@@ -589,6 +533,74 @@ server <- function(input, output, session) {
                     },
                     contentType = "application/pdf"
     )
+  
+  # Dynamic menus
+  output$menu_instructions <- 
+    renderMenu({generate_menu(text="Instructions",
+                              tabName="instructions",
+                              icon=icon("leanpub"),
+                              submissions = submissions,
+                              pass = TRUE)})
+  output$menu_strategy_and_execution <- 
+    renderMenu({generate_menu(text="Strategy and execution",
+                              tabName="strategy_and_execution",
+                              icon=icon("crosshairs"),
+                              submissions = submissions)})
+  output$menu_organization_and_governance <- 
+    renderMenu({generate_menu(text="Organization and governance",
+                              tabName="organization_and_governance",
+                              icon=icon("sitemap"),
+                              submissions = submissions)})
+  output$menu_partnerships <- 
+    renderMenu({generate_menu(text="Partnerships",
+                              tabName="partnerships",
+                              icon=icon("asterisk"),
+                              submissions = submissions)})
+  output$menu_products <- 
+    renderMenu({generate_menu(text="Products",
+                              tabName="products",
+                              icon=icon("gift"),
+                              submissions = submissions)})
+  output$menu_ <- 
+    renderMenu({generate_menu(text="Marketing",
+                              tabName="marketing",
+                              icon=icon("shopping-cart"),
+                              submissions = submissions)})
+  output$menu_distribution_and_channels <- 
+    renderMenu({generate_menu(text="Distribution and channels",
+                              tabName="distribution_and_channels",
+                              icon=icon("exchange"),
+                              submissions = submissions)})
+  output$menu_risk_management <- 
+    renderMenu({generate_menu(text="Risk management",
+                              tabName="risk_management",
+                              icon=icon("tasks"),
+                              submissions = submissions)})
+  output$menu_it_and_mis <- 
+    renderMenu({generate_menu(text="IT and MIS",
+                              tabName="it_and_mis",
+                              icon=icon("laptop"),
+                              submissions = submissions)})
+  output$menu_ <- 
+    renderMenu({generate_menu(text="Operations and customer service",
+                              tabName="operations_and_customer_service",
+                              icon=icon("users"),
+                              submissions = submissions)})
+  output$menu_responsible_finance <- 
+    renderMenu({generate_menu(text="Responsible finance",
+                              tabName="responsible_finance",
+                              icon=icon("thumbs-up"),
+                              submissions = submissions)})
+  output$menu_graphs <- 
+    renderMenu({generate_menu(text="Graphs",
+                              tabName="graphs",
+                              icon=icon("signal"),
+                              submissions = submissions)})
+  output$menu_about <- 
+    renderMenu({generate_menu(text = 'About',
+                              tabName = 'about',
+                              icon = icon('book'),
+                              submissions = submissions)})
   
 }
 

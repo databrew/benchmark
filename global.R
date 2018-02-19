@@ -96,10 +96,10 @@ create_slider <- function(item_name,
 
   sliderInput(paste0(item_name, '_slider'),
               'Score (1-7)',
-              label = div(style='width:330px;align=right', 
-                          div(style='float:left;', 'Formative'), 
-                          # div(style='float:middle;', 'Emerging'), 
-                          div(style='float:right;', 'Developed')),
+              # label = div(style='width:330px;align=right', 
+              #             div(style='float:left;', 'Formative'), 
+              #             # div(style='float:middle;', 'Emerging'), 
+              #             div(style='float:right;', 'Developed')),
               min = 0, 
               max = 7,
               value = val,
@@ -244,21 +244,17 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         collapsed = FALSE,
                    ",
         # collapsed = ", competency_done, ",
-        "fluidRow(column(9), column(3, actionButton('", paste0(tab_name, "_", this_competency, "_next_competency"), "', 'Next competency'))),",
+        "fluidRow(column(3, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Click to add comment')), column(6), column(3, actionButton('", paste0(tab_name, "_", this_competency, "_next_competency"), "', 'Press here when done'))),",
         "fluidRow(column(3), column(6,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(3, create_submit('", tab_name, "_", this_competency, "', 
                              show_icon = ", competency_done, "))),",
 
 
-        "fluidRow(column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_one, "))), 
-                  column(4, span(h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_two, "))),
-                  column(4, span(h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))), "'), style= paste0('color:',", colors_three, ")))),",
+        "fluidRow(column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (1-3)'), "'), style= paste0('color:',", colors_one, "))), 
+                  column(4, span(h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (4-5)'), "'), style= paste0('color:',", colors_two, "))),
+                  column(4, span(h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (6-7)'), "'), style= paste0('color:',", colors_three, ")))),",
         "fluidRow(column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_1')), style= paste0('color:',", colors_one, "))), 
                   column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_2')), style= paste0('color:',", colors_two, "))),
-                  column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_3')), style= paste0('color:',", colors_three, ")))),",
-        "fluidRow(
-            column(4), 
-            column(4, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Rating rationale')), 
-            column(4), style = 'text-align:center;')",
+                  column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_3')), style= paste0('color:',", colors_three, "))))",
         ")))")
   }
   b <- paste0(b, collapse = ',')
@@ -553,4 +549,56 @@ generate_radar_html <- function(rd, # radar data
                                 tab_name = 'organization_and_governance'){
     make_radar_chart(rd,
                      tn = '", tab_name, "')
+}
+
+# Define functions for generating menus
+generate_menu <- function(done = FALSE,
+                          icon = 'user',
+                          text = 'Some name',
+                          tabName = 'some_name',
+                          submissions,
+                          pass = FALSE){
+  
+  if(pass){
+    menuItem(
+      text = text,
+      tabName = tabName,
+      icon = icon)
+  } else {
+    subs <- reactiveValuesToList(submissions)
+    subs <- unlist(subs)
+    print(subs)
+    
+    # See if the entire tab's competencies have been submitted
+    if(!tabName %in% c('instructions', 'graphs', 'about'))
+      these_competencies <- competency_dict %>%
+      filter(tab_name == tabName) %>%
+      .$combined_name
+    # paste0('_submitted()')
+    these_competencies <- subs[names(subs) %in% these_competencies]
+    all_ok <- all(these_competencies)
+    done <- FALSE
+    if(length(these_competencies) > 0){
+      if(all_ok){
+        message('Everything is done.')
+        print(these_competencies)
+        
+        done <- TRUE
+      }
+    }
+
+    if(done){
+      bl <- 'Finished'
+      bc <- 'green'
+    } else {
+      bl <- 'Not finished'
+      bc <- 'red'
+    }
+    menuItem(
+      text = text,
+      tabName = tabName,
+      icon = icon,
+      badgeLabel = bl,
+      badgeColor = bc)
+  }
 }
