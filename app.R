@@ -191,13 +191,6 @@ body <- dashboardBody(
               fluidRow(helpText("Joe is a data scientist for", a(href = 'http://databrew.cc/', 'DataBrew.'), "He has a background in epidemiology and development economics. He works in both industry as a consultant as well as academia. His research focuses on the economics of malaria elimination programs in Sub-Saharan Africa."))
             ),
             width = 4)
-        ),
-        fluidRow(br(),
-                 div(a(actionButton(inputId = "email", label = "Contact", 
-                                    icon = icon("envelope", lib = "font-awesome")),
-                       href="mailto:sheitmann@ifc.org",
-                       align = 'center')), 
-                 style = 'text-align:center;'
         )
       )
     )
@@ -433,33 +426,42 @@ server <- function(input, output, session) {
   # Progress plot
   output$progress_plot <-
     renderPlot({
+      it <- main_tab()
+      if(it != 'about'){
+        the_submissions <- reactiveValuesToList(submissions)
+        the_submissions <- unlist(the_submissions)
+        numerator <- length(which(the_submissions))
+        denominator <- length(the_submissions)
+        df <- data.frame(key = c('Finished', 'All'),
+                         value = c(numerator, denominator),
+                         dummy = 'a')
+        p <- numerator / denominator * 100 
+        p <- round(p, digits = 1)
+        ggplot(data = df,
+               aes(x = dummy,
+                   y = value,
+                   fill = key)) +
+          geom_bar(stat = 'identity',
+                   position = 'stack',
+                   alpha = 0.9) +
+          coord_flip() +
+          labs(x = '',
+               y = '') +
+          ggthemes::theme_map() +
+          # cowplot::theme_nothing() +
+          scale_fill_manual(name = '', values = c('darkorange', 'lightblue')) +
+          theme(legend.position = 'none') +
+          labs(title = paste0(p, '% completed')) +
+          theme(plot.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5')) +
+          theme(panel.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5'))
+      } else {
+        ggplot() +
+          ggthemes::theme_map() +
+          theme(plot.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5')) +
+          theme(panel.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5'))
+      }
       
-      the_submissions <- reactiveValuesToList(submissions)
-      the_submissions <- unlist(the_submissions)
-      numerator <- length(which(the_submissions))
-      denominator <- length(the_submissions)
-      df <- data.frame(key = c('Finished', 'All'),
-                       value = c(numerator, denominator),
-                       dummy = 'a')
-      p <- numerator / denominator * 100 
-      p <- round(p, digits = 1)
-      ggplot(data = df,
-            aes(x = dummy,
-                y = value,
-                fill = key)) +
-        geom_bar(stat = 'identity',
-                 position = 'stack',
-                 alpha = 0.9) +
-      coord_flip() +
-        labs(x = '',
-             y = '') +
-        ggthemes::theme_map() +
-        # cowplot::theme_nothing() +
-        scale_fill_manual(name = '', values = c('darkorange', 'lightblue')) +
-        theme(legend.position = 'none') +
-        labs(title = paste0(p, '% completed')) +
-        theme(plot.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5')) +
-        theme(panel.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5'))
+      
       
       
       
@@ -492,7 +494,6 @@ server <- function(input, output, session) {
   output$menu <- renderMenu({
 
     mt <- main_tab()
-    print(paste0('mt is ', mt))
     sidebarMenu(
       generate_menu(text="Instructions",
                     tabName="instructions",
