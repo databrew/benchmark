@@ -183,7 +183,7 @@ sub_tab_completer <- function(){
 
         # Action button approach
         sm <- TRUE
-        message('CLICKED!')
+        message('SUBMISSION CLICKED!')
 
         if(is.null(sts)){
           mt <- main_tab(); 
@@ -202,7 +202,6 @@ sub_tab_completer <- function(){
           next_tab <- '", tabs[i + 1], "'
           next_sub_tab <- '", sub_tabs[i + 1], "'
           df <- data.frame(name = c('this_tab', 'this_sub_tab', 'next_tab', 'next_sub_tab'), val = this_tab, this_sub_tab, next_tab, next_sub_tab);
-          print(df)
           if(next_tab != this_tab){
             main_tab(next_tab);# navPage(1)
             sub_tab_selected(next_sub_tab)
@@ -289,7 +288,6 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
               sts <- x[1]
            };",
             # "if(length(sts) < 1){sts <- convert_capitalization(simple_cap(gsub('_', ' ', competencies)))[1]};",
-           "message('JOE STS IS ', sts);",
            "fluidPage(",
           a,
           b,
