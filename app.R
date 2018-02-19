@@ -151,12 +151,12 @@ body <- dashboardBody(
                     style="text-align: center;")
               ),
               fluidRow(h5('Project Lead'),
-                       h5('Johannesburg, ', 
+                       h5('Johannesburg ', 
                           a(href = 'mailto:sheitmann@ifc.org',
                             'sheitmann@ifc.org'))),
               fluidRow(helpText("Soren has a background in database management, software engineering and web technology. He manages the applied research and integrated monitoring, evaluation and learning program for the IFC-MasterCard Foundation Partnership for Financial Inclusion. He works at the nexus of data-driven research and technology to help drive learning and innovation within IFC’s Digital Financial Services projects in Sub-Saharan Africa."))
             ),
-            width = 4),
+            width = 3),
           shinydashboard::box(
             title = 'Oleksiy Anokhin',
             fluidPage(
@@ -168,12 +168,29 @@ body <- dashboardBody(
                     style="text-align: center;")
               ),
               fluidRow(h5('Project Specialist'),
-                       h5('Washington, DC, ', 
+                       h5('Washington, DC ', 
                           a(href = 'mailto:oanokhin@ifc.org',
                             'oanokhin@ifc.org'))),
               fluidRow(helpText("Oleksiy focuses on data-driven visualization solutions for international development. He is passionate about using programmatic tools (such as interactive dashboards) for better planning and implementation of projects, as well as for effective communication of projects results to various stakeholders."))
             ),
-            width = 4),
+            width = 3),
+          shinydashboard::box(
+            title = 'Margarete Biallas',
+            fluidPage(
+              fluidRow(
+                div(a(img(src='about/Marg.png', 
+                          align = "center",
+                          height = '80'),
+                      href="mailto:mbiallas@ifc.org"), 
+                    style="text-align: center;")
+              ),
+              fluidRow(h5('Senior DFS Specialist'),
+                       h5('Washington, D.C. ', 
+                          a(href = 'mailto:mbiallas@ifc.org',
+                            'mbiallas@ifc.org'))),
+              fluidRow(helpText("Biographical text here"))
+            ),
+            width = 3),
           shinydashboard::box(
             title = 'Joe Brew',
             fluidPage(
@@ -185,12 +202,12 @@ body <- dashboardBody(
                     style="text-align: center;")
               ),
               fluidRow(h5('Data Scientist'),
-                       h5('Amsterdam, ', 
+                       h5('Amsterdam ', 
                           a(href = 'mailto:jbrew1@worldbank.org',
                             'jbrew1@worldbank.org'))),
               fluidRow(helpText("Joe is a data scientist for", a(href = 'http://databrew.cc/', 'DataBrew.'), "He has a background in epidemiology and development economics. He works in both industry as a consultant as well as academia. His research focuses on the economics of malaria elimination programs in Sub-Saharan Africa."))
             ),
-            width = 4)
+            width = 3)
         )
       )
     )
