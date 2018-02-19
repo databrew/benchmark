@@ -260,6 +260,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         collapsed = ", collapsed,  ",
                    ",
         # collapsed = ", competency_done, ",
+        "style = \"overflow-y:scroll; max-height: 400px\",fluidPage(",
         "fluidRow(column(3, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Click to add comment')), column(6), ",
         # "column(3)",
         "column(3, actionButton('", paste0(tab_name, "_", this_competency, "_next_competency"), "', 'Press here when done'))",
@@ -274,7 +275,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         "fluidRow(column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_1')), style= paste0('color:',", colors_one, "))), 
                   column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_2')), style= paste0('color:',", colors_two, "))),
                   column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_3')), style= paste0('color:',", colors_three, "))))",
-        ")")
+        "))")
   }
   b <- paste0(b, collapse = ',')
 
