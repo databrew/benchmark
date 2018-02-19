@@ -352,23 +352,23 @@ server <- function(input, output, session) {
 
   # Reactive objecting observing the selected sub tab
   sub_tab_selected <- reactiveVal(value = NULL)
+
   
-  # observeEvent({
-  #   # main_tab();
-  #   input$tabs;
-  #   }, {
-  #     mt <- main_tab()
-  #     message('Changed tabs to ', mt)
-  #     # Get the name of the first sub tab associated with the clicked tab
-  #     x <- competency_dict %>%
-  #       filter(tab_name == mt)
-  #     if(nrow(x) > 0){
-  #       x <- x[1,]
-  #       the_new_one <- convert_capitalization(simple_cap(gsub('_', ' ', x$competency))) %>% as.character
-  #       message('Overwriting the selected sub tab with: ', the_new_one)
-  #       sub_tab_selected(the_new_one)
-  #     }
-  # })
+  observeEvent({
+    main_tab();
+    }, {
+      mt <- main_tab()
+      message('Changed tabs to ', mt)
+      # Get the name of the first sub tab associated with the clicked tab
+      x <- competency_dict %>%
+        filter(tab_name == mt)
+      if(nrow(x) > 0){
+        x <- x[1,]
+        the_new_one <- convert_capitalization(simple_cap(gsub('_', ' ', x$competency))) %>% as.character
+        message('Overwriting the selected sub tab with: ', the_new_one)
+        sub_tab_selected(the_new_one)
+      }
+  })
 
   # Observe any clicks on the sub-tabs, and update the subtab accordingly
   eval(parse(text = observe_sub_tab()))
@@ -564,7 +564,7 @@ server <- function(input, output, session) {
     old_time <- the_time()
     difference <- as.numeric(old_time - new_time)
     message('difference is ', difference)
-    if(difference < -1){
+    if(difference < -0.5){
       message('That was slow. Setting it to ', it)
       main_tab(it)
     }

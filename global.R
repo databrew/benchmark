@@ -153,7 +153,8 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
              
              # Reactives saying whether the entire competency has been submitted
              ', tab_name, '_', competencies[i], '_submitted <- reactive({
-            submissions$', tab_name, '_', competencies[i], '_submit
+            x <- submissions$', tab_name, '_', competencies[i], '_submit;
+            x
              })')
   }
   paste0(out, collapse = '\n')
@@ -184,19 +185,33 @@ sub_tab_completer <- function(){
         sm <- TRUE
         message('CLICKED!')
 
+        if(is.null(sts)){
+          mt <- main_tab(); 
+          x <- competency_dict %>% 
+            filter(tab_name == mt) %>% 
+            mutate(competency = convert_capitalization(simple_cap(gsub('_', ' ', competency)))) %>% 
+            .$competency;
+          sts <- x[1]
+          message('---new sts is ', sts)
+
+        }
         if(!is.null(sts)){
           if(sm & sts == '", sub_tabs[i], "'){
-          # Sys.sleep(0.5)
           this_tab <- '", tabs[i], "'
           this_sub_tab <- '", sub_tabs[i], "'
           next_tab <- '", tabs[i + 1], "'
           next_sub_tab <- '", sub_tabs[i + 1], "'
+          df <- data.frame(name = c('this_tab', 'this_sub_tab', 'next_tab', 'next_sub_tab'), val = this_tab, this_sub_tab, next_tab, next_sub_tab);
+          print(df)
           if(next_tab != this_tab){
-            navPage(1)
+            main_tab(next_tab);# navPage(1)
+            sub_tab_selected(next_sub_tab)
           } else {
             sub_tab_selected(next_sub_tab)
           }
         }
+        } else {
+          message('WEIRD, STS IS NULL')
         }
         
       })"
@@ -228,23 +243,29 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
     this_combined_name <- paste0(tab_name, '_', this_competency)
     this_title <- convert_capitalization(simple_cap(gsub('_', ' ', this_competency)))
     competency_done <- paste0(tab_name, "_", this_competency, "_submitted()")
-    
+    selection_phrase <- paste0('(sts != "', this_title,'")')
+    # collapsed <- paste0('any(', competency_done , ', ', selection_phrase, ', na.rm = TRUE)')
+    collapsed <- selection_phrase
+    if(length(collapsed) < 1){
+      collapsed <- 'FALSE'
+    }
+
     # Define colors
     colors_one <- paste0(tab_name, '_', competencies[i], '_colors[["a"]]')
     colors_two <- paste0(tab_name, '_', competencies[i], '_colors[["b"]]')
     colors_three <- paste0(tab_name, '_', competencies[i], '_colors[["c"]]')
     
-    b[i] <- paste0("\ntabPanel(paste0('", this_title, 
-                   "'),",
-
-        "fluidPage(br()\n,box(title = paste0('", this_title, "', ifelse(", competency_done, ", ' (Completed)', '')),        width = 12,
+    b[i] <- paste0("box(title = paste0('", this_title, "', ifelse(", competency_done, ", ' (Completed)', '')),        width = 12,
         solidHeader = TRUE,
         collapsible = TRUE,
-        collapsed = FALSE,
+        collapsed = ", collapsed,  ",
                    ",
         # collapsed = ", competency_done, ",
-        "fluidRow(column(3, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Click to add comment')), column(6), column(3, actionButton('", paste0(tab_name, "_", this_competency, "_next_competency"), "', 'Press here when done'))),",
-        "fluidRow(column(3), column(6,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(3, create_submit('", tab_name, "_", this_competency, "', 
+        "fluidRow(column(3, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Click to add comment')), column(6), ",
+        # "column(3)",
+        "column(3, actionButton('", paste0(tab_name, "_", this_competency, "_next_competency"), "', 'Press here when done'))",
+        "),",
+        "fluidRow(column(1), column(10,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(1, create_submit('", tab_name, "_", this_competency, "', 
                              show_icon = ", competency_done, "))),",
 
 
@@ -254,14 +275,21 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
         "fluidRow(column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_1')), style= paste0('color:',", colors_one, "))), 
                   column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_2')), style= paste0('color:',", colors_two, "))),
                   column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_3')), style= paste0('color:',", colors_three, "))))",
-        ")))")
+        ")")
   }
   b <- paste0(b, collapse = ',')
-  b <- paste0('fluidPage(navlistPanel("', paste0(simple_cap(replace_number(n_competencies)), ' competencies'), '", fluid = TRUE, widths = c(2, 10),', b, ',id = "',paste0('sub_tab_', tab_name), '", selected = sub_tab_selected()))', collapse = '')
-  
+
   out <- 
     paste0("output$",tab_name, "_ui <- ",
            "renderUI({",
+           "sts<- sub_tab_selected(); 
+            # if going to next tab, sts will be nothing...
+            if(length(sts) < 1){mt <- main_tab(); 
+              x <- competency_dict %>% filter(tab_name == mt) %>% mutate(competency = convert_capitalization(simple_cap(gsub('_', ' ', competency)))) %>% .$competency;
+              sts <- x[1]
+           };",
+            # "if(length(sts) < 1){sts <- convert_capitalization(simple_cap(gsub('_', ' ', competencies)))[1]};",
+           "message('JOE STS IS ', sts);",
            "fluidPage(",
           a,
           b,
@@ -588,9 +616,8 @@ generate_menu <- function(done = FALSE,
     if(exists('these_competencies')){
       if(length(these_competencies) > 0){
         if(all_ok){
-          message('Everything is done.')
-          print(these_competencies)
-          
+          message('Everything is done for ', tabName, '.')
+
           done <- TRUE
         }
       }
