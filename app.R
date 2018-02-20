@@ -141,6 +141,23 @@ body <- dashboardBody(
         br(),
         fluidRow(
           shinydashboard::box(
+            title = 'Margarete Biallas',
+            fluidPage(
+              fluidRow(
+                div(a(img(src='about/Marg.png', 
+                          align = "center",
+                          height = '80'),
+                      href="mailto:mbiallas@ifc.org"), 
+                    style="text-align: center;")
+              ),
+              fluidRow(h5('Senior DFS Specialist'),
+                       h5('Washington, D.C. ', 
+                          a(href = 'mailto:mbiallas@ifc.org',
+                            'mbiallas@ifc.org'))),
+              fluidRow(helpText("Biographical text here"))
+            ),
+            width = 3),
+          shinydashboard::box(
             title = 'Soren Heitmann',
             fluidPage(
               fluidRow(
@@ -172,23 +189,6 @@ body <- dashboardBody(
                           a(href = 'mailto:oanokhin@ifc.org',
                             'oanokhin@ifc.org'))),
               fluidRow(helpText("Oleksiy focuses on data-driven visualization solutions for international development. He is passionate about using programmatic tools (such as interactive dashboards) for better planning and implementation of projects, as well as for effective communication of projects results to various stakeholders."))
-            ),
-            width = 3),
-          shinydashboard::box(
-            title = 'Margarete Biallas',
-            fluidPage(
-              fluidRow(
-                div(a(img(src='about/Marg.png', 
-                          align = "center",
-                          height = '80'),
-                      href="mailto:mbiallas@ifc.org"), 
-                    style="text-align: center;")
-              ),
-              fluidRow(h5('Senior DFS Specialist'),
-                       h5('Washington, D.C. ', 
-                          a(href = 'mailto:mbiallas@ifc.org',
-                            'mbiallas@ifc.org'))),
-              fluidRow(helpText("Biographical text here"))
             ),
             width = 3),
           shinydashboard::box(
