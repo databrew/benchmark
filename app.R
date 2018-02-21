@@ -154,7 +154,7 @@ body <- dashboardBody(
                        h5('Washington, D.C. ', 
                           a(href = 'mailto:mbiallas@ifc.org',
                             'mbiallas@ifc.org'))),
-              fluidRow(helpText("Biographical text here"))
+              fluidRow(helpText("Margarete leads IFC's Digital Financial Advisory Services. Previously, she managed IFC‘s Access to Finance program in the Mekong and was responsible for financial markets advisory services in Vietnam, Cambodia, and Lao PDR, where she worked on IFC’s earliest mobile financial services initiatives. Prior to joining IFC she worked as a Senior Risk Manager with KfW, where she led the development of a limit management system for banks' financial markets exposures. As Credit Officer for Eastern Europe and Asia she reviewed all of KfW's commercial investments in these two regions. She successfully established two ventures providing education."))
             ),
             width = 3),
           shinydashboard::box(
@@ -224,8 +224,8 @@ server <- function(input, output, session) {
     
     ie <- input$example
     colors <- rep('black', 3)
-    make_red <- ifelse(ie > 0 & ie <=3, 1,
-                       ifelse(ie > 0 & ie <=5, 2,
+    make_red <- ifelse(ie > 0 & ie <=2.5, 1,
+                       ifelse(ie > 0 & ie <=5.5, 2,
                               ifelse( ie > 0  & ie <= 7, 3, NA)))
     cols <- c('red', 'orange', 'green')
     if(!is.na(make_red)){
@@ -477,11 +477,6 @@ server <- function(input, output, session) {
           theme(plot.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5')) +
           theme(panel.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5'))
       }
-      
-      
-      
-      
-      
     })
   
   # Download visualizations
