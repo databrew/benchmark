@@ -1,6 +1,7 @@
 library(shiny)
 library(shinydashboard)
 library(shinyjs)
+library(shinyalert)
 source('global.R')
 
 the_width <- 350
@@ -22,8 +23,10 @@ body <- dashboardBody(
   # ),
 
   useShinyjs(),
+  useShinyalert(),
+
   fluidRow(
-    column(5,
+    column(4,
            hidden(
              lapply(seq(n_tabs), function(i) {
                div(class = "page",
@@ -31,8 +34,11 @@ body <- dashboardBody(
                    paste("Tab", i, 'of', nrow(tab_dict)),
                    style = "font-size: 140%;")
              })
-           )),
-    column(3),
+           ),
+           uiOutput('log_in_text')),
+    column(4,
+           align = 'center',
+           uiOutput('log_in_out')),
     column(4,
            plotOutput('progress_plot', height = '50px')),
     height = '50px'
@@ -219,6 +225,70 @@ ui <- dashboardPage(header, sidebar, body, skin="blue")
 
 # Server
 server <- function(input, output, session) {
+  
+  
+  user <- reactiveVal(value = '')
+  logged_in <- reactiveVal(value = FALSE)
+  # Observe the log in submit and see if logged in
+  observeEvent(input$log_in_submit, {
+    # Assume success
+    user(input$user_name)
+    logged_in(TRUE)
+  })
+  
+  # Observe the log out and clear the user
+  observeEvent(input$log_out, {
+    user('')
+    logged_in(FALSE)
+  })
+  
+  # Log in / out
+  output$log_in_out <- renderUI({
+    # Get whether currently logged in
+    logged_in_now <- logged_in()
+    if(is.null(logged_in_now)){
+      logged_in_now <- FALSE
+    }
+    if(logged_in_now){
+      actionButton('log_out', 'Log out', icon = icon('sign-in'))
+    } else {
+      actionButton('log_in', 'Log in', icon = icon('sign-in'))
+    }
+  })
+  
+  # Observe the log in button and do a modal
+  observeEvent(input$log_in, {
+    showModal(modalDialog(
+      title = "Log in",
+      fluidPage(
+        fluidRow(column(12,
+                        textInput('user_name', 'User name')),
+                 column(12,
+                        textInput('password', 'Password')))#,
+        # fluidRow(column(12,
+        #                 align = 'center',
+        #                 actionButton('log_in_submit',
+        #                              'Submit',
+        #                              icon = icon('check-circle'))))
+      ),
+      easyClose = TRUE,
+      footer = action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')),
+      size = 's'
+    )) 
+  })
+  
+  
+  # Generate logged in text
+  output$log_in_text <- renderText({
+    u <- user()
+    out <- 'Not logged in'
+    if(!is.null(u)){
+      if(u != ''){
+        out <- paste0('Logged in as ', u)
+      }
+    }
+    return(out)
+  })
   
   output$example_ui <- renderUI({
     
