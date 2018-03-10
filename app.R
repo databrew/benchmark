@@ -24,7 +24,7 @@ body <- dashboardBody(
   useShinyjs(),
 
   fluidRow(
-    column(4,
+    column(3,
            hidden(
              lapply(seq(n_tabs), function(i) {
                div(class = "page",
@@ -34,10 +34,10 @@ body <- dashboardBody(
              })
            ),
            uiOutput('log_in_text')),
-    column(4,
+    column(6,
            align = 'center',
            uiOutput('log_in_out')),
-    column(4,
+    column(3,
            plotOutput('progress_plot', height = '50px')),
     height = '50px'
     
@@ -214,6 +214,10 @@ body <- dashboardBody(
             width = 3)
         )
       )
+    ),
+    tabItem(
+      tabName = 'settings',
+      uiOutput('settings_ui')
     )
   )
 )
@@ -227,11 +231,13 @@ server <- function(input, output, session) {
   
   user <- reactiveVal(value = '')
   logged_in <- reactiveVal(value = FALSE)
+  user_data <- reactiveValues()
   # Observe the log in submit and see if logged in
   observeEvent(input$log_in_submit, {
     # Assume success
     user(input$user_name)
     logged_in(TRUE)
+
   })
   
   # Observe the log out and clear the user
@@ -248,7 +254,9 @@ server <- function(input, output, session) {
       logged_in_now <- FALSE
     }
     if(logged_in_now){
-      actionButton('log_out', 'Log out', icon = icon('sign-in'))
+      fluidPage(actionButton('edit_user', 'Edit user details', icon = icon('sign-in')),
+                actionButton('log_out', 'Log out', icon = icon('sign-in')),
+                actionButton('edit_client', 'Edit client details', icon = icon('sign-in')))
     } else {
       actionButton('log_in', 'Log in', icon = icon('sign-in'))
     }
@@ -263,14 +271,39 @@ server <- function(input, output, session) {
                         textInput('user_name', 'User name')),
                  column(12,
                         textInput('password', 'Password')))#,
-        # fluidRow(column(12,
-        #                 align = 'center',
-        #                 actionButton('log_in_submit',
-        #                              'Submit',
-        #                              icon = icon('check-circle'))))
       ),
       easyClose = TRUE,
       footer = action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')),
+      size = 's'
+    ))
+  })
+  
+  # Observe log in submit and prompt selection of client and assessment name
+  observeEvent(input$log_in_submit, {
+    updateTabItems(session, "tabs", 'settings')
+  })
+  
+  # Observe editing buttons
+  observeEvent(input$edit_user, {
+    showModal(modalDialog(
+      title = "Edit user",
+      fluidPage(
+        'Some stuff will go here soon'
+      ),
+      easyClose = TRUE,
+      footer = action_modal_button('edit_user_submit', "Submit", icon = icon('check-circle')),
+      size = 's'
+    )) 
+  })
+  
+  observeEvent(input$edit_client, {
+    showModal(modalDialog(
+      title = "Edit client",
+      fluidPage(
+        'Some stuff will go here soon'
+      ),
+      easyClose = TRUE,
+      footer = action_modal_button('edit_client_submit', "Submit", icon = icon('check-circle')),
       size = 's'
     )) 
   })
@@ -575,9 +608,14 @@ server <- function(input, output, session) {
 
     mt <- main_tab()
     sidebarMenu(
-      generate_menu(text="Instructions",
+      generate_menu(text="Home",
                     tabName="instructions",
                     icon=icon("leanpub"),
+                    submissions = submissions, mt = mt,
+                    pass = TRUE),
+      generate_menu(text = 'Settings',
+                    tabName = 'settings',
+                    icon = icon('user'),
                     submissions = submissions, mt = mt,
                     pass = TRUE),
       generate_menu(text="Strategy and execution",
@@ -630,8 +668,7 @@ server <- function(input, output, session) {
                     tabName = 'about',
                     icon = icon('book'),
                     submissions = submissions, mt = mt,
-                    pass = TRUE)
-    )
+                    pass = TRUE))
   })
   # isolate({
   #   mt <- main_tab()
@@ -644,11 +681,56 @@ server <- function(input, output, session) {
     new_time <- Sys.time()
     old_time <- the_time()
     difference <- as.numeric(old_time - new_time)
-    message('difference is ', difference)
+    message('Time between tab change was ', abs(round(difference, digits = 2)))
     if(difference < -0.5){
-      message('That was slow. Setting it to ', it)
+      message('---Slow tab change time assumed to be human. Setting tab to ', it)
       main_tab(it)
     }
+  })
+  
+  # User details ui
+  output$settings_ui <- renderUI({
+    li <- logged_in()
+    
+    
+    assessment_choices <- assessments$assessment_id
+    names(assessment_choices) <- assessments$assessment_name
+    
+    client_choices <- clients$client_id
+    names(client_choices) <- clients$name
+    
+    
+    
+    if(!li){
+      fluidPage(h2('Log in above', align = 'center'))
+    } else {
+      u <- user()
+      fluidPage(
+        fluidRow(column(12,
+                        h3(paste0('Logged in a ', u),
+                           align = 'center'))),
+        fluidRow(h3("Select client and assessment name", align = 'center')),
+        fluidRow(column(6, align = 'center',
+                            selectInput('client_select',
+                                        'Select client',
+                                        choices = client_choices,
+                                        selectize = TRUE),
+                            helpText('or'),
+                            textInput('client_type',
+                                      'Create a new client')),
+                     column(6, align = 'center',
+                            selectInput('assessment_name_select',
+                                        'Select assessment name',
+                                        choices = assessment_choices,
+                                        selectize = TRUE),
+                            helpText('or'),
+                            textInput('assessment_name_type',
+                                      'Create a new assessment name'))),
+          fluidRow(column(12, align = 'center',
+                          action_modal_button('client_select_submit', "Submit", icon = icon('check-circle'))))
+      )
+    }
+    
   })
 
   # On session end, close the pool
