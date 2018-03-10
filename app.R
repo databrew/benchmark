@@ -1,7 +1,6 @@
 library(shiny)
 library(shinydashboard)
 library(shinyjs)
-library(shinyalert)
 source('global.R')
 
 the_width <- 350
@@ -23,7 +22,6 @@ body <- dashboardBody(
   # ),
 
   useShinyjs(),
-  useShinyalert(),
 
   fluidRow(
     column(4,
@@ -651,11 +649,15 @@ server <- function(input, output, session) {
       message('That was slow. Setting it to ', it)
       main_tab(it)
     }
-    
-    
   })
-  # observe(print(paste0('THE TAB SELECTED IS ', input$tabs)))
+
+  # On session end, close the pool
+  session$onSessionEnded(function() {
+    message('Session ended. Closing the connection pool.')
+    tryCatch(pool::poolClose(pool), error = function(e) {message('')})
+  })
   
+    
 
 
   
