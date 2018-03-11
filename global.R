@@ -144,8 +144,20 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
 
              # Observe submissions
             observeEvent(input$', tab_name, '_', competencies[i], '_slider,{
+                # Get the question id
+                tn <- "', tab_name, '"
+                cm <- "', competencies[i], '"
+                qid <- view_assessment_questions_list %>%
+                      filter(tab_name == tn, competency == cm) %>%
+                      .$question_id
                 if(input$', tab_name, '_', competencies[i], '_slider >= 1){
                   submissions$', tab_name, '_', competencies[i], '_submit <- TRUE
+                  # Update the data base
+                  message("updating the database with new submission for question id ", qid)
+                  record_assessment_data_entry(
+                            question_id=qid,
+                            score= input$', tab_name, '_', competencies[i], '_slider,
+                            rationale=NA)
                   # Colors
                   x <- input$', tab_name, '_', competencies[i], '_slider
                   new_value <- ceiling(x / 2.4)
