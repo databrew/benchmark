@@ -33,7 +33,7 @@ print(client_info$ifc_client_id)
 client_info$ifc_client_id <- client_info$ifc_client_id + 1
 
 #get the ID of the client we changed (should be 11)
-updated_client_id <- db_edit_client(get_current_client_id(),data.frame(client_id=client_info$client_id,ifc_client_id=client_info$ifc_client_id,name='New Bank Co.',short_name='NBC',firm_type='Bank',address='111 Main St.',city='Anytown',country='USA',stringsAsFactors = F))
+updated_client_id <- db_edit_client(get_current_client_id(),data.frame(client_id=client_info$client_id,ifc_client_id=client_info$ifc_client_id,name='New Bank Co.',short_name='NBC',firm_type='Bank',address='111 Main St.',city='SomePlace',country='USA',stringsAsFactors = F))
 print(updated_client_id) #should be the same!
 
 #refresh the listing & reload the client, if update was successful

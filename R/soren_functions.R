@@ -232,7 +232,7 @@ db_edit_client <- function(client_id,client_info)
   client_id <- dbGetQuery(conn,'select pd_dfsbenchmarking.client_edit( $1 , $2 , $3, $4 , $5, $6 , $7 , $8 , $9 );',
                           params=list(session_id=db_session_id(),
                                       client_id=client_info$client_id,
-                                      ifC_client_id=client_info$ifc_client_id,
+                                      ifc_client_id=client_info$ifc_client_id,
                                       name=client_info$name,
                                       short_name=client_info$short_name,
                                       firm_type=client_info$firm_type,

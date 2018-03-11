@@ -668,3 +668,6 @@ pool <- create_pool(options_list = credentials_extract(),
                     use_sqlite = FALSE)
 # Get the data from the db into memory
 db_to_memory(pool = pool)
+
+# function to turn NULL to NA
+nn <- function(x){ifelse(is.null(x), as.character(NA), x)}

@@ -781,16 +781,14 @@ server <- function(input, output, session) {
   
   output$edit_client_table <- renderRHandsontable({
     udci <- user_data$client_info
-    message('udci is ')
-    print(head(udci))
     x <- data_frame(client_id=udci$client_id,
                     ifc_client_id=udci$ifc_client_id,
-                    name='New Bank Co.',
-                    short_name='NBC',
-                    firm_type='Bank',
-                    address='111 Main St.',
-                    city='Anytown',
-                    country='USA')
+                    name= udci$name,
+                    short_name= nn(udci$short_name),
+                    firm_type= nn(udci$firm_type),
+                    address= udci$address,
+                    city= udci$city,
+                    country= udci$country)
     message('head of x is ')
     print(head(x))
     rhandsontable(x, readOnly = FALSE, selectCallback = TRUE,
@@ -799,7 +797,7 @@ server <- function(input, output, session) {
     
   observeEvent(input$edit_client_submit, {
     x <- input$edit_client_table[[1]]
-    vals <- unlist(x)
+    vals <- unlist(lapply(x[[1]], function(z){nn(z)}))
     out <- data_frame(client_id = NA,
                       ifc_client_id = NA,
                       name = NA,
@@ -812,16 +810,23 @@ server <- function(input, output, session) {
     out$client_id <- as.numeric(out$client_id)
     out$ifc_client_id <- as.numeric(out$ifc_client_id)
     
-    message('out is ')
-    print(out)
-    
     # Update the database
     db_edit_client(out$client_id,
                    out)
+    
+    # Update the session
+    udci <- user_data$client_info
+    udci$client_id <- out$client_id
+    udci$ifc_client_id <- out$ifc_client_id
+    udci$name <- out$name
+    udci$short_name <- out$short_name
+    udci$firm_type <- out$firm_type
+    udci$address <- out$address
+    udci$city <- out$city
+    udci$country <- out$country
+    message('overwriting user_data')
+    user_data$client_info <- udci
   })
-
-
-  
 }
 
 shinyApp(ui, server)
