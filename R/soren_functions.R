@@ -83,10 +83,19 @@ record_assessment_data_entry <- function(question_id,score,rationale)
 
 db_save_client_assessment_data <- function()
 {
-  if (!loggedin()) return(message("Warning: Not logged in"));
-  if (!assessment_has_new_data()) return (TRUE)
+  ll <- loggedin()
+  ahnd <- assessment_has_new_data()
+  if (!ll) return(message("Warning: Not logged in"));
+  if (!ahnd) return (TRUE)
   
   assessment_data <- get_current_assessment_data()
+  assessment_data$assessment_id <- get_current_assessment_id()
+  # This goes without assessment id
+  message('THIS IS THE ASSESSMENT ID')
+  print(assessment_data$assessment_id)
+  
+  message('THIS IS THE ASSESSMENT DATA')
+
   saving_data <- subset(x=assessment_data,subset=is_changed==TRUE,select=c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","score","rationale"))
   
   conn <- poolCheckout(db_get_pool())
@@ -96,9 +105,11 @@ db_save_client_assessment_data <- function()
   
   ##If table doesn't get deleted, just need to create this once in the DB and not via script
   ##dbSendQuery(conn,"create index if not exists _pd_dfsbenchmarking_save_client_assessment_data_index ON public._pd_dfsbenchmarking_save_client_assessment_data USING btree (assessment_id,question_id,last_modified_time);");
-  
+  message('______about to save data')
   rows_inserted <- dbGetQuery(conn,"select pd_dfsbenchmarking.assessments_data_save( $1 );",params=list(session_id=db_session_id()))
   poolReturn(conn)
+  message('______just saved data')
+  
   
   rows_expected <- sum(assessment_data$is_changed)
   rows_inserted <- as.numeric(unlist(rows_inserted))

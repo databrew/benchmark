@@ -158,6 +158,9 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
                             question_id=qid,
                             score= input$', tab_name, '_', competencies[i], '_slider,
                             rationale=NA)
+                  # Save
+                  get_current_assessment_data()
+                  db_save_client_assessment_data()
                   # Colors
                   x <- input$', tab_name, '_', competencies[i], '_slider
                   new_value <- ceiling(x / 2.4)

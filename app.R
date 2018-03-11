@@ -851,14 +851,18 @@ server <- function(input, output, session) {
                      message('ccid is ', ccid)
                      td <- today()
                      new_name <- input$assessment_name_select
+                     message('assessment id / new name is')
+                     print(new_name)
+                     SESSION$client_info$current_assessment_id <- as.numeric(new_name)
                      updated_assessment_id <- 
                        db_edit_client_assessment(-1,
                                                  data.frame(client_id=ccid,
                                                             assessment_name=new_name,
                                                             assessment_date=td,
                                                             stringsAsFactors=F))
-                     message('updated assessment id is ')
-                     print(updated_assessment_id)
+                     # message('updated assessment id is ')
+                     # print(updated_assessment_id)
+                     # SESSION$client_info$current_assessment_id <- updated_assessment_id
                      
                      # If not -1 load it
                      # if(updated_assessment_id != -1){
@@ -899,6 +903,8 @@ server <- function(input, output, session) {
                                            stringsAsFactors=F))
     message('updated assessment id is ')
     print(updated_assessment_id)
+    # Update the assessment id in the session
+    
     
     # If not -1 load it
     # if(updated_assessment_id != -1){
@@ -1010,6 +1016,8 @@ server <- function(input, output, session) {
   #   message('x is ')
   #   print(head(x))
   # })
+  
+
   
 }
 
