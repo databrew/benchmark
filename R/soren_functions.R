@@ -90,11 +90,6 @@ db_save_client_assessment_data <- function()
   
   assessment_data <- get_current_assessment_data()
   assessment_data$assessment_id <- get_current_assessment_id()
-  # This goes without assessment id
-  message('THIS IS THE ASSESSMENT ID')
-  print(assessment_data$assessment_id)
-  
-  message('THIS IS THE ASSESSMENT DATA')
 
   saving_data <- subset(x=assessment_data,subset=is_changed==TRUE,select=c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","score","rationale"))
   
