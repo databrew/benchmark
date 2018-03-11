@@ -870,7 +870,7 @@ server <- function(input, output, session) {
                        SESSION$client_info <- 
                        load_client(get_current_client_id())
                      
-                     load_client_assessment(updated_assessment_id)
+                     load_client_assessment(input$assessment_name_select)
                      # }
                      
                    }
