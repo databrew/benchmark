@@ -229,20 +229,37 @@ ui <- dashboardPage(header, sidebar, body, skin="blue")
 server <- function(input, output, session) {
   
   
-  user <- reactiveVal(value = '')
+  user <- reactiveVal(value = as.character(NA))
+  user_id <- reactiveVal(value = -1)
   logged_in <- reactiveVal(value = FALSE)
   user_data <- reactiveValues()
   # Observe the log in submit and see if logged in
   observeEvent(input$log_in_submit, {
-    # Assume success
-    user(input$user_name)
-    logged_in(TRUE)
+    # Attempt to log in
+    log_in_attempt <- db_login(input$user_name,
+                               input$password)
+    # Evaluate success
+    if(log_in_attempt$user_id >= 0){
+      # Success
+      user(input$user_name)
+      logged_in(TRUE)
+      user_id(log_in_attempt$user_id)
+    } else {
+      # Set values to not logged in
+      user(NA)
+      logged_in(FALSE)
+      user_id(-1)
+      # And re-generate the log in modal
+      showModal(log_in_modal)
+    }
+    
 
   })
   
   # Observe the log out and clear the user
   observeEvent(input$log_out, {
     user('')
+    user_id(-1)
     logged_in(FALSE)
   })
   
@@ -264,20 +281,7 @@ server <- function(input, output, session) {
   
   # Observe the log in button and do a modal
   observeEvent(input$log_in, {
-    showModal(modalDialog(
-      title = "Log in",
-      fluidPage(
-        fluidRow(column(12,
-                        textInput('user_name', 'User name',
-                                  value = 'MEL')),
-                 column(12,
-                        textInput('password', 'Password',
-                                  value = 'FIGSSAMEL')))#,
-      ),
-      easyClose = TRUE,
-      footer = action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')),
-      size = 's'
-    ))
+    showModal(log_in_modal)
   })
   
   # Observe log in submit and prompt selection of client and assessment name
@@ -314,10 +318,13 @@ server <- function(input, output, session) {
   # Generate logged in text
   output$log_in_text <- renderText({
     u <- user()
+    message('user is ', u)
     out <- 'Not logged in'
     if(!is.null(u)){
-      if(u != ''){
-        out <- paste0('Logged in as ', u)
+      if(!is.na(u)){
+        if(u != ''){
+          out <- paste0('Logged in as ', u)
+        }
       }
     }
     return(out)

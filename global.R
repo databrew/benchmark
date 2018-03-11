@@ -644,6 +644,22 @@ generate_menu <- function(done = FALSE,
   }
 }
 
+# Define the log-in modal
+log_in_modal <- modalDialog(
+  title = "Log in",
+  fluidPage(
+    fluidRow(column(12,
+                    textInput('user_name', 'User name',
+                              value = 'MEL')),
+             column(12,
+                    textInput('password', 'Password',
+                              value = 'FIGSSAMEL')))#,
+  ),
+  easyClose = TRUE,
+  footer = action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')),
+  size = 's'
+)
+
 
 
 # Database set-up
