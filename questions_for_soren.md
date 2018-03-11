@@ -6,3 +6,5 @@
 ```
 Error: Requested assessment -1 not found!
 ```
+
+4. Also in relation to this -1 issue, what is the correct way for me to retrieve data for a given assessment, so as to populate the ui? It doesn't appear to me that this is stored in the `SESSION` object - should I just query the db directly?

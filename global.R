@@ -84,6 +84,8 @@ create_input_list <- function(){
          collapse = '')
 }
 
+
+
 # Define function for creating a 1-5 slider for a given item
 create_slider <- function(item_name,
                           ip){
@@ -161,7 +163,7 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
                   # Save
                   get_current_assessment_data()
                   db_save_client_assessment_data()
-                  message("------database successfully updated")
+                  message("_________database successfully updated")
                   # Colors
                   x <- input$', tab_name, '_', competencies[i], '_slider
                   new_value <- ceiling(x / 2.4)

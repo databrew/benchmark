@@ -103,9 +103,7 @@ db_save_client_assessment_data <- function()
   message('______about to save data')
   rows_inserted <- dbGetQuery(conn,"select pd_dfsbenchmarking.assessments_data_save( $1 );",params=list(session_id=db_session_id()))
   poolReturn(conn)
-  message('______just saved data')
-  
-  
+
   rows_expected <- sum(assessment_data$is_changed)
   rows_inserted <- as.numeric(unlist(rows_inserted))
   if (rows_expected != rows_inserted) message(paste0("Warning: Saving Assessment Data expected to save ",rows_expected," but reported ",rows_inserted," affected"))
