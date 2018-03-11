@@ -123,13 +123,20 @@ db_get_client_assessment_data <- function(client_id,assessment_id)
   
   assessement_data <- NULL
   
-  assessment_data <- dbGetQuery(conn,'select client_id,assessment_id,question_id,last_modified_time,last_modified_user_id,last_modified_user_name,score,rationale,false as is_changed
-                                from pd_dfsbenchmarking.view_assessments_current_data where assessment_id = $1 and client_id = $2
-                                and pd_dfsbenchmarking.user_has_client_access(client_id,pd_dfsbenchmarking.user_id_session_chain( $3 ));',
-                                params=list(assessment_id=assessment_id,
-                                            client_id=client_id,
-                                            session_id=db_session_id())) 
+  #assessment_data <- dbGetQuery(conn,'select client_id,assessment_id,question_id,last_modified_time,last_modified_user_id,last_modified_user_name,score,rationale,false as is_changed
+  #                              from pd_dfsbenchmarking.view_assessments_current_data where assessment_id = $1 and client_id = $2
+  #                              and pd_dfsbenchmarking.user_has_client_access(client_id,pd_dfsbenchmarking.user_id_session_chain( $3 ));',
+  #                              params=list(assessment_id=assessment_id,
+  #                                          client_id=client_id,
+  #                                          session_id=db_session_id())) 
   
+  #Changed to load the full set of assessment questions and data.  Only need the survey questions and layout at the time the assessment is being loaded
+  #and someone wants to do it or view it
+  assessment_data <- dbGetQuery(conn,'select * from pd_dfsbenchmarking.assessment_load( $1 , $2 , $3 )',
+                                params=list(client_id=client_id,
+                                            assessment_id=assessment_id,
+                                            session_id=db_session_id())) 
+                                
   #Any new assessment will have an empty dataset
   if (nrow(assessment_data)==0) assessment_data <- NA
   
@@ -191,20 +198,29 @@ unload_client <- function() { SESSION$client_info <<- NULL }
 
 load_client_assessment <- function(assessment_id)
 {
+  if (is.null(get_current_client_id())) return(message("Error: No client is loaded.  Load client before loading assessment."))
+  
   assessments <- SESSION$client_info$assessments
   current_assessment <- assessments[assessments$assessment_id==assessment_id,]
+  
   if (nrow(current_assessment) != 1) return(message(paste0("Error: Requested assessment ",assessment_id," not found!")))
   
-  assessment_data <- db_get_client_assessment_data(get_current_client_id(),assessment_id)
+  assessment_template <- db_get_client_assessment_data(get_current_client_id(),assessment_id)
+  assessment_data <- assessment_template[,c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","last_modified_user_name","score","rationale")]
+  assessment_data$is_changed <- FALSE
+  
   SESSION$client_info$current_assessment_id <<- current_assessment$assessment_id
+  SESSION$client_info$current_assessment_template <<- assessment_template #does this need to change on load/unload since it's the same in all instances?  Does it matter?
   SESSION$client_info$current_assessment_data <<- assessment_data
   
-  return (assessment_data)
+  return (assessment_template)
 }
 unload_client_assessment <- function() 
 {
   SESSION$client_info$current_assessment_id <<- NULL
   SESSION$client_info$current_assessment_data <<- NULL
+  SESSION$client_info$current_assessment_template <<- NULL
+  
 }
 get_current_assessment <- function() { return (SESSION$client_info$assessments[SESSION$client_info$assessments$assessment_id==SESSION$client_info$current_assessment_id,]) }
 get_current_assessment_id <- function() { return (SESSION$client_info$current_assessment_id) }
