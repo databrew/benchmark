@@ -236,6 +236,7 @@ server <- function(input, output, session) {
   user_id <- reactiveVal(value = -1)
   logged_in <- reactiveVal(value = FALSE)
   user_data <- reactiveValues()
+  
   # Observe the log in submit and see if logged in
   observeEvent(input$log_in_submit, {
     # Attempt to log in
@@ -265,6 +266,7 @@ server <- function(input, output, session) {
     user_id(-1)
     logged_in(FALSE)
     user_data$client_listing <- NULL
+    user_data$client_info <- NULL
   })
   
   # Log in / out
@@ -293,6 +295,11 @@ server <- function(input, output, session) {
     updateTabItems(session, "tabs", 'settings')
   })
   
+  # Once a selection is sure, start the survey
+  observeEvent(input$client_select_submit,{
+    updateTabItems(session, "tabs", 'strategy_and_execution')
+  })
+  
   # Observe editing buttons
   observeEvent(input$edit_user, {
     showModal(modalDialog(
@@ -307,7 +314,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$edit_client, {
-    
+
     # User is editing the client, increase value by 1
     udci <- user_data$client_info
     udci$ifc_client_id <- udci$ifc_client_id + 1
@@ -712,6 +719,8 @@ server <- function(input, output, session) {
   output$settings_ui <- renderUI({
     li <- logged_in()
     udcl <- user_data$client_listing
+    message('udcl is ')
+    print(udcl)
     
     client_choices <- udcl$client_id
     names(client_choices) <- udcl$name
@@ -729,13 +738,13 @@ server <- function(input, output, session) {
                                         'Select client',
                                         choices = client_choices)),
                  column(2, align = 'center',
-                        h3('AND', align = 'center')),
+                        h2('AND', align = 'center')),
                      column(5, align = 'center',
                             selectizeInput('assessment_name_select',
                                         'Select assessment name',
                                         choices = assessment_choices))),
           fluidRow(column(12, align = 'center',
-                          action_modal_button('client_select_submit', "Submit", icon = icon('check-circle')))),
+                          action_modal_button('client_select_submit', "Continue", icon = icon('check-circle')))),
         fluidRow(h1('Or', align = 'center')),
         fluidRow(h3('Create a new client and assessment', align = 'center')),
         fluidRow(column(12, align = 'center',
@@ -750,6 +759,8 @@ server <- function(input, output, session) {
     selected_client <- input$client_select
     user_data$client_info <- load_client(selected_client)
     message('The selected client is ', selected_client)
+    # message('the corresponding client info is ')
+    # print(SESSION$client_info)
 
   })
   
@@ -780,7 +791,9 @@ server <- function(input, output, session) {
   })
   
   output$edit_client_table <- renderRHandsontable({
-    udci <- user_data$client_info
+    udci <- SESSION$client_info
+    print('udci is ')
+    print(udci)
     x <- data_frame(client_id=udci$client_id,
                     ifc_client_id=udci$ifc_client_id,
                     name= udci$name,
