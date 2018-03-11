@@ -321,7 +321,7 @@ server <- function(input, output, session) {
       ),
       easyClose = TRUE,
       footer = action_modal_button('edit_client_submit', "Submit", icon = icon('check-circle')),
-      size = 's'
+      size = 'l'
     )) 
   })
   
@@ -793,9 +793,32 @@ server <- function(input, output, session) {
                     country='USA')
     message('head of x is ')
     print(head(x))
-    rhandsontable(x, readOnly = FALSE, selectCallback = TRUE)
+    rhandsontable(x, readOnly = FALSE, selectCallback = TRUE,
+                  rowHeaders = NULL)
   })
     
+  observeEvent(input$edit_client_submit, {
+    x <- input$edit_client_table[[1]]
+    vals <- unlist(x)
+    out <- data_frame(client_id = NA,
+                      ifc_client_id = NA,
+                      name = NA,
+                      short_name = NA,
+                      film_type = NA,
+                      address = NA,
+                      city = NA,
+                      country = NA)
+    out[1,] <- vals
+    out$client_id <- as.numeric(out$client_id)
+    out$ifc_client_id <- as.numeric(out$ifc_client_id)
+    
+    message('out is ')
+    print(out)
+    
+    # Update the database
+    db_edit_client(out$client_id,
+                   out)
+  })
 
 
   
