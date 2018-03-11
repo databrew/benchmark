@@ -244,6 +244,8 @@ server <- function(input, output, session) {
       user(input$user_name)
       logged_in(TRUE)
       user_id(log_in_attempt$user_id)
+      user_data$client_listing <- db_get_client_listing()
+
     } else {
       # Set values to not logged in
       user(NA)
@@ -252,8 +254,6 @@ server <- function(input, output, session) {
       # And re-generate the log in modal
       showModal(log_in_modal)
     }
-    
-
   })
   
   # Observe the log out and clear the user
@@ -261,6 +261,7 @@ server <- function(input, output, session) {
     user('')
     user_id(-1)
     logged_in(FALSE)
+    user_data$client_listing <- NULL
   })
   
   # Log in / out
@@ -700,27 +701,26 @@ server <- function(input, output, session) {
   # User details ui
   output$settings_ui <- renderUI({
     li <- logged_in()
+    udcl <- user_data$client_listing
     
+    client_choices <- udcl$client_id
+    names(client_choices) <- udcl$name
     
     assessment_choices <- assessments$assessment_id
     names(assessment_choices) <- assessments$assessment_name
-    
-    client_choices <- clients$client_id
-    names(client_choices) <- clients$name
-    
-    
     
     if(!li){
       fluidPage(h2('Log in above', align = 'center'))
     } else {
       u <- user()
       fluidPage(
-        fluidRow(h3("Pick a client and assessment to continue working on or edit", align = 'center')),
-        fluidRow(column(6, align = 'center',
+        fluidRow(column(5, align = 'center',
                         selectizeInput('client_select',
                                         'Select client',
                                         choices = client_choices)),
-                     column(6, align = 'center',
+                 column(2, align = 'center',
+                        h3('AND', align = 'center')),
+                     column(5, align = 'center',
                             selectizeInput('assessment_name_select',
                                         'Select assessment name',
                                         choices = assessment_choices))),
