@@ -25,7 +25,9 @@ db_to_memory <- function(pool,
               'users',
               'users_user_id_seq',
               'view_assessment_questions_list',
-              'view_assessments_current_data')
+              'view_assessments_current_data',
+              'view_client_assessment_listing',
+              'view_client_listing')
   
   for (i in 1:length(tables)){
     this_table <- tables[i]

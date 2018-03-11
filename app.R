@@ -268,9 +268,11 @@ server <- function(input, output, session) {
       title = "Log in",
       fluidPage(
         fluidRow(column(12,
-                        textInput('user_name', 'User name')),
+                        textInput('user_name', 'User name',
+                                  value = 'MEL')),
                  column(12,
-                        textInput('password', 'Password')))#,
+                        textInput('password', 'Password',
+                                  value = 'FIGSSAMEL')))#,
       ),
       easyClose = TRUE,
       footer = action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')),
@@ -706,31 +708,43 @@ server <- function(input, output, session) {
     } else {
       u <- user()
       fluidPage(
-        fluidRow(column(12,
-                        h3(paste0('Logged in a ', u),
-                           align = 'center'))),
-        fluidRow(h3("Select client and assessment name", align = 'center')),
+        fluidRow(h3("Pick a client and assessment to continue working on or edit", align = 'center')),
         fluidRow(column(6, align = 'center',
-                            selectInput('client_select',
+                        selectizeInput('client_select',
                                         'Select client',
-                                        choices = client_choices,
-                                        selectize = TRUE),
-                            helpText('or'),
-                            textInput('client_type',
-                                      'Create a new client')),
+                                        choices = client_choices)),
                      column(6, align = 'center',
-                            selectInput('assessment_name_select',
+                            selectizeInput('assessment_name_select',
                                         'Select assessment name',
-                                        choices = assessment_choices,
-                                        selectize = TRUE),
-                            helpText('or'),
-                            textInput('assessment_name_type',
-                                      'Create a new assessment name'))),
+                                        choices = assessment_choices))),
           fluidRow(column(12, align = 'center',
-                          action_modal_button('client_select_submit', "Submit", icon = icon('check-circle'))))
+                          action_modal_button('client_select_submit', "Submit", icon = icon('check-circle')))),
+        fluidRow(h1('Or', align = 'center')),
+        fluidRow(h3('Create a new client and assessment', align = 'center')),
+        fluidRow(column(12, align = 'center',
+                        actionButton('create_new', 'Create new', icon = icon('user'))))
       )
     }
-    
+  })
+  
+  # If creating a new client/assessment, prompt details
+  observeEvent(input$create_new,{
+    showModal(modalDialog(
+      title = "Create new client and assessment",
+      fluidPage(
+        fluidRow(column(12,
+                        textInput('client_type',
+                                  'Create a new client',
+                                  placeholder = 'e.g. Acme Industries')),
+                 column(12,
+                        textInput('assessment_name_type',
+                                  'Create a new assessment name',
+                                  placeholder = 'e.g. Initial intake survey')))#,
+      ),
+      easyClose = TRUE,
+      footer = action_modal_button('crew_new_submit', "Submit", icon = icon('check-circle')),
+      size = 's'
+    ))
   })
 
   # On session end, close the pool
