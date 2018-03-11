@@ -34,7 +34,8 @@ credentials_extract <- function(credentials_path = NULL,
                                 credentials_folder = TRUE,
                                 credentials_file = 'credentials.yaml',
                                 credentials_search_limit = 10,
-                                all_in_file = FALSE){
+                                all_in_file = FALSE,
+                                debug=FALSE){
 
   if(all_in_file){
     credentials_path <- credentials_file
@@ -101,6 +102,7 @@ credentials_extract <- function(credentials_path = NULL,
 
   # Read in yaml file and create list object
   credentials <- yaml.load_file(credentials_path)
+  if (debug) message(paste0('Database connection: ',credentials$dbname,'@',credentials$host))
   return(credentials)
 }
 
