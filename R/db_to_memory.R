@@ -13,7 +13,7 @@ db_to_memory <- function(pool,
   
   # Read in all tables
   # tables <- unique(dbListTables(pool, 'pd_wbgbenchmark'))
-  tables <- c(#'assessment_data',
+  tables <- c('assessment_data',
               # 'assessment_question_categories',
               # 'assessment_question_categories_category_id_seq',
               # 'assessment_questions',

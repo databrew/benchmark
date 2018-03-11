@@ -55,13 +55,35 @@ get_ui_text <- function(item_name){
 
 # Define function for keeping an eye on inputs, so that they don't get reset when the ui gets re-rendered
 create_input_list <- function(){
+  
+  gcai <- get_current_assessment_id()
 
+  # Get pool
+  conn <- poolCheckout(db_get_pool())
+  # Get assessment data
+  ad <- dbGetQuery(conn,
+                   paste0("SELECT * FROM pd_dfsbenchmarking.assessment_data" ))
+  poolReturn(conn)
+  right <- ad
+  if(!is.null(gcai)){
+    right <- right %>% filter(assessment_id == gcai)
+  }
+  right <- right %>%
+    arrange(desc(entry_time)) %>%
+    dplyr::distinct(question_id, .keep_all = TRUE) %>%
+    dplyr::select(question_id, score)
+  left <- view_assessment_questions_list %>%
+    mutate(combined_name = paste0(tab_name, '_', competency)) %>%
+        dplyr::select(question_id, combined_name) 
+  x <- left_join(left, right, by = 'question_id') %>%
+    mutate(score = ifelse(is.na(score), 0, score))
+    
   a <- paste0("input_list <- reactiveValues();\n")
-  inputs <- paste0(competency_dict$combined_name, '_slider')
+  inputs <- paste0(x$combined_name, '_slider')
   b <- rep(NA, length(inputs))
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
-    v <- 0
+    v <- x$score[i]
     b[i] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
   }
   # Observe any changes and register them
