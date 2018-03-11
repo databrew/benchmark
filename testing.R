@@ -11,11 +11,12 @@
 #   setwd(dir)
 # }
 
-# Source helper files
-functions <- dir('R')
-for(i in 1:length(functions)) {
-  source(paste0('R/', functions[i]), chdir = TRUE) 
-}
+# # Source helper files
+# functions <- dir('R')
+# for(i in 1:length(functions)) {
+#   source(paste0('R/', functions[i]), chdir = TRUE) 
+# }
+source('global.R')
 
 
 ##User arrives at welcome page
@@ -30,6 +31,7 @@ print(get_current_client_id())
 #User decides to edit the client, change the ifc_client_id by 1
 print(client_info$ifc_client_id)
 client_info$ifc_client_id <- client_info$ifc_client_id + 1
+
 #get the ID of the client we changed (should be 11)
 updated_client_id <- db_edit_client(get_current_client_id(),data.frame(client_id=client_info$client_id,ifc_client_id=client_info$ifc_client_id,name='New Bank Co.',short_name='NBC',firm_type='Bank',address='111 Main St.',city='Anytown',country='USA',stringsAsFactors = F))
 print(updated_client_id) #should be the same!

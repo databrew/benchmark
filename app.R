@@ -1,7 +1,10 @@
 library(shiny)
 library(shinydashboard)
 library(shinyjs)
-source('global.R')
+library(rhandsontable)
+library(data.table)
+
+  source('global.R')
 
 the_width <- 350
 header <- dashboardHeader(title="DFS Benchmarking Tool",
@@ -304,10 +307,17 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$edit_client, {
+    
+    # User is editing the client, increase value by 1
+    udci <- user_data$client_info
+    udci$ifc_client_id <- udci$ifc_client_id + 1
+    user_data$client_info <- udci
+    
     showModal(modalDialog(
       title = "Edit client",
       fluidPage(
-        'Some stuff will go here soon'
+        rHandsontableOutput("edit_client_table")
+        
       ),
       easyClose = TRUE,
       footer = action_modal_button('edit_client_submit', "Submit", icon = icon('check-circle')),
@@ -734,6 +744,15 @@ server <- function(input, output, session) {
     }
   })
   
+  # Observe the client selection confirmation
+  # observeEvent(input$client_select_submit, {
+  observeEvent(input$client_select, {
+    selected_client <- input$client_select
+    user_data$client_info <- load_client(selected_client)
+    message('The selected client is ', selected_client)
+
+  })
+  
   # If creating a new client/assessment, prompt details
   observeEvent(input$create_new,{
     showModal(modalDialog(
@@ -760,6 +779,22 @@ server <- function(input, output, session) {
     tryCatch(pool::poolClose(pool), error = function(e) {message('')})
   })
   
+  output$edit_client_table <- renderRHandsontable({
+    udci <- user_data$client_info
+    message('udci is ')
+    print(head(udci))
+    x <- data_frame(client_id=udci$client_id,
+                    ifc_client_id=udci$ifc_client_id,
+                    name='New Bank Co.',
+                    short_name='NBC',
+                    firm_type='Bank',
+                    address='111 Main St.',
+                    city='Anytown',
+                    country='USA')
+    message('head of x is ')
+    print(head(x))
+    rhandsontable(x, readOnly = FALSE, selectCallback = TRUE)
+  })
     
 
 
