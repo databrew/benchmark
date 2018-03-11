@@ -1,21 +1,19 @@
 # Should be run from parent directory (dfsbenchmarking)
 
-# Define whether on Joe's computer (dev) or elsewhere (prod)
-joe <- grepl('joebrew', getwd())
-
-if(joe){
-  dir <- getwd()
-} else {
-  dir <- paste0(dirname(path.expand("~")),"/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/Benchmarking Excel online tool/GitHub/dfsbenchmarking")
-  setwd(dir)
-}
+## Commented out the below. If running from parent directory (as per above instructions), no need to hard-code any directory issues.
+# # Define whether on Joe's computer (dev) or elsewhere (prod)
+# joe <- grepl('joebrew', getwd())
+# 
+# if(joe){
+#   dir <- getwd()
+# } else {
+#   dir <- paste0(dirname(path.expand("~")),"/WBG/Sinja Buri - FIG SSA MEL/MEL Program Operations/Knowledge Products/Dashboards & Viz/Benchmarking Excel online tool/GitHub/dfsbenchmarking")
+#   setwd(dir)
+# }
 
 # Source helper files
 functions <- dir('R')
 for(i in 1:length(functions)) {
-  # message(i)
-  if (functions[i]=="testing.R") next
-  else
   source(paste0('R/', functions[i]), chdir = TRUE) 
 }
 
