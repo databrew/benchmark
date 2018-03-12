@@ -967,6 +967,7 @@ CREATE RULE "_RETURN" AS
   GROUP BY clients.created_by_user_id, clients.client_id, clients.ifc_client_id, COALESCE(clients.short_name, clients.name), clients.city, clients.country, users.name
   ORDER BY clients.created_time DESC;
 
+delete from public._pd_dfsbenchmarking_save_client_assessment_data;
 
 --
 -- PostgreSQL database dump complete

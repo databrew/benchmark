@@ -323,6 +323,7 @@ server <- function(input, output, session) {
     showModal(modalDialog(
       title = "Edit client",
       fluidPage(
+        h3('This is still under construction'),
         rHandsontableOutput("edit_client_table")
         
       ),
@@ -715,47 +716,74 @@ server <- function(input, output, session) {
     }
   })
   
-  # User details ui
-  output$settings_ui <- renderUI({
-    li <- logged_in()
-    udcl <- user_data$client_listing
+  # Reactive assessment choices
+  assessment_choices_reactive <- reactive({
+    # Problems right now with menu resetting, so commenting out
+    # the "right" way to do this until I can figure it out
+    # x <- input$log_in_submit
+    # x <- input$client_select
+    # a <- SESSION$client_info$assessments$assessment_id
+    # names(a) <- SESSION$client_info$assessments$assessment_name
+    # message('assessment choices reactive is ')
+    # print(a)
+    # return(a)
+  })
+  # Reactive client choices
+  client_choices_reactive <- reactive({
+    udcl <- SESSION$client_listing
     message('udcl is ')
     print(udcl)
     
     client_choices <- udcl$client_id
     names(client_choices) <- udcl$name
+    return(client_choices)
+  })
+  
+  # User details ui
+  output$settings_ui <- renderUI({
+    li <- logged_in()
     
-    assessment_choices <- assessments$assessment_id
-    names(assessment_choices) <- assessments$assessment_name
+    client_choices <- client_choices_reactive()
+    # assessment_choices <- assessment_choices_reactive()
+    a <- assessments$assessment_id
+    names(a) <- assessments$assessment_name
+    assessment_choices <- a
     
     if(!li){
       fluidPage(h2('Log in above', align = 'center'))
     } else {
       u <- user()
       fluidPage(
+        fluidRow(h3('Select a client and assessment', align = 'center')),
         fluidRow(column(5, align = 'center',
                         selectizeInput('client_select',
                                         'Select client',
                                         choices = client_choices)),
                  column(2, align = 'center',
-                        h2('AND', align = 'center')),
+                        h4('AND', align = 'center')),
                      column(5, align = 'center',
                             selectizeInput('assessment_name_select',
                                         'Select assessment name',
                                         choices = assessment_choices))),
           fluidRow(column(12, align = 'center',
                           action_modal_button('client_select_submit', "Continue", icon = icon('check-circle')))),
+        br(), br(), br(),
         fluidRow(h1('Or', align = 'center')),
-        fluidRow(h3('Create a new client and assessment', align = 'center')),
+        fluidRow(h3('Create a new assessment', align = 'center')),
         fluidRow(column(12, align = 'center',
-                        actionButton('create_new', 'Create new', icon = icon('user'))))
+                        actionButton('create_new_assessment', 'Create new assessment', icon = icon('user')))),
+        fluidRow(h1('Or', align = 'center')),
+        fluidRow(h3('Create a new client', align = 'center')),
+        fluidRow(column(12, align = 'center',
+                        actionButton('create_new_client', 'Create new client', icon = icon('user'))))
       )
     }
   })
   
   # Observe the client selection confirmation
   # observeEvent(input$client_select_submit, {
-  observeEvent(input$client_select, {
+  observeEvent(c(input$client_select,
+                 input$log_in_submit), {
     selected_client <- input$client_select
     user_data$client_info <- load_client(selected_client)
     message('The selected client is ', selected_client)
@@ -765,23 +793,128 @@ server <- function(input, output, session) {
   })
   
   # If creating a new client/assessment, prompt details
-  observeEvent(input$create_new,{
+  observeEvent(input$create_new_client,{
     showModal(modalDialog(
-      title = "Create new client and assessment",
+      title = "Create new client",
       fluidPage(
         fluidRow(column(12,
                         textInput('client_type',
                                   'Create a new client',
-                                  placeholder = 'e.g. Acme Industries')),
+                                  placeholder = 'e.g. Acme Industries')))#,
+      ),
+      easyClose = TRUE,
+      footer = action_modal_button('create_new_client_new_submit', "Submit", icon = icon('check-circle')),
+      size = 's'
+    ))
+  })
+  observeEvent(input$create_new_assessment,{
+    showModal(modalDialog(
+      title = "Create new assessment",
+      fluidPage(
+        fluidRow(
                  column(12,
                         textInput('assessment_name_type',
                                   'Create a new assessment name',
                                   placeholder = 'e.g. Initial intake survey')))#,
       ),
       easyClose = TRUE,
-      footer = action_modal_button('crew_new_submit', "Submit", icon = icon('check-circle')),
+      footer = action_modal_button('create_new_assessment_submit', "Submit", icon = icon('check-circle')),
       size = 's'
     ))
+  })
+  
+  # Observe the create new client and create new assessments
+  observeEvent(input$create_new_client_submit,{
+    
+  })
+  
+  # Observe any selection of assessment
+  observeEvent(c(input$assessment_name_select), {
+                   message('assessment name is ', input$assessment_name_select)
+                   li <- logged_in()
+                   if(li){
+                     
+                     # Make sure a client has been selected
+                     selected_client <- input$client_select
+                     user_data$client_info <- load_client(selected_client)
+                     
+                     cid <- get_current_client_id()
+                     ccid <- -1
+                     if(length(cid) > 0){
+                       if(!is.na(cid)){
+                         if(cid != ''){
+                           ccid <- cid
+                         }
+                       }
+                     }
+                     
+                     message('ccid is ', ccid)
+                     td <- today()
+                     new_name <- input$assessment_name_select
+                     message('assessment id / new name is')
+                     print(new_name)
+                     SESSION$client_info$current_assessment_id <- as.numeric(new_name)
+                     updated_assessment_id <- 
+                       db_edit_client_assessment(-1,
+                                                 data.frame(client_id=ccid,
+                                                            assessment_name=new_name,
+                                                            assessment_date=td,
+                                                            stringsAsFactors=F))
+                     # message('updated assessment id is ')
+                     # print(updated_assessment_id)
+                     # SESSION$client_info$current_assessment_id <- updated_assessment_id
+                     
+                     # If not -1 load it
+                     # if(updated_assessment_id != -1){
+                     user_data$client_info <- 
+                       SESSION$client_info <- 
+                       load_client(get_current_client_id())
+                     
+                     load_client_assessment(input$assessment_name_select)
+                     # }
+                     
+                   }
+                   
+                 })
+  
+  observeEvent(input$create_new_assessment_submit,{
+    # Make sure a client has been selected
+    selected_client <- input$client_select
+    user_data$client_info <- load_client(selected_client)
+    
+    cid <- get_current_client_id()
+    ccid <- -1
+    if(length(cid) > 0){
+      if(!is.na(cid)){
+        if(cid != ''){
+          ccid <- cid
+        }
+      }
+    }
+    
+    message('ccid is ', ccid)
+    td <- today()
+    new_name <- input$assessment_name_type
+    updated_assessment_id <- 
+      db_edit_client_assessment(-1,
+                                data.frame(client_id=ccid,
+                                           assessment_name=new_name,
+                                           assessment_date=td,
+                                           stringsAsFactors=F))
+    message('updated assessment id is ')
+    print(updated_assessment_id)
+    # Update the assessment id in the session
+    
+    
+    # If not -1 load it
+    # if(updated_assessment_id != -1){
+      user_data$client_info <- 
+        SESSION$client_info <- 
+        load_client(get_current_client_id())
+
+      load_client_assessment(updated_assessment_id)
+    # }
+    
   })
 
   # On session end, close the pool
@@ -792,8 +925,6 @@ server <- function(input, output, session) {
   
   output$edit_client_table <- renderRHandsontable({
     udci <- SESSION$client_info
-    print('udci is ')
-    print(udci)
     x <- data_frame(client_id=udci$client_id,
                     ifc_client_id=udci$ifc_client_id,
                     name= udci$name,
@@ -802,8 +933,6 @@ server <- function(input, output, session) {
                     address= udci$address,
                     city= udci$city,
                     country= udci$country)
-    message('head of x is ')
-    print(head(x))
     rhandsontable(x, readOnly = FALSE, selectCallback = TRUE,
                   rowHeaders = NULL)
   })
@@ -815,7 +944,7 @@ server <- function(input, output, session) {
                       ifc_client_id = NA,
                       name = NA,
                       short_name = NA,
-                      film_type = NA,
+                      firm_type = NA,
                       address = NA,
                       city = NA,
                       country = NA)
@@ -827,19 +956,69 @@ server <- function(input, output, session) {
     db_edit_client(out$client_id,
                    out)
     
-    # Update the session
+    # # Update the session
     udci <- user_data$client_info
-    udci$client_id <- out$client_id
-    udci$ifc_client_id <- out$ifc_client_id
-    udci$name <- out$name
-    udci$short_name <- out$short_name
-    udci$firm_type <- out$firm_type
-    udci$address <- out$address
-    udci$city <- out$city
-    udci$country <- out$country
-    message('overwriting user_data')
-    user_data$client_info <- udci
+    # udci$client_id <- out$client_id
+    # udci$ifc_client_id <- out$ifc_client_id
+    # udci$name <- out$name
+    # udci$short_name <- out$short_name
+    # udci$firm_type <- out$firm_type
+    # udci$address <- out$address
+    # udci$city <- out$city
+    # udci$country <- out$country
+    # message('overwriting user_data')
+    # user_data$client_info <- udci
+    message('Overwriting user_data client info and client listing')
+    updated_client_id <- udci$client_id
+    user_data$client_info <- SESSION$client_info <- load_client(updated_client_id)
+    user_data$client_listing <- SESSION$client_listing <- db_get_client_listing()
   })
+  
+  # Observe the input list (the list of all results)
+  results <- reactive({
+    ip <- input_list
+    ip <- reactiveValuesToList(ip)
+    ip <- unlist(ip)
+    
+    combined_names <- competency_dict$combined_name
+    
+    # Get values for each of the combined names
+    vals_df <-
+      data.frame(combined_name = combined_names)
+    # Get broken down names from dict
+    vals_df <- left_join(vals_df,
+                         competency_dict,
+                         by = 'combined_name')
+    vals_df$value <- NA
+    vals_df$value_name <- paste0(vals_df$combined_name, '_slider')
+    for(i in 1:nrow(vals_df)){
+      the_name <- vals_df$value_name[[i]]
+      the_value <- ip[names(ip) == the_name]
+      the_value <- as.numeric(the_value)
+      vals_df$value[i] <- the_value
+    }
+    
+    # Group by competency and get weighted score
+    out <- vals_df %>%
+      dplyr::select(tab_name, competency, value)
+    return(out)
+  })
+  
+  # # Upon any change of tabs, see the input_list
+  # observeEvent(input$tabs, {
+  #   right <- results()
+  #   # print(head(right))
+  #   # get the question id
+  #   left <- view_assessment_questions_list %>%
+  #     dplyr::select(question_id, tab_name, competency)
+  #   x <- left_join(left, right, by = c('tab_name', 'competency'))
+  #   x <- x %>% dplyr::select(question_id, value)
+  #   message('x is ')
+  #   print(head(x))
+  # })
+  
+
+  
 }
 
 shinyApp(ui, server)

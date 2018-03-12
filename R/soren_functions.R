@@ -47,7 +47,9 @@ assessment_has_new_data <- function()
 record_assessment_data_entry <- function(question_id,score,rationale)
 {
   client_id <- get_current_client_id()
+  message('---client_id: ', client_id)
   assessment_id <- get_current_assessment_id()
+  message('---assessment_id: ', assessment_id)
   
   if (!loggedin()) return(message("Warning: Not logged in"));
   if (is.null(client_id) | is.null(assessment_id)) return(message("Error: attempt to save data entry without current client/assessment"))
@@ -82,10 +84,14 @@ record_assessment_data_entry <- function(question_id,score,rationale)
 
 db_save_client_assessment_data <- function()
 {
-  if (!loggedin()) return(message("Warning: Not logged in"));
-  if (!assessment_has_new_data()) return (TRUE)
+  ll <- loggedin()
+  ahnd <- assessment_has_new_data()
+  if (!ll) return(message("Warning: Not logged in"));
+  if (!ahnd) return (TRUE)
   
   assessment_data <- get_current_assessment_data()
+  assessment_data$assessment_id <- get_current_assessment_id()
+
   saving_data <- subset(x=assessment_data,subset=is_changed==TRUE,select=c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","score","rationale"))
   
   conn <- poolCheckout(db_get_pool())
@@ -95,10 +101,10 @@ db_save_client_assessment_data <- function()
   
   ##If table doesn't get deleted, just need to create this once in the DB and not via script
   ##dbSendQuery(conn,"create index if not exists _pd_dfsbenchmarking_save_client_assessment_data_index ON public._pd_dfsbenchmarking_save_client_assessment_data USING btree (assessment_id,question_id,last_modified_time);");
-  
+  message('______about to save data')
   rows_inserted <- dbGetQuery(conn,"select pd_dfsbenchmarking.assessments_data_save( $1 );",params=list(session_id=db_session_id()))
   poolReturn(conn)
-  
+
   rows_expected <- sum(assessment_data$is_changed)
   rows_inserted <- as.numeric(unlist(rows_inserted))
   if (rows_expected != rows_inserted) message(paste0("Warning: Saving Assessment Data expected to save ",rows_expected," but reported ",rows_inserted," affected"))

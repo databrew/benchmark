@@ -65,8 +65,8 @@ print(paste0("load_client_assessment time: ", end_time - start_time))
 
 
 #User starts answering questions...
-record_assessment_data_entry(question_id=2,score=2,rationale="We're a 2!")
-record_assessment_data_entry(question_id=3,score=3,rationale="A bit better...")
+record_assessment_data_entry(question_id=2,score=2,rationale=NA)
+record_assessment_data_entry(question_id=3,score=3,rationale="Joe")
 record_assessment_data_entry(question_id=4,score=2,rationale="A little worse")
 record_assessment_data_entry(question_id=5,score=6,rationale="No, actually, great!")
 
