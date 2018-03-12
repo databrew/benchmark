@@ -570,12 +570,9 @@ server <- function(input, output, session) {
     x
   })
 
-
   # Modal dialogs for adding comment
   eval(parse(text = generate_modals()))
 
-  
-  
   # Progress plot
   output$progress_plot <-
     renderPlot({

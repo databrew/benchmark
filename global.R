@@ -393,10 +393,12 @@ simple_cap <- Vectorize(simple_cap)
 
 # Define function for radar charts
 make_radar_data <- function(ip){
+  message('MAKING RADAR DATA')
   require(radarchart)
 
   ip <- reactiveValuesToList(ip)
   ip <- unlist(ip)
+  
 
   combined_names <- competency_dict$combined_name
 
@@ -413,6 +415,8 @@ make_radar_data <- function(ip){
     the_name <- vals_df$value_name[[i]]
     the_value <- ip[names(ip) == the_name]
     the_value <- as.numeric(the_value)
+    the_value <- ifelse(is.na(the_value), 0, the_value)
+    the_value <- ifelse(length(the_value) == 0, 0, the_value)
     vals_df$value[i] <- the_value
   }
 
@@ -499,6 +503,8 @@ make_radar_chart <- function(data,
 generate_radar_server <- function(tab_name = 'organization_and_governance'){
   paste0("output$", tab_name, "_chart <- renderChartJSRadar({
     data <- radar_data()
+    message('RADAR DATA IS')
+    print(head(data))
     make_radar_chart(data,
                      tn = '", tab_name, "')
   })")

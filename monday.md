@@ -1,6 +1,13 @@
-What follows is an update and questions.
+What follows is an overall update, some details, and questions.
 
 *UPDATE*
+- _Overall_: Lots of progress, but also lots of issues.
+- Much of the friction / slow-downs at this point is my lack of full understanding of some of the database functionality, as well as some of the oddities of combining the heavy use of the `SESSION` object with shiny's reactive framework.
+- I've pushed the most recent stuff.
+
+*DETAILS*
+-
+
 
 
 *QUESTIONS*
@@ -41,3 +48,5 @@ What am I doing wrong here? My understanding is that the first argument of the `
 4. Am I correct that `db_edit_client` does not update the `SESSION` object? That is, if someone creates a new client, the `SESSION` object (which I'm using to generate the drop-down of clients to choose from) won't be updated, meaning that I should hard-code an update into the SESSION object on the UI side? Or is this something you can handle. I made an attempt at modifying `db_edit_client`, but failed to update `SESSION` with the new client...
 
 5. My understanding is that `db_edit_client` serves both to modify an existing client or create a brand new one. We don't have an equivalent function for modifying/creating users, right (ie, `db_edit_user`), right? Will you create something like this? 
+
+6. 
