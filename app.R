@@ -766,7 +766,7 @@ server <- function(input, output, session) {
                                         'Select assessment name',
                                         choices = assessment_choices))),
           fluidRow(column(12, align = 'center',
-                          action_modal_button('client_select_submit', "Continue", icon = icon('check-circle')))),
+                          action_modal_button('client_select_submit', "Continue", icon = icon('check-circle', 'fa-3x')))),
         br(), br(), br(),
         fluidRow(h1('Or', align = 'center')),
         fluidRow(h3('Create a new assessment', align = 'center')),
@@ -785,7 +785,7 @@ server <- function(input, output, session) {
   observeEvent(c(input$client_select,
                  input$log_in_submit), {
     selected_client <- input$client_select
-    user_data$client_info <- load_client(selected_client)
+    user_data$client_info <- SESSION$client_info <- load_client(selected_client)
     message('The selected client is ', selected_client)
     # message('the corresponding client info is ')
     # print(SESSION$client_info)
@@ -866,11 +866,16 @@ server <- function(input, output, session) {
                      
                      # If not -1 load it
                      # if(updated_assessment_id != -1){
+                     cid <- as.numeric(get_current_client_id())
+                     message('cid here is ', cid)
+                     
                      user_data$client_info <- 
                        SESSION$client_info <- 
-                       load_client(get_current_client_id())
+                       load_client(cid)
                      
-                     load_client_assessment(input$assessment_name_select)
+                     ins <- input$assessment_name_select
+                     message('ins here is ', ins)
+                     load_client_assessment(ins)
                      # }
                      
                    }

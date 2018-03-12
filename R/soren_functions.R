@@ -93,6 +93,7 @@ db_save_client_assessment_data <- function()
   assessment_data$assessment_id <- get_current_assessment_id()
 
   saving_data <- subset(x=assessment_data,subset=is_changed==TRUE,select=c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","score","rationale"))
+  saving_data$assessment_id <- ifelse(is.na(saving_data$assessment_id), -1, saving_data$assessment_id)
   
   conn <- poolCheckout(db_get_pool())
   
@@ -199,22 +200,27 @@ unload_client <- function() { SESSION$client_info <<- NULL }
 
 load_client_assessment <- function(assessment_id)
 {
-  if (is.null(get_current_client_id())) return(message("Error: No client is loaded.  Load client before loading assessment."))
+  gcci <- get_current_client_id()
+  message('gcci is ', gcci)
+  if (is.null(gcci)) return(message("Error: No client is loaded.  Load client before loading assessment."))
   
   assessments <- SESSION$client_info$assessments
   current_assessment <- assessments[assessments$assessment_id==assessment_id,]
   
   if (nrow(current_assessment) != 1) return(message(paste0("Error: Requested assessment ",assessment_id," not found!")))
   
-  assessment_template <- db_get_client_assessment_data(get_current_client_id(),assessment_id)
-  assessment_data <- assessment_template[,c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","last_modified_user_name","score","rationale")]
-  assessment_data$is_changed <- FALSE
+  assessment_template <- db_get_client_assessment_data(gcci,assessment_id)
+  if(!all(is.na(assessment_template))){
+    assessment_data <- assessment_template[,c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","last_modified_user_name","score","rationale")]
+    assessment_data$is_changed <- FALSE
+    
+    SESSION$client_info$current_assessment_id <<- current_assessment$assessment_id
+    SESSION$client_info$current_assessment_template <<- assessment_template #does this need to change on load/unload since it's the same in all instances?  Does it matter?
+    SESSION$client_info$current_assessment_data <<- assessment_data
+    
+    return (assessment_template)
+  }
   
-  SESSION$client_info$current_assessment_id <<- current_assessment$assessment_id
-  SESSION$client_info$current_assessment_template <<- assessment_template #does this need to change on load/unload since it's the same in all instances?  Does it matter?
-  SESSION$client_info$current_assessment_data <<- assessment_data
-  
-  return (assessment_template)
 }
 unload_client_assessment <- function() 
 {
