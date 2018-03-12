@@ -43,6 +43,7 @@ assessment_has_new_data <- function()
   return (any(assessment_data$is_changed))  
 }
 
+##TODO: Ensure only records changes if changes are actually made.  Ie, not setting 4 to 4 and same-text to same-text
 record_assessment_data_entry <- function(question_id,score,rationale)
 {
   client_id <- get_current_client_id()

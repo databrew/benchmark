@@ -56,8 +56,13 @@ if (updated_assessment_id >-1)
   client_info <- load_client(get_current_client_id())
 }
 
-#User selects the new assessment
-load_client_assessment(updated_assessment_id)
+start_time <- Sys.time()
+  #User selects the new assessment
+  load_client_assessment(updated_assessment_id)
+end_time <- Sys.time()
+
+print(paste0("load_client_assessment time: ", end_time - start_time))
+
 
 #User starts answering questions...
 record_assessment_data_entry(question_id=2,score=2,rationale="We're a 2!")
@@ -68,13 +73,21 @@ record_assessment_data_entry(question_id=5,score=6,rationale="No, actually, grea
 print('Preparing to save:')
 print(get_current_assessment_data())
 #So system will auto-save as often as designed or specified... Presumably every question... but now we've entred a few frist
+
+start_time <- Sys.time()
+#System auto-saves and/or user intentionally saves?   This needs to be pretty quick to auto-save, like <1s for users to tolerate
 saved <- db_save_client_assessment_data()
-print(paste("Saved ",saved," entries"))
+
+end_time <- Sys.time()
+print(paste0("db_save_client_assessment time: ", end_time - start_time))
+print(paste("Saved ",as.numeric(saved)," entries"))
+
+#Saved and continue editing...
 record_assessment_data_entry(question_id=15,score=4,rationale="4")
 
 db_save_client_assessment_data()
 saved <- db_save_client_assessment_data()
-print(paste("Saved ",as.numeric(saved)," entries"))
+
 
 db_disconnect()
 
