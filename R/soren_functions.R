@@ -50,9 +50,11 @@ record_assessment_data_entry <- function(question_id,score,rationale)
   message('---client_id: ', client_id)
   assessment_id <- get_current_assessment_id()
   message('---assessment_id: ', assessment_id)
-  if(is.na(assessment_id)){
+  if(is.na(assessment_id) | length(assessment_id) == 0){
     assessment_id <- -1
+    message('------ forcing to: ', assessment_id)
   }
+  
   
   if (!loggedin()) return(message("Warning: Not logged in"));
   if (is.null(client_id) | is.null(assessment_id)) return(message("Error: attempt to save data entry without current client/assessment"))

@@ -355,7 +355,7 @@ generate_modals <- function(){
     this_tab_name <- button_names[i]
     comment_name <- paste0('comment_', this_tab_name)
     submit_name <- paste0('submit_comment_', this_tab_name)
-    out[[i]] <- paste0('observeEvent(input$show_', this_tab_name, ', { message("MODAL TIME");
+    out[[i]] <- paste0('observeEvent(input$show_', this_tab_name, ', { message("Showing free text modal");
     x <- sub_tab_selected()
 message("Sub tab selected worked and it is ", x);
     showModal(modalDialog(title = paste0("Entering a qualitative rationale on the rating for ", x), 
@@ -647,57 +647,63 @@ generate_menu <- function(done = FALSE,
                           submissions,
                           pass = FALSE,
                           selected = NULL,
-                          mt = ''){
-  
-  if(mt == tabName){
-    selected <- TRUE
+                          mt = '',
+                          loggedin = TRUE){
+  if(!loggedin & !pass){
+    return(NULL)
+  } else if(grepl('graph', tabName)){
+    return(NULL)
   } else {
-    selected<- FALSE
-  }
-  
-  if(pass){
-    menuItem(
-      text = text,
-      tabName = tabName,
-      icon = icon,
-      selected = selected)
-  } else {
-    subs <- reactiveValuesToList(submissions)
-    subs <- unlist(subs)
+    if(mt == tabName){
+      selected <- TRUE
+    } else {
+      selected<- FALSE
+    }
     
-    # See if the entire tab's competencies have been submitted
-    if(!tabName %in% c('instructions', 'graphs', 'about'))
-      these_competencies <- competency_dict %>%
-      filter(tab_name == tabName) %>%
-      .$combined_name
-    these_competencies <- paste0(these_competencies, '_submit')
-    these_competencies <- subs[names(subs) %in% these_competencies]
-    all_ok <- all(these_competencies)
-    done <- FALSE
-    if(exists('these_competencies')){
-      if(length(these_competencies) > 0){
-        if(all_ok){
-          message('Everything is done for ', tabName, '.')
-
-          done <- TRUE
+    if(pass){
+      menuItem(
+        text = text,
+        tabName = tabName,
+        icon = icon,
+        selected = selected)
+    } else {
+      subs <- reactiveValuesToList(submissions)
+      subs <- unlist(subs)
+      
+      # See if the entire tab's competencies have been submitted
+      if(!tabName %in% c('instructions', 'graphs', 'about'))
+        these_competencies <- competency_dict %>%
+        filter(tab_name == tabName) %>%
+        .$combined_name
+      these_competencies <- paste0(these_competencies, '_submit')
+      these_competencies <- subs[names(subs) %in% these_competencies]
+      all_ok <- all(these_competencies)
+      done <- FALSE
+      if(exists('these_competencies')){
+        if(length(these_competencies) > 0){
+          if(all_ok){
+            message('Everything is done for ', tabName, '.')
+            
+            done <- TRUE
+          }
         }
       }
+      
+      if(done){
+        bl <- 'Finished'
+        bc <- 'green'
+      } else {
+        bl <- 'Not finished'
+        bc <- 'red'
+      }
+      menuItem(
+        text = text,
+        tabName = tabName,
+        icon = icon,
+        badgeLabel = bl,
+        badgeColor = bc,
+        selected = selected)
     }
-
-    if(done){
-      bl <- 'Finished'
-      bc <- 'green'
-    } else {
-      bl <- 'Not finished'
-      bc <- 'red'
-    }
-    menuItem(
-      text = text,
-      tabName = tabName,
-      icon = icon,
-      badgeLabel = bl,
-      badgeColor = bc,
-      selected = selected)
   }
 }
 
