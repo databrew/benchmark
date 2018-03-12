@@ -220,7 +220,12 @@ body <- dashboardBody(
     ),
     tabItem(
       tabName = 'settings',
-      uiOutput('settings_ui')
+      fluidPage(
+        fluidRow(column(6,
+                        uiOutput('settings_ui')),
+                 column(6,
+                        uiOutput('settings_ui2')))
+      )
     )
   )
 )
@@ -315,15 +320,14 @@ server <- function(input, output, session) {
   
   observeEvent(input$edit_client, {
 
-    # User is editing the client, increase value by 1
-    udci <- user_data$client_info
-    udci$ifc_client_id <- udci$ifc_client_id + 1
-    user_data$client_info <- udci
+    # udci <- user_data$client_info
+    # # udci$ifc_client_id <- udci$ifc_client_id + 1
+    # user_data$client_info <- udci
+    # 
     
     showModal(modalDialog(
       title = "Edit client",
       fluidPage(
-        h3('This is still under construction'),
         rHandsontableOutput("edit_client_table")
         
       ),
@@ -717,17 +721,19 @@ server <- function(input, output, session) {
   })
   
   # Reactive assessment choices
-  assessment_choices_reactive <- reactive({
-    # Problems right now with menu resetting, so commenting out
-    # the "right" way to do this until I can figure it out
-    # x <- input$log_in_submit
-    # x <- input$client_select
-    # a <- SESSION$client_info$assessments$assessment_id
-    # names(a) <- SESSION$client_info$assessments$assessment_name
-    # message('assessment choices reactive is ')
-    # print(a)
-    # return(a)
-  })
+  # assessment_choices_reactive <- reactive({
+  #   # Problems right now with menu resetting, so commenting out
+  #   # the "right" way to do this until I can figure it out
+  #   # x <- input$log_in_submit
+  #   # x <- input$client_select
+  #   # a <- SESSION$client_info$assessments$assessment_id
+  #   # names(a) <- SESSION$client_info$assessments$assessment_name
+  #   # message('assessment choices reactive is ')
+  #   # print(a)
+  #   # return(a)
+  # })
+
+  
   # Reactive client choices
   client_choices_reactive <- reactive({
     udcl <- SESSION$client_listing
@@ -740,31 +746,43 @@ server <- function(input, output, session) {
   })
   
   # User details ui
+  output$settings_ui2 <- renderUI({
+    li <- logged_in()
+    
+    # # assessment_choices <- assessment_choices_reactive()
+    # a <- assessments$assessment_id
+    # names(a) <- assessments$assessment_name
+    # assessment_choices <- a
+    input$client_select # just observe
+    assessment_choices <- SESSION$client_assessment_listing$assessment_id
+    names(assessment_choices) <- SESSION$client_assessment_listing$assessment_name
+    message('assessment choices are')
+    print(assessment_choices)
+    
+    if(!li){
+      return(NULL)
+    } else {
+      column(5, align = 'center',
+             selectizeInput('assessment_name_select',
+                            'Select assessment name',
+                            choices = assessment_choices))
+    }
+    })
   output$settings_ui <- renderUI({
     li <- logged_in()
     
     client_choices <- client_choices_reactive()
-    # assessment_choices <- assessment_choices_reactive()
-    a <- assessments$assessment_id
-    names(a) <- assessments$assessment_name
-    assessment_choices <- a
+    
     
     if(!li){
       fluidPage(h2('Log in above', align = 'center'))
     } else {
       u <- user()
       fluidPage(
-        fluidRow(h3('Select a client and assessment', align = 'center')),
-        fluidRow(column(5, align = 'center',
+        fluidRow(column(12, align = 'center',
                         selectizeInput('client_select',
                                         'Select client',
-                                        choices = client_choices)),
-                 column(2, align = 'center',
-                        h4('AND', align = 'center')),
-                     column(5, align = 'center',
-                            selectizeInput('assessment_name_select',
-                                        'Select assessment name',
-                                        choices = assessment_choices))),
+                                        choices = client_choices))),
           fluidRow(column(12, align = 'center',
                           action_modal_button('client_select_submit', "Continue", icon = icon('check-circle', 'fa-3x')))),
         br(), br(), br(),
@@ -781,15 +799,21 @@ server <- function(input, output, session) {
   })
   
   # Observe the client selection confirmation
-  # observeEvent(input$client_select_submit, {
-  observeEvent(c(input$client_select,
-                 input$log_in_submit), {
+  observeEvent(input$client_select, {
+    selected_client <- input$client_select
+    
+    user_data$client_info <- SESSION$client_info <- load_client(selected_client)
+    message('The selected client is ', selected_client)
+  })
+  observeEvent(input$client_select_confirm, {
     selected_client <- input$client_select
     user_data$client_info <- SESSION$client_info <- load_client(selected_client)
     message('The selected client is ', selected_client)
-    # message('the corresponding client info is ')
-    # print(SESSION$client_info)
-
+  })
+  observeEvent(input$log_in_submit, {
+    selected_client <- input$client_select
+    user_data$client_info <- SESSION$client_info <- load_client(selected_client)
+    message('The selected client is ', selected_client)
   })
   
   # If creating a new client/assessment, prompt details
@@ -829,7 +853,7 @@ server <- function(input, output, session) {
   })
   
   # Observe any selection of assessment
-  observeEvent(c(input$assessment_name_select), {
+  observeEvent(input$assessment_name_select, {
                    message('assessment name is ', input$assessment_name_select)
                    li <- logged_in()
                    if(li){
@@ -850,7 +874,7 @@ server <- function(input, output, session) {
                      
                      message('ccid is ', ccid)
                      td <- today()
-                     new_name <- input$assessment_name_select
+                     new_name <- as.numeric(input$assessment_name_select)
                      message('assessment id / new name is')
                      print(new_name)
                      SESSION$client_info$current_assessment_id <- as.numeric(new_name)
@@ -929,6 +953,7 @@ server <- function(input, output, session) {
   })
   
   output$edit_client_table <- renderRHandsontable({
+    input$client_select # just observing
     udci <- SESSION$client_info
     x <- data_frame(client_id=udci$client_id,
                     ifc_client_id=udci$ifc_client_id,
