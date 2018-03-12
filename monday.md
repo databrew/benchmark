@@ -4,9 +4,18 @@ What follows is an overall update, some details, and questions.
 - _Overall_: Lots of progress, but also lots of issues.
 - Much of the friction / slow-downs at this point is my lack of full understanding of some of the database functionality, as well as some of the oddities of combining the heavy use of the `SESSION` object with shiny's reactive framework.
 - I've pushed the most recent stuff.
+- As I see it, next steps are (i) Soren helps me with below questions, (ii) I figure out how to get `SESSION` to play nicely with shiny, or re-do much of the db functions in a more reactive manner (ie, no modification of global objects, etc.), (iii) simultaneously, we make changes to UI (input from both Soren and Oleksiy).
+- Timing: As of this message, I haven't slept for about 40 hours - so I'm out of the pocket until Tuesday morning.
 
 *DETAILS*
--
+- Log-in is working with pg crypto
+- A "Settings" tab is where all the data management lives.
+- UI has functionality so that user can either (a) select an existant client/assessment, (b) create a new assessment, or (c) create a new client
+- Of the above, (a) is working half-way - picking the client works, but I'm unable to make the assessment drop-down reactive (see below questions), (b) is only working on the UI side, not interacting reactively with database (see below questions), and (c) is working half-way - one can create a client, and this updates the database, but does not update the UI.
+- One of the reasons that so much of this is "half-way done" is the oddities of trying to get the `SESSION` object to play nicely with the "reactive" nature of shiny. What works in a static sript (ie, `testing.R`) does not work as predictably in a reactive environment, because each change has to be triggered, and the scoping is all within reactive environments (see questions below).
+- Scores from slider inputs are saved. Upon session load, sliders are updated.
+- The above isn't perfect. Due to issues with getting "current assessment" from the db, their is no differentiation between different assessments.
+- Another imperfection of restoring saved inputs is the UI elements, which aren't updated automatically (in my court).
 
 
 
@@ -49,4 +58,3 @@ What am I doing wrong here? My understanding is that the first argument of the `
 
 5. My understanding is that `db_edit_client` serves both to modify an existing client or create a brand new one. We don't have an equivalent function for modifying/creating users, right (ie, `db_edit_user`), right? Will you create something like this? 
 
-6. 
