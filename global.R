@@ -166,8 +166,9 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
             ', tab_name, '_', competencies[i], '_colors[["b"]] <- "black"
             ', tab_name, '_', competencies[i], '_colors[["c"]] <- "black"
 
-             # Observe submissions
-            observeEvent(input$', tab_name, '_', competencies[i], '_slider,{
+             # Observe either slider move or comment modal submit
+            observeEvent(c(input$', tab_name, '_', competencies[i], '_slider, 
+                           input$submit_comment_', tab_name, '_', competencies[i], '),{
                 # Get the question id
                 tn <- "', tab_name, '"
                 cm <- "', competencies[i], '"
@@ -178,10 +179,14 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
                   submissions$', tab_name, '_', competencies[i], '_submit <- TRUE
                   # Update the data base
                   message("updating the database with new submission for question id ", qid)
+                  rr <- input$comment_', tab_name, '_', competencies[i],'
+                  if(length(rr) == 0){rr <- NA}
+                  message("Rationale is ", rr)
                   record_assessment_data_entry(
                             question_id=qid,
                             score= input$', tab_name, '_', competencies[i], '_slider,
-                            rationale=NA)
+                            rationale = rr)
+
                   # Save
                   get_current_assessment_data()
                   db_save_client_assessment_data()
@@ -229,7 +234,7 @@ sub_tab_completer <- function(){
 
         # Action button approach
         sm <- TRUE
-        message('SUBMISSION CLICKED!')
+          message('PRESS HERE WHEN DONE CLICKED!')
 
         if(is.null(sts)){
           mt <- main_tab(); 
@@ -349,12 +354,17 @@ generate_modals <- function(){
   for(i in 1:length(button_names)){
     this_tab_name <- button_names[i]
     comment_name <- paste0('comment_', this_tab_name)
+    submit_name <- paste0('submit_comment_', this_tab_name)
     out[[i]] <- paste0('observeEvent(input$show_', this_tab_name, ', { message("MODAL TIME");
     x <- sub_tab_selected()
 message("Sub tab selected worked and it is ", x);
-    showModal(modalDialog(title = paste0("Entering a qualitative rationale on the rating for ", x), footer = modalButton("Submit"),
+    showModal(modalDialog(title = paste0("Entering a qualitative rationale on the rating for ", x), 
       easyClose = TRUE, 
-      fluidPage(fluidRow(textInput("', comment_name, '", label = "")))))
+      fluidPage(fluidRow(textInput("', comment_name, '", label = "")),
+                fluidRow(
+                  action_modal_button("',submit_name,'", "Submit", icon = icon("check-circle"))
+
+                ))))
   })')
   }
   out <- unlist(out)

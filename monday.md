@@ -16,6 +16,7 @@ What follows is an overall update, some details, some questions, and a meta-issu
 - Scores from slider inputs are saved. Upon session load, sliders are updated.
 - The above isn't perfect. Due to issues with getting "current assessment" from the db, their is no differentiation between different assessments.
 - Another imperfection of restoring saved inputs is the UI elements, which aren't updated automatically (in my court).
+- Rationale is now saved.
 
 
 
