@@ -224,7 +224,10 @@ body <- dashboardBody(
         fluidRow(column(6,
                         uiOutput('settings_ui')),
                  column(6,
-                        uiOutput('settings_ui2')))
+                        uiOutput('settings_ui2'))),
+        fluidRow(column(12,
+                        align = 'center',
+                        uiOutput('settings_ui3')))
       )
     )
   )
@@ -310,11 +313,11 @@ server <- function(input, output, session) {
     showModal(modalDialog(
       title = "Edit user",
       fluidPage(
-        'Some stuff will go here soon'
-      ),
+        helpText('The below takes data but doesn\'t actually do anything with it.'),
+        rHandsontableOutput("edit_user_table")),
       easyClose = TRUE,
       footer = action_modal_button('edit_user_submit', "Submit", icon = icon('check-circle')),
-      size = 's'
+      size = 'l'
     )) 
   })
   
@@ -721,21 +724,21 @@ server <- function(input, output, session) {
   })
   
   # Reactive assessment choices
-  # assessment_choices_reactive <- reactive({
-  #   # Problems right now with menu resetting, so commenting out
-  #   # the "right" way to do this until I can figure it out
-  #   # x <- input$log_in_submit
-  #   # x <- input$client_select
-  #   # a <- SESSION$client_info$assessments$assessment_id
-  #   # names(a) <- SESSION$client_info$assessments$assessment_name
-  #   # message('assessment choices reactive is ')
-  #   # print(a)
-  #   # return(a)
-  # })
+  assessment_choices_reactive <- reactive({
+    x <- input$log_in_submit
+    x <- input$client_select
+    a <- SESSION$client_info$assessments$assessment_id
+    names(a) <- SESSION$client_info$assessments$assessment_name
+    message('assessment choices reactive is ')
+    print(a)
+    return(a)
+  })
 
   
   # Reactive client choices
   client_choices_reactive <- reactive({
+    # Just observe new client
+    input$create_new_client_submit
     udcl <- SESSION$client_listing
     message('udcl is ')
     print(udcl)
@@ -746,23 +749,41 @@ server <- function(input, output, session) {
   })
   
   # User details ui
+  output$settings_ui3 <- renderUI({
+    
+    fluidPage(
+      fluidRow(column(12, align = 'center',
+                      action_modal_button('client_select_submit', "Continue", icon = icon('check-circle', 'fa-3x')))),
+      hr(),
+      br(), br(), 
+      fluidRow(h1('Or', align = 'center')),
+      fluidRow(h3('Create a new assessment', align = 'center')),
+      fluidRow(column(12, align = 'center',
+                      actionButton('create_new_assessment', 'Create new assessment', icon = icon('user')))),
+      fluidRow(h1('Or', align = 'center')),
+      fluidRow(h3('Create a new client', align = 'center')),
+      fluidRow(column(12, align = 'center',
+                      actionButton('create_new_client', 'Create new client', icon = icon('user'))))
+    )
+    
+  })
   output$settings_ui2 <- renderUI({
     li <- logged_in()
     
-    # # assessment_choices <- assessment_choices_reactive()
-    # a <- assessments$assessment_id
-    # names(a) <- assessments$assessment_name
-    # assessment_choices <- a
-    input$client_select # just observe
-    assessment_choices <- SESSION$client_assessment_listing$assessment_id
-    names(assessment_choices) <- SESSION$client_assessment_listing$assessment_name
-    message('assessment choices are')
-    print(assessment_choices)
+    assessment_choices <- assessment_choices_reactive()
+    # # a <- assessments$assessment_id
+    # # names(a) <- assessments$assessment_name
+    # # assessment_choices <- a
+    # input$client_select # just observe
+    # assessment_choices <- SESSION$client_assessment_listing$assessment_id
+    # names(assessment_choices) <- SESSION$client_assessment_listing$assessment_name
+    # message('assessment choices are')
+    # print(assessment_choices)
     
     if(!li){
       return(NULL)
     } else {
-      column(5, align = 'center',
+      column(12, align = 'center',
              selectizeInput('assessment_name_select',
                             'Select assessment name',
                             choices = assessment_choices))
@@ -782,18 +803,7 @@ server <- function(input, output, session) {
         fluidRow(column(12, align = 'center',
                         selectizeInput('client_select',
                                         'Select client',
-                                        choices = client_choices))),
-          fluidRow(column(12, align = 'center',
-                          action_modal_button('client_select_submit', "Continue", icon = icon('check-circle', 'fa-3x')))),
-        br(), br(), br(),
-        fluidRow(h1('Or', align = 'center')),
-        fluidRow(h3('Create a new assessment', align = 'center')),
-        fluidRow(column(12, align = 'center',
-                        actionButton('create_new_assessment', 'Create new assessment', icon = icon('user')))),
-        fluidRow(h1('Or', align = 'center')),
-        fluidRow(h3('Create a new client', align = 'center')),
-        fluidRow(column(12, align = 'center',
-                        actionButton('create_new_client', 'Create new client', icon = icon('user'))))
+                                        choices = client_choices)))
       )
     }
   })
@@ -827,7 +837,7 @@ server <- function(input, output, session) {
                                   placeholder = 'e.g. Acme Industries')))#,
       ),
       easyClose = TRUE,
-      footer = action_modal_button('create_new_client_new_submit', "Submit", icon = icon('check-circle')),
+      footer = action_modal_button('create_new_client_submit', "Submit", icon = icon('check-circle')),
       size = 's'
     ))
   })
@@ -845,11 +855,6 @@ server <- function(input, output, session) {
       footer = action_modal_button('create_new_assessment_submit', "Submit", icon = icon('check-circle')),
       size = 's'
     ))
-  })
-  
-  # Observe the create new client and create new assessments
-  observeEvent(input$create_new_client_submit,{
-    
   })
   
   # Observe any selection of assessment
@@ -905,6 +910,24 @@ server <- function(input, output, session) {
                    }
                    
                  })
+  
+  observeEvent(input$create_new_client_submit, {
+    message('Trying to create new client: ', input$client_type)
+    ccid <- get_current_client_id()
+    message('+++ccid is ', ccid)
+    updated_client_id <- 
+      db_edit_client(ccid,
+                     data.frame(client_id=SESSION$client_info$client_id,
+                                ifc_client_id=SESSION$client_info$ifc_client_id,
+                                name=input$client_type,
+                                short_name='',
+                                firm_type='',
+                                address='',
+                                city='',
+                                country='',
+                                stringsAsFactors = F))
+    
+  })
   
   observeEvent(input$create_new_assessment_submit,{
     # Make sure a client has been selected
@@ -963,6 +986,13 @@ server <- function(input, output, session) {
                     address= udci$address,
                     city= udci$city,
                     country= udci$country)
+    rhandsontable(x, readOnly = FALSE, selectCallback = TRUE,
+                  rowHeaders = NULL)
+  })
+  
+  output$edit_user_table <- renderRHandsontable({
+    x <- data_frame(user_id = SESSION$user_id,
+                    user_name = SESSION$user_name)
     rhandsontable(x, readOnly = FALSE, selectCallback = TRUE,
                   rowHeaders = NULL)
   })
