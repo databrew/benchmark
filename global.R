@@ -651,7 +651,7 @@ generate_menu <- function(done = FALSE,
                           loggedin = TRUE){
   if(!loggedin & !pass){
     return(NULL)
-  } else if(grepl('graph', tabName)){
+  } else if(grepl('graph', tabName) | grepl('settings', tabName)){
     return(NULL)
   } else {
     if(mt == tabName){
