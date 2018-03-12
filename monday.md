@@ -1,3 +1,10 @@
+What follows is an update and questions.
+
+*UPDATE*
+
+
+*QUESTIONS*
+
 1. I'm unable to get the `assessment_id` field to update in the SESSION object. This is likely because I don't really understand how `db_edit_client_assessment` works, what the expected argument meanings are, etc. After I run either of the following (a and b), `SESSION$client_info$current_assessment_id` is always NA. 
 
 _a_

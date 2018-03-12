@@ -50,6 +50,9 @@ record_assessment_data_entry <- function(question_id,score,rationale)
   message('---client_id: ', client_id)
   assessment_id <- get_current_assessment_id()
   message('---assessment_id: ', assessment_id)
+  if(is.na(assessment_id)){
+    assessment_id <- -1
+  }
   
   if (!loggedin()) return(message("Warning: Not logged in"));
   if (is.null(client_id) | is.null(assessment_id)) return(message("Error: attempt to save data entry without current client/assessment"))
@@ -74,7 +77,8 @@ record_assessment_data_entry <- function(question_id,score,rationale)
     
     filter <- assessment_data$client_id==client_id & assessment_data$assessment_id==assessment_id & assessment_data$question_id==question_id
     #Means dataset already has answers to this question that user is changing, need to replace; remove it.  
-    if (any(filter)) assessment_data <- assessment_data[!filter,] 
+
+    if (any(filter, na.rm = TRUE)) assessment_data <- assessment_data[!filter,] 
     assessment_data <- rbind(assessment_data,entry)
   }
   SESSION$client_info$current_assessment_data <<- assessment_data
