@@ -1,11 +1,11 @@
 SESSION <- 1
 
 update_session <- function(){
-  message('Updating session')
   x <- SESSION
   new_x <- x + 1
-  SESSION <- x
-  # SESSION <<- x # same effects
+  message('Updating session from ', x, ' to ', new_x)
+  # SESSION <- new_x
+  SESSION <<- new_x # same effects
 }
 
 library(shiny)
@@ -37,6 +37,8 @@ server <- function(input, output) {
   })
   
   output$the_text <- renderText({
+    # Since SESSION is not reactive, this text doesn't get updated
+    # without an explicit call to something else being updated...
     SESSION
   })
 }
