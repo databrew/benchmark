@@ -120,7 +120,7 @@ create_slider <- function(item_name,
     message('PROBLEM')
     message(' this is list name: ', list_name)
     message('it is not in names of ip: ')
-    # print(sort(names(ip)))
+    print(sort(names(ip)))
     val <- 0
   }
 

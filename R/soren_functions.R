@@ -59,14 +59,14 @@ record_assessment_data_entry <- function(question_id,score,rationale)
   
   assessment_data <- get_current_assessment_data()
   
-  entry <- data.frame(client_id=client_id,
-                      assessment_id=assessment_id,
-                      question_id=question_id,
+  entry <- data.frame(client_id=nn(client_id),
+                      assessment_id=nn(assessment_id),
+                      question_id=nn(question_id),
                       last_modified_time=now(),
-                      last_modified_user_id=SESSION$user_id,
-                      last_modified_user_name=SESSION$user_name,
-                      score=score,
-                      rationale=rationale,
+                      last_modified_user_id=nn(SESSION$user_id),
+                      last_modified_user_name=nn(SESSION$user_name),
+                      score=nn(score),
+                      rationale=nn(rationale),
                       is_changed=TRUE)
   
   if (identical(assessment_data,NA)) #will happen if db_get_client_assessment_data is empty, on first assessment load
@@ -109,7 +109,7 @@ db_save_client_assessment_data <- function()
   message('______about to save data')
   rows_inserted <- dbGetQuery(conn,"select pd_dfsbenchmarking.assessments_data_save( $1 );",params=list(session_id=db_session_id()))
   poolReturn(conn)
-
+  message('______saved data')
   rows_expected <- sum(assessment_data$is_changed)
   rows_inserted <- as.numeric(unlist(rows_inserted))
   if (rows_expected != rows_inserted) message(paste0("Warning: Saving Assessment Data expected to save ",rows_expected," but reported ",rows_inserted," affected"))

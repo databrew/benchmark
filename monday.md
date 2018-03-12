@@ -1,4 +1,4 @@
-What follows is an overall update, some details, and questions.
+What follows is an overall update, some details, some questions, and a meta-issue.
 
 *UPDATE*
 - _Overall_: Lots of progress, but also lots of issues.
@@ -58,3 +58,15 @@ What am I doing wrong here? My understanding is that the first argument of the `
 
 5. My understanding is that `db_edit_client` serves both to modify an existing client or create a brand new one. We don't have an equivalent function for modifying/creating users, right (ie, `db_edit_user`), right? Will you create something like this? 
 
+6. I inconsistently get errors when I run `db_save_client_assessment_data`:
+
+```
+Error in postgresqlExecStatement(conn, statement, ...) : 
+  RS-DBI driver: (could not Retrieve the result : ERROR:  null value in column "question_id" violates not-null constraint
+```
+I've dug around, but can't figure it out how this is being passed with no question id. Any thoughts?
+
+*Meta-issue*
+I thought implementing the db functionality (which was very clear / well done) would be straightforward. It has been just the opposite. Tons of stuff breaking on the UI side, lots of behavior which seemed unexpected/odd to me. But I think I'm figuring out the underlying issue. 
+
+Basically, I think that the use of the `SESSION` list as the underpinning of the data management functions is pretty hard to deal with in shiny. The causes (which admittedly, I don't fully understand) have to do with scoping and reactivity, I think. Basically, many of the db functions modify objects which are not explicitly called in the function arguments (ie, a function which takes `client_id` modifies a global `SESSION` object). Global objects which require modification in shiny need to be reactive (ie, `reactiveVal` or `reactiveValues`), which SESSION isn't. 

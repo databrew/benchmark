@@ -270,7 +270,7 @@ Digital Projects are not developed as distinct pieces of work, and are instead m
 There is no governance on project delivery, and cost, time and quality is not tracked. Projects routinely do not get delivered or are not delivered to expectation.', 'Digital Projects are identified and managed as distinct pieces of work. Agile  methodologies are applied, but these are informal and reflective of the experience of the project manager, rather than documented processes. 
 Projects are tracked for cost, time and quality, however projects are often not delivered to expectation.', 'There is a strong sense of governance for project delivery in the organization. All digital initiatives are delivered through use of an organization-wide agilet methodology. The delivery cycles are within weeks and reworked on a "trial and error" approach. Projects are delivered on time, within budget, and to expectation more often than not.');
 INSERT INTO "pd_dfsbenchmarking"."assessment_questions" VALUES (6, 2, 1, 'Culture', NULL, 'There is a poor collaboration culture, the decisions are made only by very hierarchical committees and there is no empowerment to lower levesl of the organization.
-Innovation is perceived as something to be done only by engineers and not as a collective effort of the whole organisation.
+Innovation is perceived as something to be done only by engineers and not as a collective effort of the whole organization.
 There is strong paper-based culture and not so much around digital workflows.
 The information is kept in silos and departments are refrained to share data on an informal fashion
 The organizational culture is perceived as "hierarchical": risk-averse, efficient, slow, standard ways of working, decision scalation, reliable, centralised, siloed.
@@ -527,7 +527,7 @@ Agents: the Bank uses agents who work with digital means such as Pads/ smartphon
 INSERT INTO "pd_dfsbenchmarking"."assessment_questions" VALUES (25, 6, 4, 'Sales function', NULL, 'There is no dedicated sales force; sales has no specific training; the sales process is not formally defined; sales force / customer facing personnel has clear incentives aligned to sales growth', 'There is dedicated sales team with some training; sales process is defined and sales workflow is mostly automated; incentives are aligned but not regularly adjusted; targets are in place and followed', 'There is dedicated sales team with specific training; sales process is defined and sales workflow is fully automated; incentives are aligned to meet targets and regularly adjusted; sales targets by channels including digital are defined and tracked');
 INSERT INTO "pd_dfsbenchmarking"."assessment_questions" VALUES (26, 7, 1, 'Management and organization', NULL, 'There is no risk function identified in the Bank. Risks are not identified, managed or mitigated. The Bank does not appreciate the different operating risks introduced by digital banking and instead applies whatever existing models are already in place.', 'Risk is identified as an area that needs focus, and a risk manager has been appointed. Risks are documented in a risk register, communicated to senior management and there are mitigation strategies in place for most of them. A risk management committee has been appointed, but it does not meet regularly, not does it have senior management appointed. Risk awareness is embeded at Sr. and Middle management level of the Bank', 'The management of existing and emerging risks from digital banking is given the highest priority in the business. 
 Risk registers are well developed, with management strategies for all identified risks.
-The risk management committee meets regularly, with representation of all senior management in the organisation. 
+The risk management committee meets regularly, with representation of all senior management in the organization. 
 Risks management culture is part of a Bank-wide initiative aiming to make awareness of cyberthreats and other risks when using digital technology');
 INSERT INTO "pd_dfsbenchmarking"."assessment_questions" VALUES (27, 7, 2, 'Regulatory compliance', NULL, 'The Bank does not adhere to existing regulations in the market, or the market itself has not applied regulations to cater for digital banking. 
 There is no one appointed in the organization to ensure that regulations, if in existence are complied with. 
@@ -675,7 +675,7 @@ Performance monitoring mixes both individual and team KPIs.
 
 
 ', 'Processes are designed with a relatively unchanging set of core elementsâ€”a fixed backbone. The rest of processes, notably those that are more customer focus evolve as rapid and customer needs changes or competition compels the change.
-Performance monitoring is usually done at "tribe" level more than at "squad" level compelling all to work as teams and cross-functionally along the whole organisation
+Performance monitoring is usually done at "tribe" level more than at "squad" level compelling all to work as teams and cross-functionally along the whole organization
 
 
 
