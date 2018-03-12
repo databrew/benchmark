@@ -226,6 +226,11 @@ unload_client_assessment <- function()
 get_current_assessment <- function() { return (SESSION$client_info$assessments[SESSION$client_info$assessments$assessment_id==SESSION$client_info$current_assessment_id,]) }
 get_current_assessment_id <- function() { return (SESSION$client_info$current_assessment_id) }
 get_current_assessment_data <- function() { return (SESSION$client_info$current_assessment_data) }
+get_client_assessments <- function()
+{
+  if (is.null(get_current_client_id())) return(message("Warning: Client must be loaded before accessing list of client assessments"))
+  return(SESSION$client_info$assessments)
+}
 
 #Presented to users when they log in a list of clients whose surveys they can access, or whose details they can edit
 db_get_client_listing <- function()
