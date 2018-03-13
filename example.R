@@ -32,7 +32,7 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   ###SAME IN APP###
-  user_data <- reactiveValues(db_session_id=NULL,current_client_id=NULL,current_assessment_id=NULL)
+  USER <- reactiveValues(db_session_id=NULL,user_id=NULL,user_name=NULL,current_client_id=NULL,current_assessment_id=NULL)
   
   LISTINGS <- reactiveValues(client_listing=NULL,client_assessment_listing=NULL)
   #CLIENT <- reactiveValues(client_info=NULL)
@@ -55,11 +55,11 @@ server <- function(input, output) {
     UI_LOGIN<-"MEL" #User input
     UI_PASS<-"FIGSSAMEL" #User input
     log_in_attempt <- db_login(UI_LOGIN,UI_PASS)
-    user_data$user_id <- log_in_attempt$user_id
-    user_data$user_name <- log_in_attempt$name
-    user_data$db_session_id <- log_in_attempt$session_id
-    user_data$current_client_id <- NULL #They didn't select one yet!  Must select from a list provided by client_listing
-    user_data$current_assessment_id <- NULL #They didn't select one yet!  Must (a) Select a client (b) Select from a list provided by client_assessment_listing
+    USER$user_id <- log_in_attempt$user_id
+    USER$user_name <- log_in_attempt$name
+    USER$db_session_id <- log_in_attempt$session_id
+    USER$current_client_id <- NULL #They didn't select one yet!  Must select from a list provided by client_listing
+    USER$current_assessment_id <- NULL #They didn't select one yet!  Must (a) Select a client (b) Select from a list provided by client_assessment_listing
     
     LISTINGS$client_listing <- db_get_client_listing(get_db_session_id())
     
@@ -126,7 +126,7 @@ server <- function(input, output) {
 
   output$the_client <- renderTable({
     print("Rendering the_client")
-    #CLIENT$client_info #Really not needed to create a new reactive CLIENT value since it's equal to a subset of client_listing and current_client_id, should be reactive on user_data$current_client_id
+    #CLIENT$client_info #Really not needed to create a new reactive CLIENT value since it's equal to a subset of client_listing and current_client_id, should be reactive on USER$current_client_id
     get_current_client_info()
   })
   

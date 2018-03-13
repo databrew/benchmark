@@ -2,7 +2,7 @@ print("LOADING SESSION FUNCTIONS")
 #HELPER FUNCTIONS: get/set
 #SESSION <- reactiveValues()
 ###LOGIN FUNCTIONS###
-loggedin <- function() { return(!is.null(user_data$db_session_id) && !is.null(user_data$user_id) && user_data$user_id >-1) }
+loggedin <- function() { return(!is.null(USER$db_session_id) && !is.null(USER$user_id) && USER$user_id >-1) }
 #logout <- function() { SESSION <<- list();  return (!loggedin()) }
 
 
@@ -11,12 +11,12 @@ loggedin <- function() { return(!is.null(user_data$db_session_id) && !is.null(us
 
 #HELPER FUNCTIONS: get/set
 #Not sure if best to keep these in isolate() to ensure they don't trigger reactivity and to manually reference reactiveValues in the render functions, or to leave exposed to reactivity?
-get_user_id <- function() { return(isolate(user_data$user_id)) }
-get_user_name <- function() { return(isolate(user_data$user_name)) }
+get_user_id <- function() { return(isolate(USER$user_id)) }
+get_user_name <- function() { return(isolate(USER$user_name)) }
 
-get_db_session_id <- function() { return((user_data$db_session_id)) }
-get_current_client_id <- function() { return ((user_data$current_client_id)) }
-get_current_assessment_id <- function() { return ((user_data$current_assessment_id)) }
+get_db_session_id <- function() { return((USER$db_session_id)) }
+get_current_client_id <- function() { return ((USER$current_client_id)) }
+get_current_assessment_id <- function() { return ((USER$current_assessment_id)) }
 
 get_client_listing <- function() { return((LISTINGS$client_listing)) }
 get_current_client_info <- function() 
@@ -106,7 +106,7 @@ load_client <- function(selected_client_id)
   if (nrow(client_info) != 1) return(message(paste0("Warning: unable to load client_id==",selected_client_id," as ID does not exist in get_client_listing()")))
   
 
-  user_data$current_client_id <<- selected_client_id
+  USER$current_client_id <<- selected_client_id
 
   #CLIENT$client_info <<- client_info
   LISTINGS$client_assessment_listing <<- db_get_client_assessment_listing(get_db_session_id(),selected_client_id)
@@ -116,7 +116,7 @@ load_client <- function(selected_client_id)
 unload_client <- function() 
 { 
   if (assessment_has_new_data()) return (message("Cannot unload client while assessment is open with unsaved data"))
-  user_data$current_client_id <<- NULL
+  USER$current_client_id <<- NULL
   LISTINGS$client_assessment_listing <<- NULL
 }
 
@@ -140,7 +140,7 @@ load_client_assessment <- function(selected_assessment_id)
     assessment_data <- assessment_template[,c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","last_modified_user_name","score","rationale")]
     assessment_data$is_changed <- FALSE
     
-    user_data$current_assessment_id <<- selected_assessment_id
+    USER$current_assessment_id <<- selected_assessment_id
 
     ASSESSMENT$assessment_template <<- assessment_template
     ASSESSMENT$assessment_data <<- assessment_data
@@ -160,5 +160,5 @@ unload_client_assessment <- function()
   
   ASSESSMENT$assessment_data <<- NULL
   ASSESSMENT$assessment_template <<- NULL
-  user_data$current_assessment_id <<- NULL
+  USER$current_assessment_id <<- NULL
 }
