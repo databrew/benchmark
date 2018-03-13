@@ -657,10 +657,6 @@ server <- function(input, output, session) {
     tryCatch(pool::poolClose(pool), error = function(e) {message('')})
   })
   
-  
-  
-  
-  
 }
 
 shinyApp(ui, server)
