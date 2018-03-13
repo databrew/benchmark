@@ -110,6 +110,13 @@ db_save_client_assessment_data <- function(db_session_id,assessment_data)
   #ahnd <- assessment_has_new_data()
   #if (!ll) return(message("Warning: Not logged in"));
   #if (!ahnd) return (TRUE)
+  fields <- list(client_id="integer",
+                 assessment_id="integer",
+                 question_id="integer",
+                 last_modified_time="timestamptz",
+                 last_modified_user_id="int",
+                 score="numeric",
+                 rationale="text")
   
   #assessment_data <- get_current_assessment_data()
   #assessment_data$assessment_id <- get_current_assessment_id()
@@ -121,7 +128,7 @@ db_save_client_assessment_data <- function(db_session_id,assessment_data)
   conn <- poolCheckout(db_get_pool())
   
   #There's a vague chance that multiple users will be writing to table concurrently -- so it's never deleted
-  dbWriteTable(conn,name=c("public","_pd_dfsbenchmarking_save_client_assessment_data"),value=saving_data,append=TRUE,overwrite=FALSE)
+  dbWriteTable(conn,name=c("public","_pd_dfsbenchmarking_save_client_assessment_data"),value=saving_data,append=TRUE,overwrite=FALSE,row.names=FALSE,field.types=fields)
   
   ##If table doesn't get deleted, just need to create this once in the DB and not via script
   ##dbSendQuery(conn,"create index if not exists _pd_dfsbenchmarking_save_client_assessment_data_index ON public._pd_dfsbenchmarking_save_client_assessment_data USING btree (assessment_id,question_id,last_modified_time);");

@@ -12,7 +12,7 @@
  Target Server Version : 100003
  File Encoding         : 65001
 
- Date: 13/03/2018 17:40:18
+ Date: 13/03/2018 18:22:22
 */
 
 
@@ -242,6 +242,30 @@ INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 14, '2018-03-13 1
 INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (58, 20, '2018-03-13 15:45:02', 1, 1.0, 'For question 20 ... I rate 1');
 INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (58, 25, '2018-03-13 15:45:05', 1, 6.0, 'For question 25 ... I rate 6');
 INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (58, 28, '2018-03-13 15:45:07', 1, 1.0, 'For question 28 ... I rate 1');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 39, '2018-03-13 18:09:09', 1, 2.0, 'For question 39 ... I rate 2');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 24, '2018-03-13 18:09:14', 1, 2.0, 'For question 24 ... I rate 2');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 16, '2018-03-13 18:09:16', 1, 5.0, 'For question 16 ... I rate 5');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 7, '2018-03-13 18:09:17', 1, 2.0, 'For question 7 ... I rate 2');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 42, '2018-03-13 18:11:25', 1, 6.0, 'For question 42 ... I rate 6');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 32, '2018-03-13 18:11:26', 1, 6.0, 'For question 32 ... I rate 6');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 13, '2018-03-13 18:11:27', 1, 3.0, 'For question 13 ... I rate 3');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 26, '2018-03-13 18:11:28', 1, 1.0, 'For question 26 ... I rate 1');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 8, '2018-03-13 18:14:26', 1, 6.0, 'For question 8 ... I rate 6');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 23, '2018-03-13 18:14:29', 1, 1.0, 'For question 23 ... I rate 1');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 40, '2018-03-13 18:14:31', 1, 6.0, 'For question 40 ... I rate 6');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 5, '2018-03-13 18:14:32', 1, 5.0, 'For question 5 ... I rate 5');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 15, '2018-03-13 18:15:05', 1, 1.0, 'For question 15 ... I rate 1');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 41, '2018-03-13 18:15:09', 1, 6.0, 'For question 41 ... I rate 6');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 17, '2018-03-13 18:15:10', 1, 3.0, 'For question 17 ... I rate 3');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 3, '2018-03-13 18:15:11', 1, 2.0, 'For question 3 ... I rate 2');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 25, '2018-03-13 18:15:32', 1, 4.0, 'For question 25 ... I rate 4');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 3, '2018-03-13 18:15:34', 1, 2.0, 'For question 3 ... I rate 2');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 11, '2018-03-13 18:15:35', 1, 6.0, 'For question 11 ... I rate 6');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 27, '2018-03-13 18:15:37', 1, 2.0, 'For question 27 ... I rate 2');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 17, '2018-03-13 18:21:14', 1, 6.0, 'For question 17 ... I rate 6');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 13, '2018-03-13 18:21:17', 1, 3.0, 'For question 13 ... I rate 3');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 41, '2018-03-13 18:21:18', 1, 3.0, 'For question 41 ... I rate 3');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (24, 37, '2018-03-13 18:21:19', 1, 4.0, 'For question 37 ... I rate 4');
 
 -- ----------------------------
 -- Table structure for assessment_question_categories
@@ -842,7 +866,7 @@ INSERT INTO "pd_dfsbenchmarking"."users" VALUES (0, 'SYSTEM', 'SYSTEM', 'SYSTEM'
 INSERT INTO "pd_dfsbenchmarking"."users" VALUES (3, 'test1', '$1$aGstpxLZ$wmVnQLxF.70AMpQ51ftFN0', 'Soren test1', NULL, NULL, 't', '2018-03-10 07:46:08.379318', NULL, 'f');
 INSERT INTO "pd_dfsbenchmarking"."users" VALUES (4, 'test2', '$1$YYIcDwCS$0cZ25s4EaWquXYvq96Cs9.', 'Soren test1', NULL, NULL, 't', NULL, NULL, 'f');
 INSERT INTO "pd_dfsbenchmarking"."users" VALUES (5, 'joe', '$1$aTc/PFPD$d8mVat5rcZ/nSK3xXFjQy.', 'Joe Brew', NULL, NULL, 't', '2018-03-10 12:24:43.881231', '81a1c607-6c92-44b7-aac9-3a39cd9b2573', 'f');
-INSERT INTO "pd_dfsbenchmarking"."users" VALUES (1, 'MEL', '$1$9FLfnwld$amkkGyaJvBpW3QT5VEzC6.', 'MEL Team', NULL, NULL, 't', '2018-03-13 12:40:54.717138', 'dafe7cbb-87c8-42eb-bb98-e6f4393d2880', 'f');
+INSERT INTO "pd_dfsbenchmarking"."users" VALUES (1, 'MEL', '$1$9FLfnwld$amkkGyaJvBpW3QT5VEzC6.', 'MEL Team', NULL, NULL, 't', '2018-03-13 14:21:07.77104', 'f941db91-9c61-4ed3-b9f7-f5e9af5ed49f', 'f');
 
 -- ----------------------------
 -- Function structure for assessment_load
@@ -912,14 +936,14 @@ BEGIN
 	(
 		select assessment_id,question_id,last_modified_time as entry_time,last_modified_user_id as entry_user_id,score,rationale
 		from public._pd_dfsbenchmarking_save_client_assessment_data
-		where pd_dfsbenchmarking.user_has_client_access(client_id,pd_dfsbenchmarking.user_id_session_chain( v_session_id ))
+		where pd_dfsbenchmarking.user_has_client_access(client_id::int,pd_dfsbenchmarking.user_id_session_chain( v_session_id ))
 	),
 	data_inserts as
 	(
 		insert into pd_dfsbenchmarking.assessment_data(assessment_id,question_id,entry_time,entry_user_id,score,rationale)
 		select assessment_id,question_id,entry_time,entry_user_id,score,rationale
 		from data_uploads
-		on conflict(assessment_id,question_id,entry_time) do update set score=excluded.score,rationale=excluded.rationale
+		on conflict(assessment_id,question_id,entry_time) do update set score=EXCLUDED.score,rationale=EXCLUDED.rationale
 		returning assessment_id,question_id,entry_time
 	)
 	insert into _inserts(u_assessment_id,u_question_id,u_entry_time)
