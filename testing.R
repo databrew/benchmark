@@ -21,8 +21,16 @@ source('global.R')
 
 ##User arrives at welcome page
 ##User logs in
-db_login('MEL','FIGSSAMEL')
-client_listing <- db_get_client_listing()
+login_info <- db_login('MEL','FIGSSAMEL')
+user_data <- list()
+LISTINGS <- list()
+ASSESSMENTS <- list()
+CLIENT <- list()
+user_data$db_session_id <- login_info$session_id 
+LISTINGS$client_listing <- db_get_client_listing(get_db_session_id())
+load_client(11)
+
+
 
 ##User selects top-1 client
 client_info <- load_client(client_listing$client_id[1])

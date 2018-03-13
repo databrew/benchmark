@@ -95,8 +95,9 @@ db_get_client_assessment_listing <- function(db_session_id,client_id)
   
   #eventually will add heirarchal user groups to allow managers to view all and/or all created by subordinates.  For now MEL does all. 
   listing <- dbGetQuery(conn,'select * from pd_dfsbenchmarking.view_client_assessment_listing
-                        where pd_dfsbenchmarking.user_has_client_access(client_id,pd_dfsbenchmarking.user_id_session_chain( $1 ))',
-                        params=list(session_id=db_session_id)) 
+                        where client_id = $1 and 
+                              pd_dfsbenchmarking.user_has_client_access(client_id,pd_dfsbenchmarking.user_id_session_chain( $2 ))',
+                        params=list(client_id=client_id,session_id=db_session_id)) 
   poolReturn(conn)
   # SESSION$client_assessment_listing <<- listing
   return (listing)
