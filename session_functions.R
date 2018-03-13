@@ -95,6 +95,20 @@ record_assessment_data_entry <- function(question_id,score,rationale)
 }
 
 
+refresh_client_listing <- function()
+{
+  if (is.null(get_db_session_id())) return(message("Unable to refresh client listing without a valid session ID"))
+  
+  LISTINGS$client_listing <- db_get_client_listing(get_db_session_id())
+  return (get_client_listing())
+}
+refresh_client_assessment_listing <- function()
+{
+  if (is.null(get_db_session_id())) return(message("Unable to refresh client listing without a valid session ID"))
+  if (is.null(get_current_client_id())) return(message("Unable to refresh client listing without a selected client"))
+  
+  LISTINGS$client_assessment_listing <<- db_get_client_assessment_listing(get_db_session_id(),get_current_client_id())
+}
 #Loads all client data (into a form) so that a user can edit it.
 #sort of a useless function, kept to keep align with the .txt -- but we're basically loading all data with the client_listing
 load_client <- function(selected_client_id)
@@ -108,8 +122,8 @@ load_client <- function(selected_client_id)
 
   USER$current_client_id <<- selected_client_id
 
-  #CLIENT$client_info <<- client_info
-  LISTINGS$client_assessment_listing <<- db_get_client_assessment_listing(get_db_session_id(),selected_client_id)
+  #must be called after setting USER$current_client_id
+  refresh_client_assessment_listing()
   
   return (client_info)
 }
