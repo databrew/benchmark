@@ -113,6 +113,7 @@ db_save_client_assessment_data <- function(db_session_id,assessment_data)
   
   #assessment_data <- get_current_assessment_data()
   #assessment_data$assessment_id <- get_current_assessment_id()
+  start_time <- Sys.time()
   
   saving_data <- subset(x=assessment_data,subset=is_changed==TRUE,select=c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","score","rationale"))
   saving_data$assessment_id <- ifelse(is.na(saving_data$assessment_id), -1, saving_data$assessment_id)
@@ -135,6 +136,11 @@ db_save_client_assessment_data <- function(db_session_id,assessment_data)
   #Now that we've saved, un-mark it as is_changed and save back to the SESSION
   assessment_data$is_changed <- FALSE
   #SESSION$client_info$current_assessment_data <<- assessment_data
+  
+  
+  end_time <- Sys.time()
+  
+  print(paste0("db_save_client_assessment_data time: ", end_time - start_time))
   
   return (assessment_data)  
 }
