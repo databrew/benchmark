@@ -7,7 +7,7 @@ library(RPostgreSQL)
 library(yaml)
 library(pool)
 library(shiny)
-functions <- dir('R')
+functions <- dir('R',pattern=".*\\.R$")
 for (i in 1:length(functions)){
   source(paste0('R/', functions[i]), chdir = TRUE)
 }
@@ -53,57 +53,61 @@ get_ui_text <- function(item_name){
   return(out)
 }
 
+
 # Define function for keeping an eye on inputs, so that they don't get reset when the ui gets re-rendered
+#SAH: This can't be in global.R because the values returned are necessarily depended on the values available to the logged-in user, which is session-specific
 create_input_list <- function(){
   
-  gcai <- get_current_assessment_id()
-
-  # Get pool
-  conn <- poolCheckout(db_get_pool())
-  # Get assessment data
-  ad <- dbGetQuery(conn,
-                   paste0("SELECT * FROM pd_dfsbenchmarking.assessment_data" ))
-  poolReturn(conn)
-  right <- ad
-  if(!is.null(gcai)){
-    right <- right %>% filter(assessment_id == gcai)
-  }
-  right <- right %>%
-    arrange(desc(entry_time)) %>%
-    dplyr::distinct(question_id, .keep_all = TRUE) %>%
-    dplyr::select(question_id, score)
-  left <- view_assessment_questions_list %>%
-    mutate(combined_name = paste0(tab_name, '_', competency)) %>%
-        dplyr::select(question_id, combined_name) 
-  x <- left_join(left, right, by = 'question_id') %>%
-    mutate(score = ifelse(is.na(score), 0, score))
-    
-  a <- paste0("input_list <- reactiveValues();\n")
-  inputs <- paste0(x$combined_name, '_slider')
-  b <- rep(NA, length(inputs))
-  for(i in 1:length(inputs)){
-    this_input <- inputs[i]
-    v <- x$score[i]
-    b[i] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
-  }
-  # Observe any changes and register them
-  z <- rep(NA, length(inputs))
-  for(i in 1:length(inputs)){
-    this_input <- inputs[i]
-    this_event <- paste0('input$', this_input)
-    # # Observe buttons rather than sliders
-    # this_observation <- gsub('_slider', '_submit', this_event)
-    # Observe sliders rather than buttons
-    this_observation <- this_event
-    z[i] <- 
-      paste0("observeEvent(",this_observation,", { ;
- input_list[['", this_input, "']] <- ", this_event,"
-    });\n")
-  }
-  paste0(a,
-         paste0(b,
-         z, collapse = ''),
-         collapse = '')
+print("debug: create_input_list called")  
+  paste("")
+  #  gcai <- get_current_assessment_id()
+  # 
+  #  # Get pool
+  #  conn <- poolCheckout(db_get_pool())
+  #  # Get assessment data
+  #  ad <- dbGetQuery(conn,paste0("SELECT * FROM pd_dfsbenchmarking.assessment_data" ))
+  #  poolReturn(conn)
+  #  right <- ad
+  #  if(!is.null(gcai)){
+  #    right <- right %>% filter(assessment_id == gcai)
+  #  }
+  #  right <- right %>%
+  #    arrange(desc(entry_time)) %>%
+  #    dplyr::distinct(question_id, .keep_all = TRUE) %>%
+  #    dplyr::select(question_id, score)
+  #  left <- view_assessment_questions_list %>%
+  #    mutate(combined_name = paste0(tab_name, '_', competency)) %>%
+  #        dplyr::select(question_id, combined_name) 
+  #  x <- left_join(left, right, by = 'question_id') %>%
+  #    mutate(score = ifelse(is.na(score), 0, score))
+  #    
+  #  a <- paste0("input_list <- reactiveValues();\n")
+  #  inputs <- paste0(x$combined_name, '_slider')
+  #  b <- rep(NA, length(inputs))
+  #  for(i in 1:length(inputs)){
+  #    this_input <- inputs[i]
+  #    v <- x$score[i]
+  #    b[i] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
+  #  }
+  #  # Observe any changes and register them
+  #  z <- rep(NA, length(inputs))
+  #  for(i in 1:length(inputs)){
+  #    this_input <- inputs[i]
+  #    this_event <- paste0('input$', this_input)
+  #    # # Observe buttons rather than sliders
+  #    # this_observation <- gsub('_slider', '_submit', this_event)
+  #    # Observe sliders rather than buttons
+  #    this_observation <- this_event
+  #    z[i] <- 
+  #      paste0("observeEvent(",this_observation,", { ;
+  # input_list[['", this_input, "']] <- ", this_event,"
+  #    });\n")
+  #  }
+  #  paste0(a,
+  #         paste0(b,
+  #         z, collapse = ''),
+  #         collapse = '')
+  
 }
 
 
@@ -726,10 +730,10 @@ log_in_modal <- modalDialog(
 
 
 # Database set-up
-pool <- create_pool(options_list = credentials_extract(),
-                    use_sqlite = FALSE)
+#pool <- create_pool(options_list = credentials_extract(),
+#                    use_sqlite = FALSE)
 # Get the data from the db into memory
-db_to_memory(pool = pool)
+#db_to_memory(pool = pool)
 
 # function to turn NULL to NA
 nn <- function(x){ifelse(is.null(x), as.character(NA), x)}

@@ -4,7 +4,7 @@ library(shinyjs)
 library(rhandsontable)
 library(data.table)
 
-  source('global.R')
+source('global.R')
 
 the_width <- 350
 header <- dashboardHeader(title="DFS Benchmarking Tool",
@@ -239,24 +239,40 @@ ui <- dashboardPage(header, sidebar, body, skin="blue")
 # Server
 server <- function(input, output, session) {
   
-  
+  #SESSION <- reactiveValues(clientInfo=NULL)
   user <- reactiveVal(value = as.character(NA))
   user_id <- reactiveVal(value = -1)
   logged_in <- reactiveVal(value = FALSE)
-  user_data <- reactiveValues()
+  user_data <- reactiveValues(db_session_id=NULL,current_client_id=NULL,current_assessment_id=NULL)
+  
+  LISTINGS <- reactiveValues(client_listing=NULL,client_assessment_listing=NULL)
+  ASSESSMENT <- reactiveValues(assessment_template=NULL,assessment_data=NULL) #Will take two data.frames: one, layout of questions and categores; two, the data to go along
+  #HELPER FUNCTIONS
+  source('session_functions.R', local = TRUE)
+
   
   # Observe the log in submit and see if logged in
   observeEvent(input$log_in_submit, {
     # Attempt to log in
+print(paste0("debug: Loggng in with: ",input$user_name,"=",input$password))
     log_in_attempt <- db_login(input$user_name,
                                input$password)
+
     # Evaluate success
     if(log_in_attempt$user_id >= 0){
       # Success
       user(input$user_name)
       logged_in(TRUE)
       user_id(log_in_attempt$user_id)
-      user_data$client_listing <- db_get_client_listing()
+      user_data$user_name <- log_in_attempt$name
+      user_data$db_session_id <- log_in_attempt$session_id
+      user_data$current_client_id <- NULL #They didn't select one yet!  Must select from a list provided by client_listing
+      user_data$current_assessment_id <- NULL #They didn't select one yet!  Must (a) Select a client (b) Select from a list provided by client_assessment_listing
+      
+      LISTINGS$client_listing <- db_get_client_listing(get_db_session_id())
+
+print("debug: Client Listing Retreived")
+print(get_client_listing())
 
     } else {
       # Set values to not logged in
@@ -273,13 +289,16 @@ server <- function(input, output, session) {
     user('')
     user_id(-1)
     logged_in(FALSE)
-    user_data$client_listing <- NULL
-    user_data$client_info <- NULL
+    user_data$current_client_id <- NULL
+    user_data$current_assessment_id <- NULL
+    LISTINGS$client_listing <- NULL
+    LISTINGS$client_assessment_listing <- NULL
   })
   
   # Log in / out
   output$log_in_out <- renderUI({
     # Get whether currently logged in
+
     logged_in_now <- logged_in()
     if(is.null(logged_in_now)){
       logged_in_now <- FALSE
@@ -299,8 +318,9 @@ server <- function(input, output, session) {
   })
   
   # Observe log in submit and prompt selection of client and assessment name
+  #SAH: On login, they need to be presented with the list of clients they want to access
   observeEvent(input$log_in_submit, {
-    updateTabItems(session, "tabs", 'settings')
+    updateTabItems(session, "tabs", 'clients')
   })
   
   # Once a selection is sure, start the survey
@@ -424,8 +444,10 @@ server <- function(input, output, session) {
   }
   
   ## Get main tab
-  main_tab <- reactiveVal(value = 'instructions')
-
+  main_tab <- reactiveVal(value = 'instructions') #main_tab is really the assessment tab
+  client_tab <- reactiveVal(value = 'clients')
+  assessment_tab <- reactiveVal(value='assessments')
+  
   # Create reactive values to observe the submissions
   submissions <- reactiveValues()
   
@@ -638,16 +660,59 @@ server <- function(input, output, session) {
   
   output$menu <- renderMenu({
 
-    li <- logged_in()
+    #Default tabs:
+    #Home, About
     
+    #When logged in:
+    #Home, Clients, Settings, About (Maybe other in the future)
+    li <- logged_in() #logged_in() is reactive
+    
+    #When client selected
+    #Home, Clients, Settings, About (Maybe other in the future)
+    cl <- client_tab()
+    
+    #When client selected
+    #Home, Clients, Client's Assessments, Settings, About (Maybe other in the future)
+    as <- assessment_tab()
+    
+    #When assessment selected
+    #Home, Clients, Client's Assessments, THE ASSESSMENT, Settings, About (Maybe other in the future)
     mt <- main_tab()
-    sidebarMenu(
+    
+    default_home <- list(
       generate_menu(text="Home",
                     tabName="instructions",
                     icon=icon("leanpub"),
                     submissions = submissions, mt = mt,
                     pass = TRUE, 
-                    loggedin = li),
+                    loggedin = li))
+    
+    default_about <- list(
+      generate_menu(text = 'About',
+                    tabName = 'about',
+                    icon = icon('book'),
+                    submissions = submissions, mt = mt,
+                    pass = TRUE, 
+                    loggedin = li))
+    
+    clients_menu <- list(
+      generate_menu(text = 'Clients',
+                    tabName = 'clients',
+                    icon = icon('book'),
+                    submissions = submissions, mt = mt,
+                    pass = TRUE, 
+                    loggedin = li))
+    
+    client_assessments_menu <- list(
+      generate_menu(text = 'Assessments',
+                    tabName = 'client_assessments',
+                    icon = icon('book'),
+                    submissions = submissions, mt = mt,
+                    pass = TRUE, 
+                    loggedin = li))
+    
+
+    assessment_menu <- list(
       generate_menu(text = 'Settings',
                     tabName = 'settings',
                     icon = icon('user'),
@@ -709,13 +774,17 @@ server <- function(input, output, session) {
                     icon=icon("signal"),
                     submissions = submissions, mt = mt,
                     pass = TRUE, 
-                    loggedin = li),
-      generate_menu(text = 'About',
-                    tabName = 'about',
-                    icon = icon('book'),
-                    submissions = submissions, mt = mt,
-                    pass = TRUE, 
                     loggedin = li))
+
+    if (!logged_in()) clients_menu <- list()
+    if (!logged_in() || is.null(get_current_client_id())) client_assessments_menu <- list()
+    if (!logged_in() || is.null(get_current_client_id()) || is.null(get_current_assessment_id())) assessment_menu <- list()
+    
+    sidebarMenu(default_home,
+      clients_menu,
+      client_assessments_menu,
+      assessment_menu,
+      default_about)
   })
   # isolate({
   #   mt <- main_tab()
@@ -737,10 +806,11 @@ server <- function(input, output, session) {
   
   # Reactive assessment choices
   assessment_choices_reactive <- reactive({
-    x <- input$log_in_submit
-    x <- input$client_select
-    a <- SESSION$client_info$assessments$assessment_id
-    names(a) <- SESSION$client_info$assessments$assessment_name
+    #SAH: This has to be reactive on selecting a client's assessment; there's nothing to select on login
+    #x <- input$log_in_submit
+    #x <- input$client_select
+    a <- get_current_assessment_id()
+
     message('assessment choices reactive is ')
     print(a)
     return(a)
@@ -751,7 +821,7 @@ server <- function(input, output, session) {
   client_choices_reactive <- reactive({
     # Just observe new client
     input$create_new_client_submit
-    udcl <- SESSION$client_listing
+    udcl <- get_client_listing()
     message('udcl is ')
     print(udcl)
     
@@ -824,19 +894,25 @@ server <- function(input, output, session) {
   observeEvent(input$client_select, {
     selected_client <- input$client_select
     
-    user_data$client_info <- SESSION$client_info <- load_client(selected_client)
+    user_data$current_client_id <- selected_client
+    load_client(selected_client)
     message('The selected client is ', selected_client)
   })
   observeEvent(input$client_select_confirm, {
     selected_client <- input$client_select
-    user_data$client_info <- SESSION$client_info <- load_client(selected_client)
+
+    user_data$current_client_id <- selected_client
+    load_client(selected_client)
+
     message('The selected client is ', selected_client)
   })
-  observeEvent(input$log_in_submit, {
-    selected_client <- input$client_select
-    user_data$client_info <- SESSION$client_info <- load_client(selected_client)
-    message('The selected client is ', selected_client)
-  })
+
+  #SAH: User has to select a client, cannot happen on login.  
+  # observeEvent(input$log_in_submit, {
+  #   selected_client <- input$client_select
+  #   user_data$client_info <- SESSION$client_info <- load_client(selected_client)
+  #   message('The selected client is ', selected_client)
+  # })
   
   # If creating a new client/assessment, prompt details
   observeEvent(input$create_new_client,{
@@ -873,11 +949,11 @@ server <- function(input, output, session) {
   observeEvent(input$assessment_name_select, {
                    message('assessment name is ', input$assessment_name_select)
                    li <- logged_in()
-                   if(li){
+                   if(li && !is.null(get_current_client_id())) {
                      
                      # Make sure a client has been selected
-                     selected_client <- input$client_select
-                     user_data$client_info <- load_client(selected_client)
+                     selected_client <- get_current_client_id()
+#                     user_data$client_info <- load_client(selected_client)
                      
                      cid <- get_current_client_id()
                      ccid <- -1
@@ -894,13 +970,15 @@ server <- function(input, output, session) {
                      new_name <- as.numeric(input$assessment_name_select)
                      message('assessment id / new name is')
                      print(new_name)
-                     SESSION$client_info$current_assessment_id <- as.numeric(new_name)
-                     updated_assessment_id <- 
-                       db_edit_client_assessment(-1,
-                                                 data.frame(client_id=ccid,
-                                                            assessment_name=new_name,
-                                                            assessment_date=td,
-                                                            stringsAsFactors=F))
+                     user_data$current_assessment_id <- as.numeric(new_name)
+                     
+                     #They're selecting an assessment, not editing its values
+                     # updated_assessment_id <- 
+                     #   db_edit_client_assessment(-1,
+                     #                             data.frame(client_id=ccid,
+                     #                                        assessment_name=new_name,
+                     #                                        assessment_date=td,
+                     #                                        stringsAsFactors=F))
                      # message('updated assessment id is ')
                      # print(updated_assessment_id)
                      # SESSION$client_info$current_assessment_id <- updated_assessment_id
@@ -910,10 +988,11 @@ server <- function(input, output, session) {
                      cid <- as.numeric(get_current_client_id())
                      message('cid here is ', cid)
                      
-                     user_data$client_info <- 
-                       SESSION$client_info <- 
-                       load_client(cid)
-                     
+                     #SAH: client is already loaded if they're working with a client's assessment
+                     # user_data$client_info <- 
+                     #   SESSION$client_info <- 
+                     #   load_client(cid)
+                     # 
                      ins <- input$assessment_name_select
                      message('ins here is ', ins)
                      load_client_assessment(ins)
@@ -929,8 +1008,8 @@ server <- function(input, output, session) {
     message('+++ccid is ', ccid)
     updated_client_id <- 
       db_edit_client(ccid,
-                     data.frame(client_id=SESSION$client_info$client_id,
-                                ifc_client_id=SESSION$client_info$ifc_client_id,
+                     data.frame(client_id=-1, #If it's new, it has to be -1
+                                ifc_client_id=input$ifc_client_id, #If it's new, it has to come from form field
                                 name=input$client_type,
                                 short_name='',
                                 firm_type='',
@@ -944,7 +1023,9 @@ server <- function(input, output, session) {
   observeEvent(input$create_new_assessment_submit,{
     # Make sure a client has been selected
     selected_client <- input$client_select
-    user_data$client_info <- load_client(selected_client)
+
+    #SAH: why load a client to create an assessment?  Client is already loaded.
+    #    user_data$client_info <- load_client(selected_client)
     
     cid <- get_current_client_id()
     ccid <- -1
@@ -972,11 +1053,13 @@ server <- function(input, output, session) {
     
     # If not -1 load it
     # if(updated_assessment_id != -1){
-      user_data$client_info <- 
-        SESSION$client_info <- 
-        load_client(get_current_client_id())
-
-      load_client_assessment(updated_assessment_id)
+      # user_data$client_info <- 
+      #   SESSION$client_info <- 
+      #   load_client(get_current_client_id())
+      # 
+    
+      #SAH: We don't know if user is ready to load the assessment just because they created one.
+      # load_client_assessment(updated_assessment_id)
     # }
     
   })
@@ -984,12 +1067,17 @@ server <- function(input, output, session) {
   # On session end, close the pool
   session$onSessionEnded(function() {
     message('Session ended. Closing the connection pool.')
-    tryCatch(pool::poolClose(pool), error = function(e) {message('')})
+    #tryCatch(pool::poolClose(pool), error = function(e) {message('')})
+    tryCatch(db_disconnect(), error = function(e) {message('')})
   })
   
   output$edit_client_table <- renderRHandsontable({
     input$client_select # just observing
-    udci <- SESSION$client_info
+    #udci <- SESSION$client_info
+    udci <- get_client_listing()
+    print(class(udci))
+    print(udci)
+    
     x <- data_frame(client_id=udci$client_id,
                     ifc_client_id=udci$ifc_client_id,
                     name= udci$name,
@@ -1003,8 +1091,8 @@ server <- function(input, output, session) {
   })
   
   output$edit_user_table <- renderRHandsontable({
-    x <- data_frame(user_id = SESSION$user_id,
-                    user_name = SESSION$user_name)
+    x <- data_frame(user_id = get_user_id(),
+                    user_name = get_user_name())
     rhandsontable(x, readOnly = FALSE, selectCallback = TRUE,
                   rowHeaders = NULL)
   })
@@ -1025,7 +1113,8 @@ server <- function(input, output, session) {
     out$ifc_client_id <- as.numeric(out$ifc_client_id)
     
     # Update the database
-    db_edit_client(out$client_id,
+    db_edit_client(db_session_id=get_db_session_id(),
+                   out$client_id,
                    out)
     
     # # Update the session
@@ -1041,9 +1130,8 @@ server <- function(input, output, session) {
     # message('overwriting user_data')
     # user_data$client_info <- udci
     message('Overwriting user_data client info and client listing')
-    updated_client_id <- udci$client_id
-    user_data$client_info <- SESSION$client_info <- load_client(updated_client_id)
-    user_data$client_listing <- SESSION$client_listing <- db_get_client_listing()
+    #user_data$client_info <- SESSION$client_info <- load_client(updated_client_id)
+    listing <- db_get_client_listing(db_session_id = get_db_session_id())
   })
   
   # Observe the input list (the list of all results)
