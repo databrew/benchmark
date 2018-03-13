@@ -224,14 +224,33 @@ ui <- dashboardPage(header, sidebar, body, skin="blue")
 # Server
 server <- function(input, output, session) {
   
-  
+  # Define some reactive values for later update
+  USER <- reactiveValues(db_session_id=NULL,user_id=NULL,user_name=NULL,current_client_id=NULL,current_assessment_id=NULL)
+  LISTINGS <- reactiveValues(client_listing=NULL,client_assessment_listing=NULL)
+  ASSESSMENT <- reactiveValues(assessment_template=NULL,assessment_data=NULL) #Will take two data.frames: one, layout of questions and categores; two, the data to go along
+  STATUS <- reactiveVal(value="Please login")
   user <- reactiveVal(value = '')
   logged_in <- reactiveVal(value = FALSE)
+  failed_log_in <- reactiveVal(value = 0)
+  
   # Observe the log in submit and see if logged in
   observeEvent(input$log_in_submit, {
-    # Assume success
-    user(input$user_name)
-    logged_in(TRUE)
+    
+    UI_LOGIN<- input$user_name #User input
+    UI_PASS<- input$password #User input
+    log_in_attempt <- db_login(UI_LOGIN,UI_PASS)
+    # the user_id will be -1 if log in failed
+    if(log_in_attempt$user_id > -1){
+      # Successfull log-in
+      message('Successful log in')
+      user(input$user_name)
+      logged_in(TRUE)
+    } else {
+      message('failed log in')
+      # failed log-in, send signal to re-render the log-in modal
+      fli <- failed_log_in()
+      failed_log_in(fli + 1)
+    }
   })
   
   # Observe the log out and clear the user
@@ -256,23 +275,16 @@ server <- function(input, output, session) {
   
   # Observe the log in button and do a modal
   observeEvent(input$log_in, {
-    showModal(modalDialog(
-      title = "Log in",
-      fluidPage(
-        fluidRow(column(12,
-                        textInput('user_name', 'User name')),
-                 column(12,
-                        textInput('password', 'Password')))#,
-        # fluidRow(column(12,
-        #                 align = 'center',
-        #                 actionButton('log_in_submit',
-        #                              'Submit',
-        #                              icon = icon('check-circle'))))
-      ),
-      easyClose = TRUE,
-      footer = action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')),
-      size = 's'
-    )) 
+    showModal(log_in_modal)
+  })
+  
+  observeEvent(failed_log_in(), {
+    message('Failed log in attempt!')
+    fli <- failed_log_in()
+    message('fli = ', fli)
+    if(fli > 0){
+      showModal(log_in_modal)
+    }
   })
   
   

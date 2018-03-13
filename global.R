@@ -10,6 +10,8 @@ functions <- dir('R')
 for (i in 1:length(functions)){
   source(paste0('R/', functions[i]), chdir = TRUE)
 }
+source('session_functions.R', local = TRUE)
+
 
 # Create a dictionary of tab names / numbers
 tab_names_full <- c('Instructions',
@@ -644,6 +646,21 @@ generate_menu <- function(done = FALSE,
   }
 }
 
+# Define the log in modal
+log_in_modal <- 
+  modalDialog(
+    title = "Log in",
+    fluidPage(
+      fluidRow(column(12,
+                      textInput('user_name', 'User name')),
+               column(12,
+                      textInput('password', 'Password')))
+    ),
+    easyClose = TRUE,
+    footer = action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')),
+    size = 's'
+  )
+   
 
 
 # Database set-up

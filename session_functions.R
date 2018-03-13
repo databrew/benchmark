@@ -162,3 +162,64 @@ unload_client_assessment <- function()
   ASSESSMENT$assessment_template <<- NULL
   USER$current_assessment_id <<- NULL
 }
+
+update_session <- function(status) {
+  STATUS <<- status
+  print(paste("Status updated to: ",STATUS))
+}
+
+
+
+call_db_login <- function()
+{
+  UI_LOGIN<-"MEL" #User input
+  UI_PASS<-"FIGSSAMEL" #User input
+  log_in_attempt <- db_login(UI_LOGIN,UI_PASS)
+  USER$user_id <- log_in_attempt$user_id
+  USER$user_name <- log_in_attempt$name
+  USER$db_session_id <- log_in_attempt$session_id
+  USER$current_client_id <- NULL #They didn't select one yet!  Must select from a list provided by client_listing
+  USER$current_assessment_id <- NULL #They didn't select one yet!  Must (a) Select a client (b) Select from a list provided by client_assessment_listing
+  
+  LISTINGS$client_listing <- db_get_client_listing(get_db_session_id())
+  
+  print("Login Result")
+  print(log_in_attempt)
+}
+
+call_load_client <- function()
+{
+  UI_SELECTED_CLIENT_ID <- get_client_listing()$client_id[1] #Auto-selects whatever is top-1 client
+  print(paste0("You selected client_id=",UI_SELECTED_CLIENT_ID))
+  client_info <- load_client(UI_SELECTED_CLIENT_ID) #CLIENT$client_info and LISTINGS$client_assessment_listing set in load_client()
+  print(client_info)
+  print(get_client_listing())
+}
+
+call_load_client_assessment <- function()
+{
+  UI_SELECTED_ASSESSMENT_ID <- get_current_client_assessment_listing()$assessment_id[1] #Auto-selects whatever is top-1 client
+  print(paste0("You selected client_assessment_id=",UI_SELECTED_ASSESSMENT_ID))
+  assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID) #CLIENT$client_info and LISTINGS$client_assessment_listing set in load_client()
+  print(assessment_info[1,])
+  
+}
+call_edit_assessment <- function()
+{
+  UI_SCORE <- ceiling(runif(1,0,7)) #From user input
+  UI_QUESTION <- ceiling(runif(1,2,43)) #From user input
+  UI_RATIONALE <- paste0("For question ",UI_QUESTION," ... I rate ",UI_SCORE)
+  
+  record_assessment_data_entry(question_id=UI_QUESTION,score=UI_SCORE,rationale=UI_RATIONALE)
+}
+call_save_and_close <- function()
+{
+  new_data <- get_current_assessment_data_changed()
+  print("SAVING NEW DATA: ")
+  print(new_data)
+  saved <- db_save_client_assessment_data(get_db_session_id(),new_data)
+  print(paste0("SAVED: ",nrow(saved)))
+  
+  unload_client_assessment()
+  unload_client()
+}
