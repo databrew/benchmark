@@ -7,6 +7,7 @@ library(RPostgreSQL)
 library(yaml)
 library(pool)
 library(shiny)
+library(lubridate)
 
 functions <- dir('R',pattern=".*\\.R$")
 for (i in 1:length(functions)){

@@ -12,7 +12,7 @@
  Target Server Version : 100003
  File Encoding         : 65001
 
- Date: 13/03/2018 18:22:22
+ Date: 13/03/2018 19:02:27
 */
 
 
@@ -1197,7 +1197,7 @@ CREATE VIEW "pd_dfsbenchmarking"."view_client_listing" AS  SELECT clients.create
    FROM ((pd_dfsbenchmarking.clients
      JOIN pd_dfsbenchmarking.users ON ((users.user_id = clients.created_by_user_id)))
      LEFT JOIN pd_dfsbenchmarking.assessments ON ((assessments.client_id = clients.client_id)))
-  GROUP BY clients.created_by_user_id, clients.client_id, clients.ifc_client_id, clients.name, clients.short_name, clients.firm_type, clients.address, clients.city, clients.country, users.name
+  GROUP BY clients.created_by_user_id, clients.client_id, clients.ifc_client_id, clients.name, clients.short_name, clients.firm_type, clients.address, clients.city, clients.country, users.name, clients.created_time
   ORDER BY clients.created_time DESC;
 
 -- ----------------------------
