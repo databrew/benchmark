@@ -652,9 +652,9 @@ log_in_modal <-
     title = "Log in",
     fluidPage(
       fluidRow(column(12,
-                      textInput('user_name', 'User name')),
+                      textInput('user_name', 'User name', value = 'MEL')),
                column(12,
-                      textInput('password', 'Password')))
+                      textInput('password', 'Password', value = 'FIGSSAMEL')))
     ),
     easyClose = TRUE,
     footer = action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')),

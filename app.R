@@ -235,18 +235,29 @@ server <- function(input, output, session) {
   
   # Observe the log in submit and see if logged in
   observeEvent(input$log_in_submit, {
-    
-    UI_LOGIN<- input$user_name #User input
-    UI_PASS<- input$password #User input
+    # Attempt the log-in
+    UI_LOGIN<- input$user_name
+    UI_PASS<- input$password
     log_in_attempt <- db_login(UI_LOGIN,UI_PASS)
     # the user_id will be -1 if log in failed
     if(log_in_attempt$user_id > -1){
-      # Successfull log-in
+      # Successful log-in
       message('Successful log in')
+      # Update the reactive user object
       user(input$user_name)
+      # # Update the true/false logged_in switch
       logged_in(TRUE)
+      # # Update the USER dataframe
+      USER$user_id <- log_in_attempt$user_id
+      USER$user_name <- log_in_attempt$name
+      USER$db_session_id <- log_in_attempt$session_id
+      USER$current_client_id <- NULL #They didn't select one yet!  Must select from a list provided by client_listing
+      USER$current_assessment_id <- NULL #They didn't select one yet!  Must (a) Select a client (b) Select from a list provided by client_assessment_listing
+      LISTINGS$client_listing <- db_get_client_listing(get_db_session_id())
+      # 
+      # print("Login Result")
+      # print(log_in_attempt)
     } else {
-      message('failed log in')
       # failed log-in, send signal to re-render the log-in modal
       fli <- failed_log_in()
       failed_log_in(fli + 1)
@@ -255,6 +266,14 @@ server <- function(input, output, session) {
   
   # Observe the log out and clear the user
   observeEvent(input$log_out, {
+    # Reset the reactive values
+    message('Logging out. Resetting reactive values.')
+    USER <- reactiveValues(db_session_id=NULL,user_id=NULL,user_name=NULL,current_client_id=NULL,current_assessment_id=NULL)
+    LISTINGS <- reactiveValues(client_listing=NULL,client_assessment_listing=NULL)
+    ASSESSMENT <- reactiveValues(assessment_template=NULL,assessment_data=NULL) #Will take two data.frames: one, layout of questions and categores; two, the data to go along
+    STATUS <- reactiveVal(value="Please login")
+    logged_in <- reactiveVal(value = FALSE)
+    failed_log_in <- reactiveVal(value = 0)
     user('')
     logged_in(FALSE)
   })
@@ -279,10 +298,9 @@ server <- function(input, output, session) {
   })
   
   observeEvent(failed_log_in(), {
-    message('Failed log in attempt!')
     fli <- failed_log_in()
-    message('fli = ', fli)
     if(fli > 0){
+      message('Failed log in attempt. Re-prompting the log-in modal')
       showModal(log_in_modal)
     }
   })
