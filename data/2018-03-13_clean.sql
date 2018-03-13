@@ -93,14 +93,14 @@ BEGIN
 	(
 		select assessment_id,question_id,last_modified_time as entry_time,last_modified_user_id as entry_user_id,score,rationale
 		from public._pd_dfsbenchmarking_save_client_assessment_data
-		where pd_dfsbenchmarking.user_has_client_access(client_id,pd_dfsbenchmarking.user_id_session_chain( v_session_id ))
+		where pd_dfsbenchmarking.user_has_client_access(client_id::int,pd_dfsbenchmarking.user_id_session_chain( v_session_id ))
 	),
 	data_inserts as
 	(
 		insert into pd_dfsbenchmarking.assessment_data(assessment_id,question_id,entry_time,entry_user_id,score,rationale)
 		select assessment_id,question_id,entry_time,entry_user_id,score,rationale
 		from data_uploads
-		on conflict(assessment_id,question_id,entry_time) do update set score=excluded.score,rationale=excluded.rationale
+		on conflict(assessment_id,question_id,entry_time) do update set score=EXCLUDED.score,rationale=EXCLUDED.rationale
 		returning assessment_id,question_id,entry_time
 	)
 	insert into _inserts(u_assessment_id,u_question_id,u_entry_time)
@@ -433,6 +433,47 @@ ALTER SEQUENCE pd_dfsbenchmarking.assessments_assessment_id_seq OWNED BY pd_dfsb
 
 
 --
+-- Name: clients; Type: TABLE; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+CREATE TABLE pd_dfsbenchmarking.clients (
+    client_id integer NOT NULL,
+    ifc_client_id integer,
+    name character varying(255) NOT NULL,
+    short_name character varying(15) NOT NULL,
+    firm_type character varying(255),
+    address character varying(255),
+    city character varying(255),
+    country character varying(255),
+    created_by_user_id integer NOT NULL,
+    created_time timestamp(6) without time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE pd_dfsbenchmarking.clients OWNER TO joebrew;
+
+--
+-- Name: clients_client_id_seq; Type: SEQUENCE; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+CREATE SEQUENCE pd_dfsbenchmarking.clients_client_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    MAXVALUE 2147483647
+    CACHE 1;
+
+
+ALTER TABLE pd_dfsbenchmarking.clients_client_id_seq OWNER TO joebrew;
+
+--
+-- Name: clients_client_id_seq; Type: SEQUENCE OWNED BY; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+ALTER SEQUENCE pd_dfsbenchmarking.clients_client_id_seq OWNED BY pd_dfsbenchmarking.clients.client_id;
+
+
+--
 -- Name: users; Type: TABLE; Schema: pd_dfsbenchmarking; Owner: joebrew
 --
 
@@ -531,6 +572,32 @@ CREATE VIEW pd_dfsbenchmarking.view_client_assessment_listing AS
 ALTER TABLE pd_dfsbenchmarking.view_client_assessment_listing OWNER TO joebrew;
 
 --
+-- Name: view_client_listing; Type: VIEW; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+CREATE VIEW pd_dfsbenchmarking.view_client_listing AS
+ SELECT clients.created_by_user_id,
+    clients.client_id,
+    clients.ifc_client_id,
+    clients.name,
+    clients.short_name,
+    clients.firm_type,
+    clients.address,
+    clients.city,
+    clients.country,
+    users.name AS created_by,
+    count(DISTINCT assessments.assessment_id) AS assessments,
+    COALESCE((max(assessments.assessment_date))::character varying, 'Never'::character varying) AS last_assessment
+   FROM ((pd_dfsbenchmarking.clients
+     JOIN pd_dfsbenchmarking.users ON ((users.user_id = clients.created_by_user_id)))
+     LEFT JOIN pd_dfsbenchmarking.assessments ON ((assessments.client_id = clients.client_id)))
+  GROUP BY clients.created_by_user_id, clients.client_id, clients.ifc_client_id, clients.name, clients.short_name, clients.firm_type, clients.address, clients.city, clients.country, users.name, clients.created_time
+  ORDER BY clients.created_time DESC;
+
+
+ALTER TABLE pd_dfsbenchmarking.view_client_listing OWNER TO joebrew;
+
+--
 -- Name: category_id; Type: DEFAULT; Schema: pd_dfsbenchmarking; Owner: joebrew
 --
 
@@ -549,6 +616,13 @@ ALTER TABLE ONLY pd_dfsbenchmarking.assessment_questions ALTER COLUMN question_i
 --
 
 ALTER TABLE ONLY pd_dfsbenchmarking.assessments ALTER COLUMN assessment_id SET DEFAULT nextval('pd_dfsbenchmarking.assessments_assessment_id_seq'::regclass);
+
+
+--
+-- Name: client_id; Type: DEFAULT; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+ALTER TABLE ONLY pd_dfsbenchmarking.clients ALTER COLUMN client_id SET DEFAULT nextval('pd_dfsbenchmarking.clients_client_id_seq'::regclass);
 
 
 --
@@ -717,6 +791,30 @@ COPY pd_dfsbenchmarking.assessment_data (assessment_id, question_id, entry_time,
 58	20	2018-03-13 15:45:02	1	1.0	For question 20 ... I rate 1
 58	25	2018-03-13 15:45:05	1	6.0	For question 25 ... I rate 6
 58	28	2018-03-13 15:45:07	1	1.0	For question 28 ... I rate 1
+24	39	2018-03-13 18:09:09	1	2.0	For question 39 ... I rate 2
+24	24	2018-03-13 18:09:14	1	2.0	For question 24 ... I rate 2
+24	16	2018-03-13 18:09:16	1	5.0	For question 16 ... I rate 5
+24	7	2018-03-13 18:09:17	1	2.0	For question 7 ... I rate 2
+24	42	2018-03-13 18:11:25	1	6.0	For question 42 ... I rate 6
+24	32	2018-03-13 18:11:26	1	6.0	For question 32 ... I rate 6
+24	13	2018-03-13 18:11:27	1	3.0	For question 13 ... I rate 3
+24	26	2018-03-13 18:11:28	1	1.0	For question 26 ... I rate 1
+24	8	2018-03-13 18:14:26	1	6.0	For question 8 ... I rate 6
+24	23	2018-03-13 18:14:29	1	1.0	For question 23 ... I rate 1
+24	40	2018-03-13 18:14:31	1	6.0	For question 40 ... I rate 6
+24	5	2018-03-13 18:14:32	1	5.0	For question 5 ... I rate 5
+24	15	2018-03-13 18:15:05	1	1.0	For question 15 ... I rate 1
+24	41	2018-03-13 18:15:09	1	6.0	For question 41 ... I rate 6
+24	17	2018-03-13 18:15:10	1	3.0	For question 17 ... I rate 3
+24	3	2018-03-13 18:15:11	1	2.0	For question 3 ... I rate 2
+24	25	2018-03-13 18:15:32	1	4.0	For question 25 ... I rate 4
+24	3	2018-03-13 18:15:34	1	2.0	For question 3 ... I rate 2
+24	11	2018-03-13 18:15:35	1	6.0	For question 11 ... I rate 6
+24	27	2018-03-13 18:15:37	1	2.0	For question 27 ... I rate 2
+24	17	2018-03-13 18:21:14	1	6.0	For question 17 ... I rate 6
+24	13	2018-03-13 18:21:17	1	3.0	For question 13 ... I rate 3
+24	41	2018-03-13 18:21:18	1	3.0	For question 41 ... I rate 3
+24	37	2018-03-13 18:21:19	1	4.0	For question 37 ... I rate 4
 \.
 
 
@@ -823,6 +921,31 @@ SELECT pg_catalog.setval('pd_dfsbenchmarking.assessments_assessment_id_seq', 59,
 
 
 --
+-- Data for Name: clients; Type: TABLE DATA; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+COPY pd_dfsbenchmarking.clients (client_id, ifc_client_id, name, short_name, firm_type, address, city, country, created_by_user_id, created_time) FROM stdin;
+11	200034	New Bank Co.	NBC	Bank	111 Main St.	SomePlace	USA	1	2018-03-10 16:32:53.578021
+7	100000	Yapi Kredi Bankasi	Yapi Kredi	Bank	\N	Istanbul	Turkey	1	2018-03-10 12:36:27.176374
+8	200000	Yapi Kredi Bankasi2	Yapi Kredi2	Bank	\N	Istanbul	Turkey	1	2018-03-10 16:21:57.908626
+10	200000	Yapi Kredi Bankasi3	Yapi Kredi3	Bank	\N	Istanbul	Turkey	1	2018-03-10 16:32:36.922313
+13	79	New Bank 79	NBC79	Bank	111 Main St.	SomePlace	USA	1	2018-03-13 11:14:46.428687
+14	32	New Bank 32	NBC32	Bank	111 Main St.	SomePlace	USA	1	2018-03-13 11:24:55.951837
+15	68	New Bank 68	NBC68	Bank	111 Main St.	SomePlace	USA	1	2018-03-13 11:26:04.377945
+1	1862	Garanti Bankasi	Garanti	bank	NA	Istanbul	Turkey	1	2018-03-09 18:55:04.741104
+16	43	New Bank 43	NBC43	Bank	111 Main St.	SomePlace	USA	1	2018-03-13 11:44:49.012268
+2	\N	Is Bankasi	Is Bank	bank	\N	Istanbul	Turkey	5	2018-03-10 12:35:48.300008
+\.
+
+
+--
+-- Name: clients_client_id_seq; Type: SEQUENCE SET; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+SELECT pg_catalog.setval('pd_dfsbenchmarking.clients_client_id_seq', 17, true);
+
+
+--
 -- Data for Name: users; Type: TABLE DATA; Schema: pd_dfsbenchmarking; Owner: joebrew
 --
 
@@ -831,7 +954,7 @@ COPY pd_dfsbenchmarking.users (user_id, username, password, name, email, upi, ca
 3	test1	$1$aGstpxLZ$wmVnQLxF.70AMpQ51ftFN0	Soren test1	\N	\N	t	2018-03-10 07:46:08.379318	\N	f
 4	test2	$1$YYIcDwCS$0cZ25s4EaWquXYvq96Cs9.	Soren test1	\N	\N	t	\N	\N	f
 5	joe	$1$aTc/PFPD$d8mVat5rcZ/nSK3xXFjQy.	Joe Brew	\N	\N	t	2018-03-10 12:24:43.881231	81a1c607-6c92-44b7-aac9-3a39cd9b2573	f
-1	MEL	$1$9FLfnwld$amkkGyaJvBpW3QT5VEzC6.	MEL Team	\N	\N	t	2018-03-13 12:40:54.717138	dafe7cbb-87c8-42eb-bb98-e6f4393d2880	f
+1	MEL	$1$9FLfnwld$amkkGyaJvBpW3QT5VEzC6.	MEL Team	\N	\N	t	2018-03-13 14:21:07.77104	f941db91-9c61-4ed3-b9f7-f5e9af5ed49f	f
 \.
 
 
@@ -891,6 +1014,30 @@ ALTER TABLE ONLY pd_dfsbenchmarking.assessments
 
 
 --
+-- Name: clients_name_key; Type: CONSTRAINT; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+ALTER TABLE ONLY pd_dfsbenchmarking.clients
+    ADD CONSTRAINT clients_name_key UNIQUE (name);
+
+
+--
+-- Name: clients_pkey; Type: CONSTRAINT; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+ALTER TABLE ONLY pd_dfsbenchmarking.clients
+    ADD CONSTRAINT clients_pkey PRIMARY KEY (client_id);
+
+
+--
+-- Name: clients_short_name_key; Type: CONSTRAINT; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+ALTER TABLE ONLY pd_dfsbenchmarking.clients
+    ADD CONSTRAINT clients_short_name_key UNIQUE (short_name);
+
+
+--
 -- Name: users_pkey; Type: CONSTRAINT; Schema: pd_dfsbenchmarking; Owner: joebrew
 --
 
@@ -917,6 +1064,297 @@ CREATE UNIQUE INDEX assessment_question_categories_category_name_idx ON pd_dfsbe
 --
 
 CREATE UNIQUE INDEX users_username_idx ON pd_dfsbenchmarking.users USING btree (username);
+
+
+--
+-- Name: FUNCTION assessment_load(v_client_id integer, v_assessment_id integer, v_session_id character varying); Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.assessment_load(v_client_id integer, v_assessment_id integer, v_session_id character varying) FROM PUBLIC;
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.assessment_load(v_client_id integer, v_assessment_id integer, v_session_id character varying) FROM joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.assessment_load(v_client_id integer, v_assessment_id integer, v_session_id character varying) TO joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.assessment_load(v_client_id integer, v_assessment_id integer, v_session_id character varying) TO PUBLIC;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.assessment_load(v_client_id integer, v_assessment_id integer, v_session_id character varying) TO "Applications";
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.assessment_load(v_client_id integer, v_assessment_id integer, v_session_id character varying) TO "ARLTeam";
+
+
+--
+-- Name: FUNCTION assessments_data_save(v_session_id character varying); Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.assessments_data_save(v_session_id character varying) FROM PUBLIC;
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.assessments_data_save(v_session_id character varying) FROM joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.assessments_data_save(v_session_id character varying) TO joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.assessments_data_save(v_session_id character varying) TO PUBLIC;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.assessments_data_save(v_session_id character varying) TO "Applications";
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.assessments_data_save(v_session_id character varying) TO "ARLTeam";
+
+
+--
+-- Name: FUNCTION client_assessment_edit(v_session_id character varying, v_assessment_id integer, v_client_id integer, v_assessment_name character varying, v_assessment_date date); Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.client_assessment_edit(v_session_id character varying, v_assessment_id integer, v_client_id integer, v_assessment_name character varying, v_assessment_date date) FROM PUBLIC;
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.client_assessment_edit(v_session_id character varying, v_assessment_id integer, v_client_id integer, v_assessment_name character varying, v_assessment_date date) FROM joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.client_assessment_edit(v_session_id character varying, v_assessment_id integer, v_client_id integer, v_assessment_name character varying, v_assessment_date date) TO joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.client_assessment_edit(v_session_id character varying, v_assessment_id integer, v_client_id integer, v_assessment_name character varying, v_assessment_date date) TO PUBLIC;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.client_assessment_edit(v_session_id character varying, v_assessment_id integer, v_client_id integer, v_assessment_name character varying, v_assessment_date date) TO "Applications";
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.client_assessment_edit(v_session_id character varying, v_assessment_id integer, v_client_id integer, v_assessment_name character varying, v_assessment_date date) TO "ARLTeam";
+
+
+--
+-- Name: FUNCTION client_edit(v_session_id character varying, v_client_id integer, v_ifc_client_id integer, v_name character varying, v_short_name character varying, v_firm_type character varying, v_address character varying, v_city character varying, v_country character varying); Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.client_edit(v_session_id character varying, v_client_id integer, v_ifc_client_id integer, v_name character varying, v_short_name character varying, v_firm_type character varying, v_address character varying, v_city character varying, v_country character varying) FROM PUBLIC;
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.client_edit(v_session_id character varying, v_client_id integer, v_ifc_client_id integer, v_name character varying, v_short_name character varying, v_firm_type character varying, v_address character varying, v_city character varying, v_country character varying) FROM joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.client_edit(v_session_id character varying, v_client_id integer, v_ifc_client_id integer, v_name character varying, v_short_name character varying, v_firm_type character varying, v_address character varying, v_city character varying, v_country character varying) TO joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.client_edit(v_session_id character varying, v_client_id integer, v_ifc_client_id integer, v_name character varying, v_short_name character varying, v_firm_type character varying, v_address character varying, v_city character varying, v_country character varying) TO PUBLIC;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.client_edit(v_session_id character varying, v_client_id integer, v_ifc_client_id integer, v_name character varying, v_short_name character varying, v_firm_type character varying, v_address character varying, v_city character varying, v_country character varying) TO "Applications";
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.client_edit(v_session_id character varying, v_client_id integer, v_ifc_client_id integer, v_name character varying, v_short_name character varying, v_firm_type character varying, v_address character varying, v_city character varying, v_country character varying) TO "ARLTeam";
+
+
+--
+-- Name: FUNCTION user_create(v_username character varying, v_password character varying, v_name character varying, v_email character varying, v_upi integer); Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.user_create(v_username character varying, v_password character varying, v_name character varying, v_email character varying, v_upi integer) FROM PUBLIC;
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.user_create(v_username character varying, v_password character varying, v_name character varying, v_email character varying, v_upi integer) FROM joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_create(v_username character varying, v_password character varying, v_name character varying, v_email character varying, v_upi integer) TO joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_create(v_username character varying, v_password character varying, v_name character varying, v_email character varying, v_upi integer) TO PUBLIC;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_create(v_username character varying, v_password character varying, v_name character varying, v_email character varying, v_upi integer) TO "Applications";
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_create(v_username character varying, v_password character varying, v_name character varying, v_email character varying, v_upi integer) TO "ARLTeam";
+
+
+--
+-- Name: FUNCTION user_has_client_access(v_client_id integer, v_user_id_chain integer[]); Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.user_has_client_access(v_client_id integer, v_user_id_chain integer[]) FROM PUBLIC;
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.user_has_client_access(v_client_id integer, v_user_id_chain integer[]) FROM joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_has_client_access(v_client_id integer, v_user_id_chain integer[]) TO joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_has_client_access(v_client_id integer, v_user_id_chain integer[]) TO PUBLIC;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_has_client_access(v_client_id integer, v_user_id_chain integer[]) TO "Applications";
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_has_client_access(v_client_id integer, v_user_id_chain integer[]) TO "ARLTeam";
+
+
+--
+-- Name: FUNCTION user_id_session_chain(v_session_id character varying); Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.user_id_session_chain(v_session_id character varying) FROM PUBLIC;
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.user_id_session_chain(v_session_id character varying) FROM joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_id_session_chain(v_session_id character varying) TO joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_id_session_chain(v_session_id character varying) TO PUBLIC;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_id_session_chain(v_session_id character varying) TO "Applications";
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_id_session_chain(v_session_id character varying) TO "ARLTeam";
+
+
+--
+-- Name: FUNCTION user_login(v_username character varying, v_password character varying); Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.user_login(v_username character varying, v_password character varying) FROM PUBLIC;
+REVOKE ALL ON FUNCTION pd_dfsbenchmarking.user_login(v_username character varying, v_password character varying) FROM joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_login(v_username character varying, v_password character varying) TO joebrew;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_login(v_username character varying, v_password character varying) TO PUBLIC;
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_login(v_username character varying, v_password character varying) TO "Applications";
+GRANT ALL ON FUNCTION pd_dfsbenchmarking.user_login(v_username character varying, v_password character varying) TO "ARLTeam";
+
+
+--
+-- Name: TABLE assessment_data; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON TABLE pd_dfsbenchmarking.assessment_data FROM PUBLIC;
+REVOKE ALL ON TABLE pd_dfsbenchmarking.assessment_data FROM joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessment_data TO joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessment_data TO "Applications";
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessment_data TO "ARLTeam";
+
+
+--
+-- Name: TABLE assessment_question_categories; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON TABLE pd_dfsbenchmarking.assessment_question_categories FROM PUBLIC;
+REVOKE ALL ON TABLE pd_dfsbenchmarking.assessment_question_categories FROM joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessment_question_categories TO joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessment_question_categories TO "Applications";
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessment_question_categories TO "ARLTeam";
+
+
+--
+-- Name: SEQUENCE assessment_question_categories_category_id_seq; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON SEQUENCE pd_dfsbenchmarking.assessment_question_categories_category_id_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE pd_dfsbenchmarking.assessment_question_categories_category_id_seq FROM joebrew;
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.assessment_question_categories_category_id_seq TO joebrew;
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.assessment_question_categories_category_id_seq TO "Applications";
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.assessment_question_categories_category_id_seq TO "ARLTeam";
+
+
+--
+-- Name: TABLE assessment_questions; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON TABLE pd_dfsbenchmarking.assessment_questions FROM PUBLIC;
+REVOKE ALL ON TABLE pd_dfsbenchmarking.assessment_questions FROM joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessment_questions TO joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessment_questions TO "Applications";
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessment_questions TO "ARLTeam";
+
+
+--
+-- Name: SEQUENCE assessment_questions_question_id_seq; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON SEQUENCE pd_dfsbenchmarking.assessment_questions_question_id_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE pd_dfsbenchmarking.assessment_questions_question_id_seq FROM joebrew;
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.assessment_questions_question_id_seq TO joebrew;
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.assessment_questions_question_id_seq TO "Applications";
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.assessment_questions_question_id_seq TO "ARLTeam";
+
+
+--
+-- Name: TABLE assessments; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON TABLE pd_dfsbenchmarking.assessments FROM PUBLIC;
+REVOKE ALL ON TABLE pd_dfsbenchmarking.assessments FROM joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessments TO joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessments TO "Applications";
+GRANT ALL ON TABLE pd_dfsbenchmarking.assessments TO "ARLTeam";
+
+
+--
+-- Name: SEQUENCE assessments_assessment_id_seq; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON SEQUENCE pd_dfsbenchmarking.assessments_assessment_id_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE pd_dfsbenchmarking.assessments_assessment_id_seq FROM joebrew;
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.assessments_assessment_id_seq TO joebrew;
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.assessments_assessment_id_seq TO "Applications";
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.assessments_assessment_id_seq TO "ARLTeam";
+
+
+--
+-- Name: TABLE clients; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON TABLE pd_dfsbenchmarking.clients FROM PUBLIC;
+REVOKE ALL ON TABLE pd_dfsbenchmarking.clients FROM joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.clients TO joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.clients TO "Applications";
+GRANT ALL ON TABLE pd_dfsbenchmarking.clients TO "ARLTeam";
+
+
+--
+-- Name: SEQUENCE clients_client_id_seq; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON SEQUENCE pd_dfsbenchmarking.clients_client_id_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE pd_dfsbenchmarking.clients_client_id_seq FROM joebrew;
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.clients_client_id_seq TO joebrew;
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.clients_client_id_seq TO "Applications";
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.clients_client_id_seq TO "ARLTeam";
+
+
+--
+-- Name: TABLE users; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON TABLE pd_dfsbenchmarking.users FROM PUBLIC;
+REVOKE ALL ON TABLE pd_dfsbenchmarking.users FROM joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.users TO joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.users TO "Applications";
+GRANT ALL ON TABLE pd_dfsbenchmarking.users TO "ARLTeam";
+
+
+--
+-- Name: SEQUENCE users_user_id_seq; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON SEQUENCE pd_dfsbenchmarking.users_user_id_seq FROM PUBLIC;
+REVOKE ALL ON SEQUENCE pd_dfsbenchmarking.users_user_id_seq FROM joebrew;
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.users_user_id_seq TO joebrew;
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.users_user_id_seq TO "Applications";
+GRANT ALL ON SEQUENCE pd_dfsbenchmarking.users_user_id_seq TO "ARLTeam";
+
+
+--
+-- Name: TABLE view_assessment_questions_list; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON TABLE pd_dfsbenchmarking.view_assessment_questions_list FROM PUBLIC;
+REVOKE ALL ON TABLE pd_dfsbenchmarking.view_assessment_questions_list FROM joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_assessment_questions_list TO joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_assessment_questions_list TO "Applications";
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_assessment_questions_list TO "ARLTeam";
+
+
+--
+-- Name: TABLE view_assessments_current_data; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON TABLE pd_dfsbenchmarking.view_assessments_current_data FROM PUBLIC;
+REVOKE ALL ON TABLE pd_dfsbenchmarking.view_assessments_current_data FROM joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_assessments_current_data TO joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_assessments_current_data TO "Applications";
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_assessments_current_data TO "ARLTeam";
+
+
+--
+-- Name: TABLE view_client_assessment_listing; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON TABLE pd_dfsbenchmarking.view_client_assessment_listing FROM PUBLIC;
+REVOKE ALL ON TABLE pd_dfsbenchmarking.view_client_assessment_listing FROM joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_client_assessment_listing TO joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_client_assessment_listing TO "Applications";
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_client_assessment_listing TO "ARLTeam";
+
+
+--
+-- Name: TABLE view_client_listing; Type: ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+REVOKE ALL ON TABLE pd_dfsbenchmarking.view_client_listing FROM PUBLIC;
+REVOKE ALL ON TABLE pd_dfsbenchmarking.view_client_listing FROM joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_client_listing TO joebrew;
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_client_listing TO "Applications";
+GRANT ALL ON TABLE pd_dfsbenchmarking.view_client_listing TO "ARLTeam";
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking REVOKE ALL ON SEQUENCES  FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking REVOKE ALL ON SEQUENCES  FROM joebrew;
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking GRANT ALL ON SEQUENCES  TO "ARLTeam";
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking GRANT ALL ON SEQUENCES  TO "Applications";
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking REVOKE ALL ON FUNCTIONS  FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking REVOKE ALL ON FUNCTIONS  FROM joebrew;
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking GRANT ALL ON FUNCTIONS  TO "ARLTeam";
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking GRANT ALL ON FUNCTIONS  TO "Applications";
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking REVOKE ALL ON TABLES  FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking REVOKE ALL ON TABLES  FROM joebrew;
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking GRANT ALL ON TABLES  TO "ARLTeam";
+ALTER DEFAULT PRIVILEGES FOR ROLE joebrew IN SCHEMA pd_dfsbenchmarking GRANT ALL ON TABLES  TO "Applications";
 
 
 --
