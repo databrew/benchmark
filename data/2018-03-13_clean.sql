@@ -33,42 +33,42 @@ CREATE FUNCTION pd_dfsbenchmarking.assessment_load(v_client_id integer, v_assess
 declare v_has_access boolean default false;
 BEGIN
 
--- Open questions:
--- Is it better to fully load assessment, questions and responses, where available?  Or keep as-is and load these separately -- first the
--- assessment and then the data and pair them internally?
--- and if we load them separately, should the assessment template be reloaded each load_assessment() call?  Will take more bandwidth, but also
--- keeps the groups together by consolidating assessment-related functionality
--- Also unlikely users are going to be going up and back between multiple different assessments frequently cusing lots of loads and unloads
--- and even if they do the bandwidth due to the questions is adding maybe partial second in incremental download time.  
--- Internally takes about <0.25s to execute.
+	-- Open questions:
+	-- Is it better to fully load assessment, questions and responses, where available?  Or keep as-is and load these separately -- first the
+	-- assessment and then the data and pair them internally?
+	-- and if we load them separately, should the assessment template be reloaded each load_assessment() call?  Will take more bandwidth, but also
+	-- keeps the groups together by consolidating assessment-related functionality
+	-- Also unlikely users are going to be going up and back between multiple different assessments frequently cusing lots of loads and unloads
+	-- and even if they do the bandwidth due to the questions is adding maybe partial second in incremental download time.  
+	-- Internally takes about <0.25s to execute.
 
-select coalesce(
- pd_dfsbenchmarking.user_has_client_access(
- assessments.client_id,pd_dfsbenchmarking.user_id_session_chain(v_session_id)),false) into v_has_access
-from pd_dfsbenchmarking.assessments where assessments.assessment_id = v_assessment_id and assessments.client_id = v_client_id;
-
-return query
-select 
-vaql.category_id::int,
-vaql.question_id::int,
-vaql.tab_name::varchar,
-vaql.competency::varchar,
-vaql.combined_name::varchar,
-vaql.category_name::varchar,
-vaql.question_title::varchar,
-vaql.formative_text::text,
-vaql.emerging_text::text,
-vaql.developed_text::text,
-coalesce(vacd.client_id,v_client_id)::int,
-coalesce(vacd.assessment_id,v_assessment_id)::int,
-vacd.last_modified_time::timestamp,
-vacd.last_modified_user_id::int,
-vacd.last_modified_user_name::varchar,
-vacd.score::numeric,
-vacd.rationale::text
-from pd_dfsbenchmarking.view_assessment_questions_list vaql
-left join pd_dfsbenchmarking.view_assessments_current_data vacd on vacd.question_id = vaql.question_id
-where coalesce(vacd.assessment_id,v_assessment_id)=v_assessment_id and v_has_access = true;
+	select coalesce(
+					 pd_dfsbenchmarking.user_has_client_access(
+						 assessments.client_id,pd_dfsbenchmarking.user_id_session_chain(v_session_id)),false) into v_has_access
+	from pd_dfsbenchmarking.assessments where assessments.assessment_id = v_assessment_id and assessments.client_id = v_client_id;
+	
+	return query
+	select 
+	vaql.category_id::int,
+	vaql.question_id::int,
+	vaql.tab_name::varchar,
+	vaql.competency::varchar,
+	vaql.combined_name::varchar,
+	vaql.category_name::varchar,
+	vaql.question_title::varchar,
+	vaql.formative_text::text,
+	vaql.emerging_text::text,
+	vaql.developed_text::text,
+	coalesce(vacd.client_id,v_client_id)::int,
+	coalesce(vacd.assessment_id,v_assessment_id)::int,
+	vacd.last_modified_time::timestamp,
+	vacd.last_modified_user_id::int,
+	vacd.last_modified_user_name::varchar,
+	vacd.score::numeric,
+	vacd.rationale::text
+	from pd_dfsbenchmarking.view_assessment_questions_list vaql
+	left join pd_dfsbenchmarking.view_assessments_current_data vacd on vacd.question_id = vaql.question_id
+	where coalesce(vacd.assessment_id,v_assessment_id)=v_assessment_id and v_has_access = true;
 
 END;
 $$;
@@ -262,7 +262,9 @@ BEGIN
 --This function doesn't do much now
 --To Do: create user groups that allow nesting so managers or supervisors can see clients/assessments created under them
 --and admins can see all created
-	select array_agg(distinct user_id) into user_id_chain from pd_dfsbenchmarking.users where session_id = v_session_id::uuid;
+RAISE NOTICE 'user_id_session_chain with v_session_id=%',v_session_id;
+
+	select array_agg(distinct user_id) into user_id_chain from pd_dfsbenchmarking.users where v_session_id is not null and session_id = v_session_id::uuid;
 	return user_id_chain;
 END;
 $$;
@@ -431,47 +433,6 @@ ALTER SEQUENCE pd_dfsbenchmarking.assessments_assessment_id_seq OWNED BY pd_dfsb
 
 
 --
--- Name: clients; Type: TABLE; Schema: pd_dfsbenchmarking; Owner: joebrew
---
-
-CREATE TABLE pd_dfsbenchmarking.clients (
-    client_id integer NOT NULL,
-    ifc_client_id integer,
-    name character varying(255) NOT NULL,
-    short_name character varying(15) NOT NULL,
-    firm_type character varying(255),
-    address character varying(255),
-    city character varying(255),
-    country character varying(255),
-    created_by_user_id integer NOT NULL,
-    created_time timestamp(6) without time zone DEFAULT now() NOT NULL
-);
-
-
-ALTER TABLE pd_dfsbenchmarking.clients OWNER TO joebrew;
-
---
--- Name: clients_client_id_seq; Type: SEQUENCE; Schema: pd_dfsbenchmarking; Owner: joebrew
---
-
-CREATE SEQUENCE pd_dfsbenchmarking.clients_client_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    MAXVALUE 2147483647
-    CACHE 1;
-
-
-ALTER TABLE pd_dfsbenchmarking.clients_client_id_seq OWNER TO joebrew;
-
---
--- Name: clients_client_id_seq; Type: SEQUENCE OWNED BY; Schema: pd_dfsbenchmarking; Owner: joebrew
---
-
-ALTER SEQUENCE pd_dfsbenchmarking.clients_client_id_seq OWNED BY pd_dfsbenchmarking.clients.client_id;
-
-
---
 -- Name: users; Type: TABLE; Schema: pd_dfsbenchmarking; Owner: joebrew
 --
 
@@ -570,30 +531,6 @@ CREATE VIEW pd_dfsbenchmarking.view_client_assessment_listing AS
 ALTER TABLE pd_dfsbenchmarking.view_client_assessment_listing OWNER TO joebrew;
 
 --
--- Name: view_client_listing; Type: TABLE; Schema: pd_dfsbenchmarking; Owner: joebrew
---
-
-CREATE TABLE pd_dfsbenchmarking.view_client_listing (
-    created_by_user_id integer,
-    client_id integer,
-    ifc_client_id integer,
-    name character varying(255),
-    short_name character varying(15),
-    firm_type character varying(255),
-    address character varying(255),
-    city character varying(255),
-    country character varying(255),
-    created_by character varying(255),
-    assessments bigint,
-    last_assessment character varying
-);
-
-ALTER TABLE ONLY pd_dfsbenchmarking.view_client_listing REPLICA IDENTITY NOTHING;
-
-
-ALTER TABLE pd_dfsbenchmarking.view_client_listing OWNER TO joebrew;
-
---
 -- Name: category_id; Type: DEFAULT; Schema: pd_dfsbenchmarking; Owner: joebrew
 --
 
@@ -612,13 +549,6 @@ ALTER TABLE ONLY pd_dfsbenchmarking.assessment_questions ALTER COLUMN question_i
 --
 
 ALTER TABLE ONLY pd_dfsbenchmarking.assessments ALTER COLUMN assessment_id SET DEFAULT nextval('pd_dfsbenchmarking.assessments_assessment_id_seq'::regclass);
-
-
---
--- Name: client_id; Type: DEFAULT; Schema: pd_dfsbenchmarking; Owner: joebrew
---
-
-ALTER TABLE ONLY pd_dfsbenchmarking.clients ALTER COLUMN client_id SET DEFAULT nextval('pd_dfsbenchmarking.clients_client_id_seq'::regclass);
 
 
 --
@@ -737,235 +667,56 @@ COPY pd_dfsbenchmarking.assessment_data (assessment_id, question_id, entry_time,
 24	15	2018-03-11 20:33:43	1	4.0	4
 24	5	2018-03-11 20:37:35	1	6.0	No, actually, great!
 24	5	2018-03-11 20:38:01	1	6.0	No, actually, great!
--1	2	2018-03-12 06:27:10	1	2.0	\N
--1	3	2018-03-12 06:27:10	1	3.0	\N
--1	4	2018-03-12 06:27:10	1	2.0	\N
--1	5	2018-03-12 06:27:10	1	6.0	\N
--1	2	2018-03-12 06:54:57	1	2.0	\N
--1	3	2018-03-12 06:54:57	1	3.0	\N
--1	4	2018-03-12 06:54:57	1	2.0	\N
--1	5	2018-03-12 06:54:57	1	6.0	\N
--1	6	2018-03-12 06:55:05	1	3.5	\N
--1	7	2018-03-12 06:55:11	1	2.0	\N
--1	8	2018-03-12 06:55:15	1	4.5	\N
--1	9	2018-03-12 06:55:18	1	2.5	\N
--1	10	2018-03-12 06:55:23	1	5.0	\N
--1	2	2018-03-12 06:57:11	1	2.0	\N
--1	3	2018-03-12 06:57:11	1	3.0	\N
--1	4	2018-03-12 06:57:11	1	2.0	\N
--1	5	2018-03-12 06:57:11	1	6.0	\N
--1	6	2018-03-12 06:57:17	1	3.5	\N
--1	7	2018-03-12 06:57:17	1	2.0	\N
--1	8	2018-03-12 06:57:17	1	4.5	\N
--1	9	2018-03-12 06:57:17	1	2.5	\N
--1	10	2018-03-12 06:57:17	1	5.0	\N
--1	11	2018-03-12 06:57:22	1	1.5	\N
--1	12	2018-03-12 06:57:26	1	5.5	\N
--1	13	2018-03-12 06:57:28	1	1.0	\N
--1	14	2018-03-12 06:57:33	1	4.5	\N
--1	15	2018-03-12 06:57:35	1	4.0	\N
--1	16	2018-03-12 06:57:43	1	1.5	\N
--1	17	2018-03-12 06:57:46	1	5.0	\N
--1	18	2018-03-12 06:57:49	1	2.0	\N
--1	2	2018-03-12 08:10:10	1	2.0	\N
--1	3	2018-03-12 08:10:10	1	3.0	\N
--1	4	2018-03-12 08:10:10	1	2.0	\N
--1	5	2018-03-12 08:10:10	1	6.0	\N
--1	6	2018-03-12 08:10:17	1	3.5	\N
--1	7	2018-03-12 08:10:17	1	2.0	\N
--1	8	2018-03-12 08:10:17	1	4.5	\N
--1	9	2018-03-12 08:10:17	1	2.5	\N
--1	10	2018-03-12 08:10:17	1	5.0	\N
--1	11	2018-03-12 08:10:20	1	1.5	\N
--1	12	2018-03-12 08:10:20	1	5.5	\N
--1	13	2018-03-12 08:10:20	1	1.0	\N
--1	14	2018-03-12 08:10:20	1	4.5	\N
--1	15	2018-03-12 08:10:23	1	4.0	\N
--1	16	2018-03-12 08:10:23	1	1.5	\N
--1	17	2018-03-12 08:10:23	1	5.0	\N
--1	18	2018-03-12 08:10:23	1	2.0	\N
--1	2	2018-03-12 08:21:08	1	2.0	\N
--1	3	2018-03-12 08:21:08	1	3.0	\N
--1	4	2018-03-12 08:21:08	1	2.0	\N
--1	5	2018-03-12 08:21:08	1	6.0	\N
--1	2	2018-03-12 08:24:06	1	2.0	\N
--1	3	2018-03-12 08:24:06	1	3.0	\N
--1	4	2018-03-12 08:24:06	1	2.0	\N
--1	5	2018-03-12 08:24:06	1	6.0	\N
--1	2	2018-03-12 09:03:40	1	2.0	\N
--1	3	2018-03-12 09:03:40	1	3.0	\N
--1	4	2018-03-12 09:03:40	1	2.0	\N
--1	5	2018-03-12 09:03:40	1	6.0	\N
--1	2	2018-03-12 09:52:11	1	2.0	\N
--1	3	2018-03-12 09:52:11	1	3.0	\N
--1	4	2018-03-12 09:52:11	1	2.0	\N
--1	5	2018-03-12 09:52:11	1	6.0	\N
--1	6	2018-03-12 09:52:27	1	3.5	\N
--1	7	2018-03-12 09:52:27	1	2.0	\N
--1	8	2018-03-12 09:52:27	1	4.5	\N
--1	9	2018-03-12 09:52:27	1	2.5	\N
--1	10	2018-03-12 09:52:27	1	5.0	\N
--1	11	2018-03-12 09:52:35	1	1.5	\N
--1	12	2018-03-12 09:52:35	1	5.5	\N
--1	13	2018-03-12 09:52:35	1	1.0	\N
--1	14	2018-03-12 09:52:35	1	4.5	\N
--1	15	2018-03-12 09:52:37	1	4.0	\N
--1	16	2018-03-12 09:52:37	1	1.5	\N
--1	17	2018-03-12 09:52:37	1	5.0	\N
--1	18	2018-03-12 09:52:37	1	2.0	\N
--1	2	2018-03-12 09:54:27	1	2.0	\N
--1	3	2018-03-12 09:54:27	1	3.0	\N
--1	4	2018-03-12 09:54:28	1	2.0	\N
--1	5	2018-03-12 09:54:28	1	6.0	\N
--1	6	2018-03-12 09:54:30	1	3.5	\N
--1	7	2018-03-12 09:54:30	1	2.0	\N
--1	8	2018-03-12 09:54:30	1	4.5	\N
--1	9	2018-03-12 09:54:30	1	2.5	\N
--1	10	2018-03-12 09:54:30	1	5.0	\N
--1	2	2018-03-12 10:01:33	1	2.0	\N
--1	3	2018-03-12 10:01:33	1	3.0	\N
--1	4	2018-03-12 10:01:33	1	2.0	\N
--1	5	2018-03-12 10:01:33	1	6.0	\N
--1	2	2018-03-12 10:09:16	1	2.0	\N
--1	3	2018-03-12 10:09:16	1	3.0	\N
--1	4	2018-03-12 10:09:16	1	2.0	\N
--1	5	2018-03-12 10:09:16	1	6.0	\N
--1	2	2018-03-12 10:11:02	1	2.0	\N
--1	3	2018-03-12 10:11:02	1	3.0	\N
--1	4	2018-03-12 10:11:02	1	2.0	\N
--1	5	2018-03-12 10:11:02	1	6.0	\N
--1	2	2018-03-12 10:13:17	1	2.0	\N
--1	3	2018-03-12 10:13:17	1	3.0	\N
--1	4	2018-03-12 10:13:17	1	2.0	\N
--1	5	2018-03-12 10:13:17	1	6.0	\N
--1	2	2018-03-12 10:15:30	1	2.0	\N
--1	3	2018-03-12 10:15:30	1	3.0	\N
--1	4	2018-03-12 10:15:30	1	2.0	\N
--1	5	2018-03-12 10:15:30	1	6.0	\N
--1	2	2018-03-12 10:18:09	1	2.0	\N
--1	3	2018-03-12 10:18:09	1	3.0	\N
--1	4	2018-03-12 10:18:09	1	2.0	\N
--1	5	2018-03-12 10:18:09	1	6.0	\N
--1	2	2018-03-12 10:19:26	1	2.0	\N
--1	3	2018-03-12 10:19:26	1	3.0	\N
--1	4	2018-03-12 10:19:26	1	2.0	\N
--1	5	2018-03-12 10:19:26	1	6.0	\N
--1	2	2018-03-12 10:21:33	1	2.0	\N
--1	3	2018-03-12 10:21:33	1	3.0	\N
--1	4	2018-03-12 10:21:33	1	2.0	\N
--1	5	2018-03-12 10:21:33	1	6.0	\N
--1	2	2018-03-12 10:22:21	1	2.0	\N
--1	3	2018-03-12 10:22:21	1	3.0	\N
--1	4	2018-03-12 10:22:21	1	2.0	\N
--1	5	2018-03-12 10:22:21	1	6.0	\N
--1	2	2018-03-12 10:22:24	1	3.5	\N
--1	6	2018-03-12 10:30:07	1	3.5	\N
--1	7	2018-03-12 10:30:07	1	2.0	\N
--1	8	2018-03-12 10:30:07	1	4.5	\N
--1	9	2018-03-12 10:30:07	1	2.5	\N
--1	10	2018-03-12 10:30:07	1	5.0	\N
--1	6	2018-03-12 10:54:38	1	3.5	\N
--1	7	2018-03-12 10:54:38	1	2.0	\N
--1	8	2018-03-12 10:54:38	1	4.5	\N
--1	9	2018-03-12 10:54:38	1	2.5	\N
--1	10	2018-03-12 10:54:38	1	5.0	\N
--1	2	2018-03-12 10:59:58	1	3.5	\N
--1	3	2018-03-12 10:59:58	1	3.0	\N
--1	4	2018-03-12 10:59:58	1	2.0	\N
--1	5	2018-03-12 10:59:58	1	6.0	\N
--1	11	2018-03-12 11:00:00	1	1.5	\N
--1	12	2018-03-12 11:00:00	1	5.5	\N
--1	13	2018-03-12 11:00:00	1	1.0	\N
--1	14	2018-03-12 11:00:00	1	4.5	\N
--1	2	2018-03-12 11:47:57	1	3.5	\N
--1	3	2018-03-12 11:47:57	1	3.0	\N
--1	4	2018-03-12 11:47:57	1	2.0	\N
--1	5	2018-03-12 11:47:57	1	6.0	\N
--1	6	2018-03-12 11:48:01	1	3.5	\N
--1	7	2018-03-12 11:48:01	1	2.0	\N
--1	8	2018-03-12 11:48:01	1	4.5	\N
--1	9	2018-03-12 11:48:01	1	2.5	\N
--1	10	2018-03-12 11:48:01	1	5.0	\N
--1	6	2018-03-12 11:48:04	1	1.5	\N
--1	6	2018-03-12 11:48:06	1	4.5	\N
--1	2	2018-03-12 11:49:32	1	3.5	\N
--1	3	2018-03-12 11:49:32	1	3.0	\N
--1	4	2018-03-12 11:49:32	1	2.0	\N
--1	5	2018-03-12 11:49:32	1	6.0	\N
--1	6	2018-03-12 11:49:39	1	4.5	\N
--1	7	2018-03-12 11:49:39	1	2.0	\N
--1	8	2018-03-12 11:49:39	1	4.5	\N
--1	9	2018-03-12 11:49:39	1	2.5	\N
--1	10	2018-03-12 11:49:39	1	5.0	\N
--1	6	2018-03-12 11:49:42	1	2.5	\N
--1	11	2018-03-12 11:49:56	1	1.5	\N
--1	12	2018-03-12 11:49:56	1	5.5	\N
--1	13	2018-03-12 11:49:56	1	1.0	\N
--1	14	2018-03-12 11:49:56	1	4.5	\N
--1	2	2018-03-12 13:05:39	1	3.5	\N
--1	3	2018-03-12 13:05:40	1	3.0	\N
--1	4	2018-03-12 13:05:40	1	2.0	\N
--1	5	2018-03-12 13:05:40	1	6.0	\N
--1	2	2018-03-12 13:11:28	1	3.5	\N
--1	3	2018-03-12 13:11:28	1	3.0	\N
--1	4	2018-03-12 13:11:28	1	2.0	\N
--1	5	2018-03-12 13:11:28	1	6.0	\N
--1	2	2018-03-12 13:11:49	1	4.0	\N
--1	6	2018-03-12 13:11:53	1	2.5	\N
--1	7	2018-03-12 13:11:53	1	2.0	\N
--1	8	2018-03-12 13:11:53	1	4.5	\N
--1	9	2018-03-12 13:11:53	1	2.5	\N
--1	10	2018-03-12 13:11:54	1	5.0	\N
--1	6	2018-03-12 13:11:57	1	2.0	\N
--1	6	2018-03-12 13:13:52	1	2.0	\N
--1	7	2018-03-12 13:13:52	1	2.0	\N
--1	8	2018-03-12 13:13:52	1	4.5	\N
--1	9	2018-03-12 13:13:52	1	2.5	\N
--1	10	2018-03-12 13:13:52	1	5.0	\N
--1	6	2018-03-12 13:13:55	1	3.5	\N
--1	6	2018-03-12 13:14:05	1	3.0	abc
--1	2	2018-03-12 13:14:47	1	4.0	\N
--1	3	2018-03-12 13:14:47	1	3.0	\N
--1	4	2018-03-12 13:14:47	1	2.0	\N
--1	5	2018-03-12 13:14:47	1	6.0	\N
--1	2	2018-03-12 13:14:59	1	4.5	Here is a comment.
--1	2	2018-03-12 13:21:49	1	4.5	\N
--1	3	2018-03-12 13:21:49	1	3.0	\N
--1	4	2018-03-12 13:21:49	1	2.0	\N
--1	5	2018-03-12 13:21:49	1	6.0	\N
--1	2	2018-03-12 13:21:59	1	3.5	abc
--1	2	2018-03-12 13:24:45	1	3.5	\N
--1	3	2018-03-12 13:24:45	1	3.0	\N
--1	4	2018-03-12 13:24:45	1	2.0	\N
--1	5	2018-03-12 13:24:45	1	6.0	\N
--1	2	2018-03-12 13:24:47	1	3.5	
--1	2	2018-03-12 13:24:51	1	3.5	abc
--1	2	2018-03-12 13:24:55	1	2.5	abc
--1	2	2018-03-12 13:24:56	1	2.5	
--1	2	2018-03-12 13:25:00	1	2.5	def
--1	2	2018-03-12 13:31:35	1	2.5	\N
--1	3	2018-03-12 13:31:35	1	3.0	\N
--1	4	2018-03-12 13:31:35	1	2.0	\N
--1	5	2018-03-12 13:31:35	1	6.0	\N
--1	2	2018-03-12 13:31:38	1	2.0	\N
--1	2	2018-03-12 13:31:40	1	4.0	\N
--1	2	2018-03-12 13:31:42	1	4.0	
--1	2	2018-03-12 13:31:44	1	4.0	abc
--1	11	2018-03-12 13:31:53	1	1.5	\N
--1	12	2018-03-12 13:31:53	1	5.5	\N
--1	13	2018-03-12 13:31:53	1	1.0	\N
--1	14	2018-03-12 13:31:53	1	4.5	\N
--1	11	2018-03-12 13:31:57	1	3.0	\N
--1	11	2018-03-12 13:32:02	1	3.0	
--1	11	2018-03-12 13:32:04	1	3.0	
--1	6	2018-03-12 13:37:25	1	3.0	\N
--1	7	2018-03-12 13:37:25	1	2.0	\N
--1	8	2018-03-12 13:37:26	1	4.5	\N
--1	9	2018-03-12 13:37:26	1	2.5	\N
--1	10	2018-03-12 13:37:26	1	5.0	\N
--1	6	2018-03-12 13:37:29	1	1.5	\N
--1	7	2018-03-12 13:37:33	1	5.5	\N
--1	8	2018-03-12 13:37:38	1	1.5	\N
+24	36	2018-03-13 13:11:20	1	2.0	For question 36 ... I rate 2
+24	19	2018-03-13 13:11:23	1	5.0	For question 19 ... I rate 5
+24	24	2018-03-13 13:11:24	1	2.0	For question 24 ... I rate 2
+24	31	2018-03-13 13:11:26	1	1.0	For question 31 ... I rate 1
+24	5	2018-03-13 13:16:20	1	7.0	For question 5 ... I rate 7
+24	39	2018-03-13 13:16:23	1	3.0	For question 39 ... I rate 3
+24	38	2018-03-13 13:16:24	1	2.0	For question 38 ... I rate 2
+24	35	2018-03-13 13:16:25	1	7.0	For question 35 ... I rate 7
+24	30	2018-03-13 13:20:37	1	3.0	For question 30 ... I rate 3
+24	3	2018-03-13 13:20:40	1	4.0	For question 3 ... I rate 4
+24	31	2018-03-13 13:20:41	1	5.0	For question 31 ... I rate 5
+24	5	2018-03-13 13:20:44	1	6.0	For question 5 ... I rate 6
+24	34	2018-03-13 13:39:15	1	4.0	For question 34 ... I rate 4
+24	15	2018-03-13 13:39:16	1	3.0	For question 15 ... I rate 3
+24	30	2018-03-13 13:39:17	1	6.0	For question 30 ... I rate 6
+24	33	2018-03-13 13:39:25	1	3.0	For question 33 ... I rate 3
+24	34	2018-03-13 14:18:10	1	5.0	For question 34 ... I rate 5
+24	38	2018-03-13 14:18:11	1	7.0	For question 38 ... I rate 7
+24	39	2018-03-13 14:18:12	1	4.0	For question 39 ... I rate 4
+24	15	2018-03-13 14:18:13	1	6.0	For question 15 ... I rate 6
+24	25	2018-03-13 14:59:15	1	6.0	For question 25 ... I rate 6
+24	40	2018-03-13 14:59:16	1	7.0	For question 40 ... I rate 7
+24	24	2018-03-13 14:59:17	1	2.0	For question 24 ... I rate 2
+24	33	2018-03-13 14:59:18	1	3.0	For question 33 ... I rate 3
+24	24	2018-03-13 15:01:46	1	6.0	For question 24 ... I rate 6
+24	6	2018-03-13 15:01:47	1	4.0	For question 6 ... I rate 4
+24	42	2018-03-13 15:01:48	1	6.0	For question 42 ... I rate 6
+24	33	2018-03-13 15:01:48	1	5.0	For question 33 ... I rate 5
+24	5	2018-03-13 15:14:12	1	5.0	For question 5 ... I rate 5
+24	40	2018-03-13 15:14:17	1	1.0	For question 40 ... I rate 1
+24	17	2018-03-13 15:14:18	1	3.0	For question 17 ... I rate 3
+24	39	2018-03-13 15:14:18	1	6.0	For question 39 ... I rate 6
+24	19	2018-03-13 15:24:31	1	1.0	For question 19 ... I rate 1
+24	41	2018-03-13 15:24:33	1	4.0	For question 41 ... I rate 4
+24	29	2018-03-13 15:24:34	1	6.0	For question 29 ... I rate 6
+24	6	2018-03-13 15:24:34	1	3.0	For question 6 ... I rate 3
+24	24	2018-03-13 15:25:39	1	4.0	For question 24 ... I rate 4
+24	41	2018-03-13 15:25:40	1	2.0	For question 41 ... I rate 2
+24	9	2018-03-13 15:25:43	1	4.0	For question 9 ... I rate 4
+24	39	2018-03-13 15:25:44	1	7.0	For question 39 ... I rate 7
+57	16	2018-03-13 15:26:41	1	4.0	For question 16 ... I rate 4
+57	27	2018-03-13 15:26:51	1	1.0	For question 27 ... I rate 1
+57	38	2018-03-13 15:26:58	1	3.0	For question 38 ... I rate 3
+24	7	2018-03-13 15:44:18	1	2.0	For question 7 ... I rate 2
+24	17	2018-03-13 15:44:19	1	4.0	For question 17 ... I rate 4
+24	18	2018-03-13 15:44:20	1	7.0	For question 18 ... I rate 7
+24	14	2018-03-13 15:44:21	1	7.0	For question 14 ... I rate 7
+58	20	2018-03-13 15:45:02	1	1.0	For question 20 ... I rate 1
+58	25	2018-03-13 15:45:05	1	6.0	For question 25 ... I rate 6
+58	28	2018-03-13 15:45:07	1	1.0	For question 28 ... I rate 1
 \.
 
 
@@ -1056,12 +807,11 @@ SELECT pg_catalog.setval('pd_dfsbenchmarking.assessment_questions_question_id_se
 --
 
 COPY pd_dfsbenchmarking.assessments (assessment_id, client_id, assessment_name, assessment_date, created_by_user_id, created_time) FROM stdin;
-1	1	test assessment	2017-10-15	1	2018-03-09 18:55:42.205113
 24	11	New Assessment	2018-03-11	1	2018-03-10 19:19:25.219823
-57	11	1	2018-03-12	1	2018-03-12 06:24:33.283415
-70	10	57	2018-03-12	1	2018-03-12 08:11:05.35116
-87	8	1	2018-03-12	1	2018-03-12 08:32:40.025025
-131	7	24	2018-03-12	1	2018-03-12 11:49:26.324942
+56	14	New Assessment 54	2018-01-18	1	2018-03-13 11:25:04.217878
+57	15	New Assessment 100	2017-12-03	1	2018-03-13 11:26:11.751836
+1	1	Assessment Name Update 85	2017-12-18	1	2018-03-09 18:55:42.205113
+58	16	New Assessment 11	2018-03-02	1	2018-03-13 11:44:58.511648
 \.
 
 
@@ -1069,28 +819,7 @@ COPY pd_dfsbenchmarking.assessments (assessment_id, client_id, assessment_name, 
 -- Name: assessments_assessment_id_seq; Type: SEQUENCE SET; Schema: pd_dfsbenchmarking; Owner: joebrew
 --
 
-SELECT pg_catalog.setval('pd_dfsbenchmarking.assessments_assessment_id_seq', 142, true);
-
-
---
--- Data for Name: clients; Type: TABLE DATA; Schema: pd_dfsbenchmarking; Owner: joebrew
---
-
-COPY pd_dfsbenchmarking.clients (client_id, ifc_client_id, name, short_name, firm_type, address, city, country, created_by_user_id, created_time) FROM stdin;
-7	100000	Yapi Kredi Bankasi	Yapi Kredi	Bank	\N	Istanbul	Turkey	1	2018-03-10 12:36:27.176374
-8	200000	Yapi Kredi Bankasi2	Yapi Kredi2	Bank	\N	Istanbul	Turkey	1	2018-03-10 16:21:57.908626
-10	200000	Yapi Kredi Bankasi3	Yapi Kredi3	Bank	\N	Istanbul	Turkey	1	2018-03-10 16:32:36.922313
-2	\N	Is Bankasi	Is Bank	bank	\N	Istanbul	Turkey	5	2018-03-10 12:35:48.300008
-1	0	Garanti Bankasi	Garanti	bank	\N	Istanbul	Turkey	1	2018-03-09 18:55:04.741104
-11	200035	Frank	Mr. F					1	2018-03-10 16:32:53.578021
-\.
-
-
---
--- Name: clients_client_id_seq; Type: SEQUENCE SET; Schema: pd_dfsbenchmarking; Owner: joebrew
---
-
-SELECT pg_catalog.setval('pd_dfsbenchmarking.clients_client_id_seq', 13, true);
+SELECT pg_catalog.setval('pd_dfsbenchmarking.assessments_assessment_id_seq', 59, true);
 
 
 --
@@ -1102,7 +831,7 @@ COPY pd_dfsbenchmarking.users (user_id, username, password, name, email, upi, ca
 3	test1	$1$aGstpxLZ$wmVnQLxF.70AMpQ51ftFN0	Soren test1	\N	\N	t	2018-03-10 07:46:08.379318	\N	f
 4	test2	$1$YYIcDwCS$0cZ25s4EaWquXYvq96Cs9.	Soren test1	\N	\N	t	\N	\N	f
 5	joe	$1$aTc/PFPD$d8mVat5rcZ/nSK3xXFjQy.	Joe Brew	\N	\N	t	2018-03-10 12:24:43.881231	81a1c607-6c92-44b7-aac9-3a39cd9b2573	f
-1	MEL	$1$9FLfnwld$amkkGyaJvBpW3QT5VEzC6.	MEL Team	\N	\N	t	2018-03-12 13:56:18.774767	4f73a0c0-3f21-40ab-bc38-f106502bf690	f
+1	MEL	$1$9FLfnwld$amkkGyaJvBpW3QT5VEzC6.	MEL Team	\N	\N	t	2018-03-13 12:40:54.717138	dafe7cbb-87c8-42eb-bb98-e6f4393d2880	f
 \.
 
 
@@ -1162,30 +891,6 @@ ALTER TABLE ONLY pd_dfsbenchmarking.assessments
 
 
 --
--- Name: clients_name_key; Type: CONSTRAINT; Schema: pd_dfsbenchmarking; Owner: joebrew
---
-
-ALTER TABLE ONLY pd_dfsbenchmarking.clients
-    ADD CONSTRAINT clients_name_key UNIQUE (name);
-
-
---
--- Name: clients_pkey; Type: CONSTRAINT; Schema: pd_dfsbenchmarking; Owner: joebrew
---
-
-ALTER TABLE ONLY pd_dfsbenchmarking.clients
-    ADD CONSTRAINT clients_pkey PRIMARY KEY (client_id);
-
-
---
--- Name: clients_short_name_key; Type: CONSTRAINT; Schema: pd_dfsbenchmarking; Owner: joebrew
---
-
-ALTER TABLE ONLY pd_dfsbenchmarking.clients
-    ADD CONSTRAINT clients_short_name_key UNIQUE (short_name);
-
-
---
 -- Name: users_pkey; Type: CONSTRAINT; Schema: pd_dfsbenchmarking; Owner: joebrew
 --
 
@@ -1212,30 +917,6 @@ CREATE UNIQUE INDEX assessment_question_categories_category_name_idx ON pd_dfsbe
 --
 
 CREATE UNIQUE INDEX users_username_idx ON pd_dfsbenchmarking.users USING btree (username);
-
-
---
--- Name: view_client_listing _RETURN; Type: RULE; Schema: pd_dfsbenchmarking; Owner: joebrew
---
-
-CREATE RULE "_RETURN" AS
-    ON SELECT TO pd_dfsbenchmarking.view_client_listing DO INSTEAD  SELECT clients.created_by_user_id,
-    clients.client_id,
-    clients.ifc_client_id,
-    clients.name,
-    clients.short_name,
-    clients.firm_type,
-    clients.address,
-    clients.city,
-    clients.country,
-    users.name AS created_by,
-    count(DISTINCT assessments.assessment_id) AS assessments,
-    COALESCE((max(assessments.assessment_date))::character varying, 'Never'::character varying) AS last_assessment
-   FROM ((pd_dfsbenchmarking.clients
-     JOIN pd_dfsbenchmarking.users ON ((users.user_id = clients.created_by_user_id)))
-     LEFT JOIN pd_dfsbenchmarking.assessments ON ((assessments.client_id = clients.client_id)))
-  GROUP BY clients.created_by_user_id, clients.client_id, clients.ifc_client_id, clients.name, clients.short_name, clients.firm_type, clients.address, clients.city, clients.country, users.name
-  ORDER BY clients.created_time DESC;
 
 
 --
