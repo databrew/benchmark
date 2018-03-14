@@ -756,7 +756,7 @@ server <- function(input, output, session) {
     clients_names <- gcl$name
     names(clients) <- paste0(clients_names, ' (id:', clients,')')
     selectInput('client',
-                'Client',
+                'Select a client',
                 choices = clients)
   })
   # Load the selected client
@@ -817,12 +817,42 @@ server <- function(input, output, session) {
     if(show_table){
       if(is.data.frame(assessment_info)){
         if(nrow(assessment_info) > 0){
-          prettify(assessment_info, download_options = TRUE)
+          prettify(assessment_info %>%
+                     dplyr::select(combined_name, score), download_options = TRUE)
         }
       }
     }
   })
   
+  # Observe the create new client and show a modal for it
+  observeEvent(input$create_client,{
+    showModal(
+      modalDialog(
+        title = "Create a new client",
+        fluidPage(
+          h4('Under construction')
+        ),
+        easyClose = TRUE,
+        footer = action_modal_button('create_client_confirm', "Submit", icon = icon('check-circle')),
+        size = 'l'
+      )
+    )
+  })
+  
+  # Observe the create new assessment button and show modal for it
+  observeEvent(input$create_assessment,{
+    showModal(
+      modalDialog(
+        title = "Create a new assessment",
+        fluidPage(
+          h4('Under construction')
+        ),
+        easyClose = TRUE,
+        footer = action_modal_button('create_assessment_confirm', "Submit", icon = icon('check-circle')),
+        size = 'l'
+      )
+    )
+  })
   
   
   # On session end, close the pool
