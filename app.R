@@ -799,7 +799,11 @@ server <- function(input, output, session) {
       }
     }
     if(show_table){
-      prettify(assessment_info, download_options = TRUE)
+      if(is.data.frame(assessment_info)){
+        if(nrow(assessment_info) > 0){
+          prettify(assessment_info, download_options = TRUE)
+        }
+      }
     }
   })
   
