@@ -277,8 +277,8 @@ server <- function(input, output, session) {
     USER <- reactiveValues(db_session_id=NULL,user_id=NULL,user_name=NULL,current_client_id=NULL,current_assessment_id=NULL)
     LISTINGS <- reactiveValues(client_listing=NULL,client_assessment_listing=NULL)
     ASSESSMENT <- reactiveValues(assessment_template=NULL,assessment_data=NULL) #Will take two data.frames: one, layout of questions and categores; two, the data to go along
-    STATUS <- reactiveVal(value="Please login")
-    logged_in <- reactiveVal(value = FALSE)
+    STATUS("Please login")
+    logged_in(FALSE)
     failed_log_in <- reactiveVal(value = 0)
     user('')
     logged_in(FALSE)
@@ -608,65 +608,78 @@ server <- function(input, output, session) {
     )
   
   output$menu <- renderMenu({
-    
+    li <- logged_in()
     mt <- main_tab()
+    
     sidebarMenu(
       generate_menu(text="Instructions",
                     tabName="instructions",
                     icon=icon("leanpub"),
                     submissions = submissions, mt = mt,
-                    pass = TRUE),
+                    pass = TRUE, 
+                    loggedin = li),
       generate_menu(text="Strategy and execution",
                     tabName="strategy_and_execution",
                     icon=icon("crosshairs"),
-                    submissions = submissions, mt = mt),
+                    submissions = submissions, mt = mt, 
+                    loggedin = li),
       generate_menu(text="Organization and governance",
                     tabName="organization_and_governance",
                     icon=icon("sitemap"),
-                    submissions = submissions, mt = mt),
-      
+                    submissions = submissions, mt = mt, 
+                    loggedin = li),
       generate_menu(text="Partnerships",
                     tabName="partnerships",
                     icon=icon("asterisk"),
-                    submissions = submissions, mt = mt),
+                    submissions = submissions, mt = mt, 
+                    loggedin = li),
       generate_menu(text="Products",
                     tabName="products",
                     icon=icon("gift"),
-                    submissions = submissions, mt = mt),
+                    submissions = submissions, mt = mt, 
+                    loggedin = li),
       generate_menu(text="Marketing",
                     tabName="marketing",
                     icon=icon("shopping-cart"),
-                    submissions = submissions, mt = mt),
+                    submissions = submissions, mt = mt, 
+                    loggedin = li),
       generate_menu(text="Distribution and channels",
                     tabName="distribution_and_channels",
                     icon=icon("exchange"),
-                    submissions = submissions, mt = mt),
+                    submissions = submissions, mt = mt, 
+                    loggedin = li),
       generate_menu(text="Risk management",
                     tabName="risk_management",
                     icon=icon("tasks"),
-                    submissions = submissions, mt = mt),
+                    submissions = submissions, mt = mt, 
+                    loggedin = li),
       generate_menu(text="IT and MIS",
                     tabName="it_and_mis",
                     icon=icon("laptop"),
-                    submissions = submissions, mt = mt),
+                    submissions = submissions, mt = mt, 
+                    loggedin = li),
       generate_menu(text="Operations and customer service",
                     tabName="operations_and_customer_service",
                     icon=icon("users"),
-                    submissions = submissions, mt = mt),
+                    submissions = submissions, mt = mt, 
+                    loggedin = li),
       generate_menu(text="Responsible finance",
                     tabName="responsible_finance",
                     icon=icon("thumbs-up"),
-                    submissions = submissions, mt = mt),
+                    submissions = submissions, mt = mt, 
+                    loggedin = li),
       generate_menu(text="Graphs",
                     tabName="graphs",
                     icon=icon("signal"),
                     submissions = submissions, mt = mt,
-                    pass = TRUE),
+                    pass = TRUE, 
+                    loggedin = li),
       generate_menu(text = 'About',
                     tabName = 'about',
                     icon = icon('book'),
                     submissions = submissions, mt = mt,
-                    pass = TRUE)
+                    pass = TRUE, 
+                    loggedin = li)
     )
   })
   # isolate({
