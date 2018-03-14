@@ -227,8 +227,15 @@ server <- function(input, output, session) {
   # Define some reactive values for later update
   USER <- reactiveValues(db_session_id=NULL,user_id=NULL,user_name=NULL,current_client_id=NULL,current_assessment_id=NULL)
   LISTINGS <- reactiveValues(client_listing=NULL,client_assessment_listing=NULL)
+  #CLIENT <- reactiveValues(client_info=NULL)
   ASSESSMENT <- reactiveValues(assessment_template=NULL,assessment_data=NULL) #Will take two data.frames: one, layout of questions and categores; two, the data to go along
+  #HELPER FUNCTIONS
+  source('session_functions.R', local = TRUE)
   STATUS <- reactiveVal(value="Please login")
+  update_session <- function(status) {
+    STATUS <<- status
+    print(paste("Status updated to: ",STATUS))
+  }
   user <- reactiveVal(value = '')
   logged_in <- reactiveVal(value = FALSE)
   failed_log_in <- reactiveVal(value = 0)
@@ -253,10 +260,9 @@ server <- function(input, output, session) {
       USER$db_session_id <- log_in_attempt$session_id
       USER$current_client_id <- NULL #They didn't select one yet!  Must select from a list provided by client_listing
       USER$current_assessment_id <- NULL #They didn't select one yet!  Must (a) Select a client (b) Select from a list provided by client_assessment_listing
-      LISTINGS$client_listing <- db_get_client_listing(get_db_session_id())
-      # 
-      # print("Login Result")
-      # print(log_in_attempt)
+      refresh_client_listing()    
+      message("Login Result")
+      print(log_in_attempt)
     } else {
       # failed log-in, send signal to re-render the log-in modal
       fli <- failed_log_in()

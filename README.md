@@ -28,12 +28,12 @@ CREATE SCHEMA pd_dfsbenchmarking
 Once database is in shape, dump this project's schema with data:
 
 ```
-pg_dump -d dev -n pd_dfsbenchmarking -f data/2018-03-13_clean.sql
+pg_dump -d dev -n pd_dfsbenchmarking -f data/2018-03-14_clean.sql
 ```
 
 - Restore the locally created dump from within psql
 ``` 
-\i 'data/2018-03-13_clean.sql'
+\i 'data/2018-03-14_clean.sql'
 ```
 
 - Grant relevant privileges
