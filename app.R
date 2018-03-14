@@ -79,10 +79,27 @@ body <- dashboardBody(
       tabName = 'configuration',
       fluidPage(
         fluidRow(
-          column(6,
+          column(6, align = 'center',
                  uiOutput('configuration_ui_left')),
-          column(6,
+          column(6, align = 'center',
                  uiOutput('configuration_ui_right'))
+        ),
+        fluidRow(
+          column(6, align = 'center',
+                 h4('or', align = 'center'),
+                 actionButton('create_client',
+                              'Create new client',
+                              icon = icon('user', 'fa-3x'))),
+          column(6, align = 'center',
+                 h4('or', align = 'center'),
+                 actionButton('create_assessment',
+                              'Create new assessment',
+                              icon = icon('address-card', 'fa-3x')))
+        ),
+        fluidRow(
+          column(12,
+                 h4('Assessment data', align = 'center'),
+                 DT::dataTableOutput('assessment_table'))
         )
       )
       
@@ -770,12 +787,11 @@ server <- function(input, output, session) {
       fluidPage(
         selectInput('assessment',
                     'Select an assessment', 
-                    assessments),
-        DT::dataTableOutput('assessment_table')
+                    assessments)
       )
     } else {
       fluidPage(h3('No assessments yet exist for this client.', align = 'center'),
-                h3(icon('arrow-left', 'fa-3x'), align = 'center'))
+                h3(icon('arrow-down', 'fa-3x'), align = 'center'))
     }
   })
   # Load the selected assessment
