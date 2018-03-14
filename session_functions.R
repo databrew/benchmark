@@ -5,10 +5,6 @@ print("LOADING SESSION FUNCTIONS")
 loggedin <- function() { return(!is.null(USER$db_session_id) && !is.null(USER$user_id) && USER$user_id >-1) }
 #logout <- function() { SESSION <<- list();  return (!loggedin()) }
 
-
-
-
-
 #HELPER FUNCTIONS: get/set
 #Not sure if best to keep these in isolate() to ensure they don't trigger reactivity and to manually reference reactiveValues in the render functions, or to leave exposed to reactivity?
 get_user_id <- function() { return(isolate(USER$user_id)) }
@@ -47,18 +43,12 @@ assessment_has_new_data <- function()
 ##TODO: Ensure only records changes if changes are actually made.  Ie, not setting 4 to 4 and same-text to same-text
 record_assessment_data_entry <- function(question_id,score,rationale)
 {
-  client_id <- get_current_client_id()
-  message('---client_id: ', client_id)
-  assessment_id <- get_current_assessment_id()
-  message('---assessment_id: ', assessment_id)
-  if(is.na(assessment_id) | length(assessment_id) == 0){
-    assessment_id <- -1
-    message('------ forcing to: ', assessment_id)
-  }
-  
-  
+
   if (!loggedin()) return(message("Warning: Not logged in"));
   if (is.null(client_id) | is.null(assessment_id)) return(message("Error: attempt to save data entry without current client/assessment"))
+  
+  client_id <- get_current_client_id()
+  assessment_id <- get_current_assessment_id()
   
   assessment_data <- get_current_assessment_data()
   
@@ -89,7 +79,7 @@ record_assessment_data_entry <- function(question_id,score,rationale)
     if (any(filter, na.rm = TRUE)) assessment_data <- assessment_data[!filter,] 
     assessment_data <- rbind(assessment_data,entry)
   }
-  ASSESSMENT$assessment_data <- assessment_data
+  ASSESSMENT$assessment_data <<- assessment_data
   
   return (assessment_data)
 }
@@ -166,11 +156,19 @@ load_client_assessment <- function(selected_assessment_id)
   
 }
 
+save_assessment_data <- function()
+{
+  unsaved_assessment_data <- get_current_assessment_data()
+  saved_assessment_data <- db_save_client_assessment_data(get_db_session_id(),unsaved_assessment_data)
+  ASSESSMENT$assessment_data <<- saved_assessment_data
+  return (saved_assessment_data)
+}
+
 unload_client_assessment <- function() 
 {
   print("Unloading assessment")
   print("SAVING NEW DATA...just in case")
-  db_save_client_assessment_data(get_db_session_id(),get_current_assessment_data_changed())
+  save_assessment_data()
   
   ASSESSMENT$assessment_data <<- NULL
   ASSESSMENT$assessment_template <<- NULL

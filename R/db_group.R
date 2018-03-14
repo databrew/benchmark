@@ -123,7 +123,7 @@ db_save_client_assessment_data <- function(db_session_id,assessment_data)
   start_time <- Sys.time()
   
   saving_data <- subset(x=assessment_data,subset=is_changed==TRUE,select=c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","score","rationale"))
-  saving_data$assessment_id <- ifelse(is.na(saving_data$assessment_id), -1, saving_data$assessment_id)
+  #saving_data$assessment_id <- ifelse(is.na(saving_data$assessment_id), -1, saving_data$assessment_id)
   
   conn <- poolCheckout(db_get_pool())
   

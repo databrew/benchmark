@@ -93,12 +93,7 @@ server <- function(input, output) {
   }
   call_save_and_close <- function()
   {
-    new_data <- get_current_assessment_data_changed()
-    print("SAVING NEW DATA: ")
-    print(new_data)
-    saved <- db_save_client_assessment_data(get_db_session_id(),new_data)
-    print(paste0("SAVED: ",nrow(saved)))
-    
+    save_assessment_data()
     unload_client_assessment()
     unload_client()
   }
