@@ -86,18 +86,19 @@ body <- dashboardBody(
         ),
         fluidRow(
           column(6, align = 'center',
-                 h4('or', align = 'center'),
                  actionButton('create_client',
                               'Create new client',
                               icon = icon('user', 'fa-3x'))),
           column(6, align = 'center',
-                 h4('or', align = 'center'),
                  actionButton('create_assessment',
                               'Create new assessment',
                               icon = icon('address-card', 'fa-3x')))
         ),
         fluidRow(
-          column(12,
+          column(6,
+                 h4('Client data', align = 'center'),
+                 DT::dataTableOutput('client_table')),
+          column(6,
                  h4('Assessment data', align = 'center'),
                  DT::dataTableOutput('assessment_table'))
         )
@@ -790,8 +791,7 @@ server <- function(input, output, session) {
                     assessments)
       )
     } else {
-      fluidPage(h3('No assessments yet exist for this client.', align = 'center'),
-                h3(icon('arrow-down', 'fa-3x'), align = 'center'))
+      fluidPage(h3('No assessments yet exist for this client.', align = 'center'))
     }
   })
   # Load the selected assessment
@@ -800,6 +800,24 @@ server <- function(input, output, session) {
     message("You selected client_assessment_id=",UI_SELECTED_ASSESSMENT_ID)
     assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID) #CLIENT$client_info and LISTINGS$client_assessment_listing set in load_client()
   })
+  
+  # Table of client info
+  output$client_table <- DT::renderDataTable({
+    UI_SELECTED_CLIENT_ID <- input$client
+    message('Selected client ', UI_SELECTED_CLIENT_ID)
+    client_info <- load_client(UI_SELECTED_CLIENT_ID)
+    if(!is.null(client_info)){
+      if(is.data.frame(client_info)){
+        prettify(client_info %>%
+                   dplyr::select(name,
+                                 short_name,
+                                 firm_type,
+                                 city),
+                 download_options = TRUE)
+      }
+    }
+  })
+  
   # Table of assessment info
   output$assessment_table <- DT::renderDataTable({
     UI_SELECTED_ASSESSMENT_ID <- input$assessment
@@ -830,7 +848,28 @@ server <- function(input, output, session) {
       modalDialog(
         title = "Create a new client",
         fluidPage(
-          h4('Under construction')
+          fluidRow(
+            column(4,
+                   textInput('new_client_name',
+                             'Name')),
+            column(4,
+                   textInput('new_client_short_name',
+                             'Short name')),
+            column(4,
+                   textInput('new_client_firm_type',
+                             'Firm type'))
+          ),
+          fluidRow(
+            column(4,
+                   textInput('new_client_address',
+                             'Address')),
+            column(4,
+                   textInput('new_client_city',
+                             'City')),
+            column(4,
+                   textInput('new_client_country',
+                             'Country'))
+          )
         ),
         easyClose = TRUE,
         footer = action_modal_button('create_client_confirm', "Submit", icon = icon('check-circle')),
@@ -852,6 +891,27 @@ server <- function(input, output, session) {
         size = 'l'
       )
     )
+  })
+  
+  # Upon creation of a new client, unload the previous one and load the newly created on
+  observeEvent(input$create_client_confirm, {
+    # Unload the previous client
+    unload_client()
+    unload_client_assessment()
+    # Create a new one
+    random_100 <- ceiling(runif(1,1,100))
+    UI_CLIENT_FORM <- data.frame(client_id=-1,
+                                 ifc_client_id=random_100,
+                                 name= input$new_client_name,
+                                 short_name = input$new_client_short_name,
+                                 firm_type = input$new_client_firm_type,
+                                 address = input$new_client_address,
+                                 city= input$new_client_city,
+                                 country= input$new_client_country,
+                                 stringsAsFactors = F)
+    new_client_id <- db_edit_client(get_db_session_id(),UI_CLIENT_FORM$client_id,UI_CLIENT_FORM) #Client_id=-1 needs to come from the UI form, where -1 is specified as value when user clicks on 'add new'.  A separate argument to db_edit just for clarity as it's the key ID
+    print(paste0("Client ",UI_CLIENT_FORM$name," has been added as client_id=",new_client_id))
+    refresh_client_listing()
   })
   
   
