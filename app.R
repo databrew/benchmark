@@ -77,7 +77,15 @@ body <- dashboardBody(
     ),
     tabItem(
       tabName = 'configuration',
-      uiOutput('configuration_ui')
+      fluidPage(
+        fluidRow(
+          column(6,
+                 uiOutput('configuration_ui_left')),
+          column(6,
+                 uiOutput('configuration_ui_right'))
+        )
+      )
+      
     ),
     tabItem(
       tabName="strategy_and_execution",
@@ -720,10 +728,55 @@ server <- function(input, output, session) {
     }
   })
   
-  # Configuration ui
-  output$configuration_ui <- renderUI({
+  # Configuration uis
+  output$configuration_ui_left <- renderUI({
     h3('Configuration goes here')
+    
+    # Pickable clients
+    gcl <- get_client_listing()
+    print(head(gcl))
+    clients <- gcl$client_id
+    clients_names <- gcl$name
+    names(clients) <- paste0(clients_names, ' (id:', clients,')')
+    selectInput('client',
+                'Client',
+                choices = clients)
   })
+  # Load the selected client
+  observeEvent(input$client, {
+    UI_SELECTED_CLIENT_ID <- input$client
+    message('Selected client ', UI_SELECTED_CLIENT_ID)
+    client_info <- load_client(UI_SELECTED_CLIENT_ID) #CLIENT$client_info and LISTINGS$client_assessment_listing set in load_client()
+    message('---client info is')
+    print(head(client_info, 3))
+    message('---client listing is')
+    print(head(get_client_listing(), 3))
+  })
+  
+  output$configuration_ui_right <- renderUI({
+    gccal <- get_current_client_assessment_listing()
+    show_menu <- FALSE
+    if(!is.null(gccal)){
+      message('gccal is ', gccal)
+      assessments <- gccal$assessment_id 
+      if(!is.null(assessments)){
+        if(length(assessments) > 0){
+          show_menu <- TRUE
+          names(assessments) <- paste0(gccal$assessment_name, ' (id:', gccal$assessment_id, ')')      
+        }
+      }
+    } 
+    if(show_menu){
+      selectInput('assessment',
+                  'Select an assessment', 
+                  assessments)
+    } else {
+      fluidPage(h3('No assessments yet exist for this client.', align = 'center'),
+                h3(icon('arrow-left', 'fa-3x'), align = 'center'))
+    }
+  })
+  
+  
   
   # On session end, close the pool
   session$onSessionEnded(function() {
