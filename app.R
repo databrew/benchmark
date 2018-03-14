@@ -76,6 +76,10 @@ body <- dashboardBody(
       
     ),
     tabItem(
+      tabName = 'configuration',
+      uiOutput('configuration_ui')
+    ),
+    tabItem(
       tabName="strategy_and_execution",
       uiOutput('strategy_and_execution_ui')
     ),
@@ -267,6 +271,16 @@ server <- function(input, output, session) {
       # failed log-in, send signal to re-render the log-in modal
       fli <- failed_log_in()
       failed_log_in(fli + 1)
+    }
+  })
+  
+  
+  # Observe log in submit and prompt selection of client and assessment name
+  observeEvent(input$log_in_submit, {
+    li <- logged_in()
+    if(li){
+      message('Changing to configuration tab having now logged-in')
+      updateTabItems(session, "tabs", 'configuration')
     }
   })
   
@@ -618,6 +632,12 @@ server <- function(input, output, session) {
                     submissions = submissions, mt = mt,
                     pass = TRUE, 
                     loggedin = li),
+      generate_menu(text="Configuration",
+                    tabName="configuration",
+                    icon=icon("gears"),
+                    pass = TRUE,
+                    submissions = submissions, mt = mt,
+                    loggedin = li),
       generate_menu(text="Strategy and execution",
                     tabName="strategy_and_execution",
                     icon=icon("crosshairs"),
@@ -698,6 +718,11 @@ server <- function(input, output, session) {
       message('That was slow. Setting it to ', it)
       main_tab(it)
     }
+  })
+  
+  # Configuration ui
+  output$configuration_ui <- renderUI({
+    h3('Configuration goes here')
   })
   
   # On session end, close the pool
