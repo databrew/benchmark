@@ -787,11 +787,15 @@ server <- function(input, output, session) {
   # Table of assessment info
   output$assessment_table <- DT::renderDataTable({
     UI_SELECTED_ASSESSMENT_ID <- input$assessment
-    assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID)
     show_table <- FALSE
-    if(!is.null(assessment_info)){
-      if(nrow(assessment_info) > 0){
-        show_table <- TRUE
+    if(!is.null(UI_SELECTED_ASSESSMENT_ID)){
+      if(length(UI_SELECTED_ASSESSMENT_ID) > 0){
+        assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID)
+        if(!is.null(assessment_info)){
+          if(length(assessment_info) > 0){
+            show_table <- TRUE
+          }
+        }
       }
     }
     if(show_table){

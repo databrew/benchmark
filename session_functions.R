@@ -133,8 +133,17 @@ load_client_assessment <- function(selected_assessment_id)
   if (is.null(get_current_client_id())) return(message("Error: No client is loaded.  Load client before loading assessment."))
   
   #Check to make sure selected_assessment exists!
-  current_assessment <- subset(get_current_client_assessment_listing(),subset=assessment_id==selected_assessment_id) 
-  if (nrow(current_assessment) != 1) return(message(paste0("Error: Requested assessment ",selected_assessment_id," not found!")))
+  gccal <- get_current_client_assessment_listing()
+  go <- FALSE
+  if(!is.null(gccal)){
+    if(length(gccal) > 0){
+      current_assessment <- subset(gccal,subset=assessment_id==selected_assessment_id) 
+      go <- TRUE
+    }
+  }
+  if (go){
+    if(nrow(current_assessment) != 1) return(message(paste0("Error: Requested assessment ",selected_assessment_id," not found!")))
+  }
 
   print(paste0("load_client_assessment: ",get_db_session_id()," , ",get_current_client_id()," , ", selected_assessment_id))  
   assessment_template <- db_get_client_assessment_data(get_db_session_id(),get_current_client_id(),selected_assessment_id)
