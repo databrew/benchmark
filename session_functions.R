@@ -44,11 +44,13 @@ assessment_has_new_data <- function()
 record_assessment_data_entry <- function(question_id,score,rationale)
 {
 
-  if (!loggedin()) return(message("Warning: Not logged in"));
-  if (is.null(client_id) | is.null(assessment_id)) return(message("Error: attempt to save data entry without current client/assessment"))
+  if (!loggedin()) return(message("Warning: Not logged in"))
   
   client_id <- get_current_client_id()
   assessment_id <- get_current_assessment_id()
+  
+  if (is.null(client_id) | is.null(assessment_id)) return(message("Error: attempt to save data entry without current client/assessment"))
+  
   
   assessment_data <- get_current_assessment_data()
   
