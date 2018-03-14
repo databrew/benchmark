@@ -767,12 +767,35 @@ server <- function(input, output, session) {
       }
     } 
     if(show_menu){
-      selectInput('assessment',
-                  'Select an assessment', 
-                  assessments)
+      fluidPage(
+        selectInput('assessment',
+                    'Select an assessment', 
+                    assessments),
+        DT::dataTableOutput('assessment_table')
+      )
     } else {
       fluidPage(h3('No assessments yet exist for this client.', align = 'center'),
                 h3(icon('arrow-left', 'fa-3x'), align = 'center'))
+    }
+  })
+  # Load the selected assessment
+  observeEvent(input$assessment,{
+    UI_SELECTED_ASSESSMENT_ID <- input$assessment
+    message("You selected client_assessment_id=",UI_SELECTED_ASSESSMENT_ID)
+    assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID) #CLIENT$client_info and LISTINGS$client_assessment_listing set in load_client()
+  })
+  # Table of assessment info
+  output$assessment_table <- DT::renderDataTable({
+    UI_SELECTED_ASSESSMENT_ID <- input$assessment
+    assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID)
+    show_table <- FALSE
+    if(!is.null(assessment_info)){
+      if(nrow(assessment_info) > 0){
+        show_table <- TRUE
+      }
+    }
+    if(show_table){
+      prettify(assessment_info, download_options = TRUE)
     }
   })
   
