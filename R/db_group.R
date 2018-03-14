@@ -116,26 +116,35 @@ db_save_client_assessment_data <- function(db_session_id,assessment_data)
                  last_modified_time="timestamptz",
                  last_modified_user_id="int",
                  score="numeric",
-                 rationale="text")
+                 rationale="varchar")
   
-  #assessment_data <- get_current_assessment_data()
-  #assessment_data$assessment_id <- get_current_assessment_id()
   start_time <- Sys.time()
   
   saving_data <- subset(x=assessment_data,subset=is_changed==TRUE,select=c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","score","rationale"))
-  #saving_data$assessment_id <- ifelse(is.na(saving_data$assessment_id), -1, saving_data$assessment_id)
+  if (nrow(saving_data)==0) return (assessment_data) #No data to save
+  if (any(is.na(saving_data$client_id))) return(warning("Unable to save client_assessment_data: NAs in client_id"))
+  if (any(is.na(saving_data$assessment_id))) return(warning("Unable to save client_assessment_data: NAs in assessment_id"))
+  if (any(is.na(saving_data$question_id))) return(warning("Unable to save client_assessment_data: NAs in question_id"))
+  if (any(is.na(saving_data$last_modified_user_id))) return(warning("Unable to save client_assessment_data: NAs in last_modified_user_id"))
+  if (any(is.na(saving_data$score) || is.null(saving_data$score) || saving_data$score > 7 || saving_data$score < 1)) return(warning("Unable to save client_assessment_data: score out of range 1-7"))
+  
+  saving_data[is.na(saving_data$rationale) | is.null(saving_data$rationale),"rationale"] <- "" #Insert blank strings instead of NULL where no rationale
   
   conn <- poolCheckout(db_get_pool())
   
   #There's a vague chance that multiple users will be writing to table concurrently -- so it's never deleted
-  dbWriteTable(conn,name=c("public","_pd_dfsbenchmarking_save_client_assessment_data"),value=saving_data,append=TRUE,overwrite=FALSE,row.names=FALSE,field.types=fields)
+  #dbWriteTable(conn,name=c("public","_pd_dfsbenchmarking_save_client_assessment_data"),value=saving_data,append=TRUE,overwrite=FALSE,row.names=FALSE,field.types=fields)
+  dbSendQuery(conn,"drop table if exists public._pd_dfsbenchmarking_save_client_assessment_data")
+  dbWriteTable(conn,name=c("public","_pd_dfsbenchmarking_save_client_assessment_data"),value=saving_data,row.names=FALSE,field.types=fields)
   
   ##If table doesn't get deleted, just need to create this once in the DB and not via script
   ##dbSendQuery(conn,"create index if not exists _pd_dfsbenchmarking_save_client_assessment_data_index ON public._pd_dfsbenchmarking_save_client_assessment_data USING btree (assessment_id,question_id,last_modified_time);");
   message('______about to save data')
   rows_inserted <- dbGetQuery(conn,"select pd_dfsbenchmarking.assessments_data_save( $1 );",params=list(session_id=db_session_id))
-  poolReturn(conn)
+
   message('______saved data')
+  
+  poolReturn(conn)
   rows_expected <- sum(assessment_data$is_changed)
   rows_inserted <- as.numeric(unlist(rows_inserted))
   if (rows_expected != rows_inserted) message(paste0("Warning: Saving Assessment Data expected to save ",rows_expected," but reported ",rows_inserted," affected"))
@@ -143,8 +152,7 @@ db_save_client_assessment_data <- function(db_session_id,assessment_data)
   #Now that we've saved, un-mark it as is_changed and save back to the SESSION
   assessment_data$is_changed <- FALSE
   #SESSION$client_info$current_assessment_data <<- assessment_data
-  
-  
+
   end_time <- Sys.time()
   
   print(paste0("db_save_client_assessment_data time: ", end_time - start_time))
