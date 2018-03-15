@@ -102,7 +102,7 @@ body <- dashboardBody(
         ),
         br(), 
         uiOutput('launch_assessment_ui'),
-        br(), br(),
+        br(), br(), br(), br(), br(), br(), br(), br(),
         fluidRow(
           column(6,
                  h4('Client data', align = 'center'),
