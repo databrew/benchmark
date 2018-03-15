@@ -661,6 +661,25 @@ server <- function(input, output, session) {
   
   output$menu <- renderMenu({
     li <- logged_in()
+    lo <- li
+    as <- input$assessment
+    cl <- input$client
+
+    # Figure out whether there are any assessments or not (ie, whether to show sidebar items)
+    gccal <- get_current_client_assessment_listing()
+    show_menu <- FALSE
+    if(!is.null(gccal)){
+      assessments <- gccal$assessment_id 
+      if(!is.null(assessments)){
+        if(length(assessments) > 0){
+          show_menu <- TRUE
+        }
+      }
+    } 
+    if(!show_menu){
+      li <- FALSE
+    }
+    
     mt <- main_tab()
     ss <- submissions
     
@@ -676,7 +695,7 @@ server <- function(input, output, session) {
                     icon=icon("gears"),
                     pass = TRUE,
                     submissions = submissions, mt = mt,
-                    loggedin = li),
+                    loggedin = lo),
       generate_menu(text="Strategy and execution",
                     tabName="strategy_and_execution",
                     icon=icon("crosshairs"),
