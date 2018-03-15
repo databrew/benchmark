@@ -851,6 +851,10 @@ server <- function(input, output, session) {
   
   # Table of assessment info
   output$assessment_table <- DT::renderDataTable({
+    # Observe submissions changes and input_list
+    x <- submissions
+    x <- input_list
+    x <- ASSESSMENT
     UI_SELECTED_ASSESSMENT_ID <- input$assessment
     show_table <- FALSE
     if(!is.null(UI_SELECTED_ASSESSMENT_ID)){

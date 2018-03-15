@@ -88,7 +88,8 @@ create_input_list <- function(){
     z[i] <- 
       paste0("observeEvent(",this_observation,", { ;
               if(", this_event, " > 0.5){
-                record_assessment_data_entry(question_id=",this_question_id, ",score=", this_event, ",rationale='Placeholder')
+                record_assessment_data_entry(question_id=",this_question_id, ",score=", this_event, ",rationale='Placeholder');
+                save_assessment_data()
               }
   });\n")
   }
@@ -151,8 +152,8 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
              # Create reactive values
              submissions$', tab_name, '_', competencies[i], '_submit <- FALSE; # NEW ONE!
              
-            # Upon change of assessment, set all submissions back to false
-            observeEvent(input$assessment, { 
+            # Upon change of assessment, set all submissions back to false 
+            observeEvent(c(input$assessment), { 
                 submissions$', tab_name, '_', competencies[i], '_submit <- FALSE
             })
   
