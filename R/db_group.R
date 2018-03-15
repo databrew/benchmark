@@ -119,8 +119,24 @@ db_save_client_assessment_data <- function(db_session_id,assessment_data)
                  rationale="varchar")
   
   start_time <- Sys.time()
+  nothing <- FALSE
+  if(is.null(assessment_data)){
+    nothing <- TRUE
+  } else if(nrow(assessment_data) == 0){
+    nothing <- TRUE
+  }
+  if(nothing){return(assessment_data)}
   
-  saving_data <- subset(x=assessment_data,subset=is_changed==TRUE,select=c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","score","rationale"))
+  saving_data <- assessment_data %>%
+    filter(is_changed) %>%
+    dplyr::select(client_id,
+                  assessment_id,
+                  question_id,
+                  last_modified_time,
+                  last_modified_user_id,
+                  score,
+                  rationale)
+  # saving_data <- subset(x=assessment_data,subset=is_changed==TRUE,select=c("client_id","assessment_id","question_id","last_modified_time","last_modified_user_id","score","rationale"))
   if (nrow(saving_data)==0) return (assessment_data) #No data to save
   if (any(is.na(saving_data$client_id))) return(warning("Unable to save client_assessment_data: NAs in client_id"))
   if (any(is.na(saving_data$assessment_id))) return(warning("Unable to save client_assessment_data: NAs in assessment_id"))

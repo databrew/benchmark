@@ -323,6 +323,8 @@ server <- function(input, output, session) {
     USER <- reactiveValues(db_session_id=NULL,user_id=NULL,user_name=NULL,current_client_id=NULL,current_assessment_id=NULL)
     LISTINGS <- reactiveValues(client_listing=NULL,client_assessment_listing=NULL)
     ASSESSMENT <- reactiveValues(assessment_template=NULL,assessment_data=NULL) #Will take two data.frames: one, layout of questions and categores; two, the data to go along
+    # Clear the submissions
+    submissions <- reactiveValues()
     STATUS("Please login")
     logged_in(FALSE)
     failed_log_in <- reactiveVal(value = 0)
@@ -594,8 +596,11 @@ server <- function(input, output, session) {
   # Progress plot
   output$progress_plot <-
     renderPlot({
+      # Observe log out
+      li <- logged_in()
+      print(paste0('li is ', li))
       it <- main_tab()
-      if(it != 'about'){
+      if(it != 'about' & li){
         the_submissions <- reactiveValuesToList(submissions)
         the_submissions <- unlist(the_submissions)
         numerator <- length(which(the_submissions))

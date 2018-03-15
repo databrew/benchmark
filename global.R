@@ -6,6 +6,7 @@ library(DBI)
 library(RPostgreSQL)
 library(yaml)
 library(pool)
+library(lubridate)
 functions <- dir('R')
 for (i in 1:length(functions)){
   source(paste0('R/', functions[i]), chdir = TRUE)
