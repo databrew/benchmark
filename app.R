@@ -926,6 +926,32 @@ server <- function(input, output, session) {
     print(paste0("Client ",UI_CLIENT_FORM$name," has been added as client_id=",new_client_id))
     refresh_client_listing()
   })
+  
+  # Observe changes to assessment, and update the sliders accordingly
+  observeEvent(input$assessment, {
+    as <- reactiveValuesToList(ASSESSMENT);
+    as <- as$assessment_template %>% dplyr::select(combined_name, question_id, score, rationale,last_modified_time);
+    message('as pre-filter is ')
+    print(as)
+    as <- as %>% filter(!is.na(score));
+    message('as post-filter is ')
+    print(as)
+    # Go through each value in as and update the slider
+    if(nrow(as) > 0){
+      for(i in 1:nrow(as)){
+        this_name <- as$combined_name[i]
+        this_slider <- paste0(this_name, '_slider')
+        the_value <-as$score[i]
+        message('updating ', this_slider, ' to ', the_value)
+        # Update the input list
+        input_list[[this_slider]] <- the_value
+        # Update the slider
+        updateSliderInput(session = session,
+                          inputId = this_slider,
+                          value = the_value)
+      }
+    }
+  })
 
   # On session end, close the pool
   session$onSessionEnded(function() {

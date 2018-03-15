@@ -56,7 +56,7 @@ get_ui_text <- function(item_name){
 
 # Define function for keeping an eye on inputs, so that they don't get reset when the ui gets re-rendered
 create_input_list <- function(){
-  
+
   a <- paste0("input_list <- reactiveValues();\n")
   inputs <- paste0(competency_dict$combined_name, '_slider')
   b <- rep(NA, length(inputs))
@@ -74,11 +74,13 @@ create_input_list <- function(){
     # this_observation <- gsub('_slider', '_submit', this_event)
     # Observe sliders rather than buttons
     this_observation <- this_event
+    
     z[i] <- 
       paste0("observeEvent(",this_observation,", { ;
              input_list[['", this_input, "']] <- ", this_event,"
   });\n")
   }
+  
   paste0(a,
          paste0(b,
                 z, collapse = ''),
@@ -92,6 +94,7 @@ create_slider <- function(item_name,
   list_name <- paste0(item_name, '_slider')
   ip <- reactiveValuesToList(ip)
   ip <- unlist(ip)
+
   if(list_name %in% names(ip)){
     val <- ip[names(ip) == list_name]
   } else {
@@ -670,4 +673,12 @@ log_in_modal <-
 pool <- create_pool(options_list = credentials_extract(),
                     use_sqlite = FALSE)
 # # Get the data from the db into memory
-# db_to_memory(pool = pool)
+db_to_memory(pool = pool)
+
+# get the question ids into the competency dict
+competency_dict <-
+  left_join(competency_dict,
+            view_assessment_questions_list %>%
+              dplyr::select(combined_name,
+                            question_id),
+            by = 'combined_name')
