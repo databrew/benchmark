@@ -662,6 +662,7 @@ server <- function(input, output, session) {
   output$menu <- renderMenu({
     li <- logged_in()
     mt <- main_tab()
+    ss <- submissions
     
     sidebarMenu(
       generate_menu(text="Instructions",
@@ -947,6 +948,8 @@ server <- function(input, output, session) {
   
   # Observe changes to selected assessment, and update the sliders accordingly
   observeEvent(input$assessment, {
+    Sys.sleep(0.03) # this allows the submissions object to be cleared in generate_reactivity
+    # before the object gets updated. Has the effect of making sure that the finished/notfinished toggles are correct.
     as <- reactiveValuesToList(ASSESSMENT);
     as <- as$assessment_template %>% dplyr::select(combined_name, question_id, score, rationale,last_modified_time);
     message('as pre-filter is ')
@@ -973,11 +976,6 @@ server <- function(input, output, session) {
     }
   })
   
-  # Observe changes to the inputs and save data accordingly
-  observeEvent(input_list, {
-    
-  })
-
   # On session end, close the pool
   session$onSessionEnded(function() {
     message('Session ended. Saving all data')

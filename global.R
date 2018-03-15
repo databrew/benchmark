@@ -151,6 +151,11 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
              # Create reactive values
              submissions$', tab_name, '_', competencies[i], '_submit <- FALSE; # NEW ONE!
              
+            # Upon change of assessment, set all submissions back to false
+            observeEvent(input$assessment, { 
+                submissions$', tab_name, '_', competencies[i], '_submit <- FALSE
+            })
+  
              # Create reactive colors
              ', tab_name, '_', competencies[i], '_colors <- reactiveValues()
              ', tab_name, '_', competencies[i], '_colors[["a"]] <- "black"
