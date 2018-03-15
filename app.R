@@ -255,6 +255,7 @@ ui <- dashboardPage(header, sidebar, body, skin="blue")
 # Server
 server <- function(input, output, session) {
   
+  counter <- reactiveVal(0)
   # Define some reactive values for later update
   USER <- reactiveValues(db_session_id=NULL,user_id=NULL,user_name=NULL,current_client_id=NULL,current_assessment_id=NULL)
   LISTINGS <- reactiveValues(client_listing=NULL,client_assessment_listing=NULL)
@@ -598,7 +599,6 @@ server <- function(input, output, session) {
     renderPlot({
       # Observe log out
       li <- logged_in()
-      print(paste0('li is ', li))
       it <- main_tab()
       if(it != 'about' & li){
         the_submissions <- reactiveValuesToList(submissions)
@@ -854,7 +854,7 @@ server <- function(input, output, session) {
     # Observe submissions changes and input_list
     x <- submissions
     x <- input_list
-    x <- ASSESSMENT
+    x <- counter()
     UI_SELECTED_ASSESSMENT_ID <- input$assessment
     show_table <- FALSE
     if(!is.null(UI_SELECTED_ASSESSMENT_ID)){

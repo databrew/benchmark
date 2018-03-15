@@ -89,6 +89,11 @@ create_input_list <- function(){
       paste0("observeEvent(",this_observation,", { ;
               if(", this_event, " > 0.5){
                 record_assessment_data_entry(question_id=",this_question_id, ",score=", this_event, ",rationale='Placeholder');
+                # Force a re-load of assessment data
+                cc <- counter()
+                cc <- cc + 1
+                counter(cc)
+                message('Counter increased to ', cc)
                 save_assessment_data()
               }
   });\n")
