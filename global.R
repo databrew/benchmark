@@ -85,9 +85,10 @@ create_input_list <- function(){
          collapse = '')
 }
 
-# Define function for creating a 1-5 slider for a given item
+# Define function for creating a slider for a given item
 create_slider <- function(item_name,
                           ip){
+
   list_name <- paste0(item_name, '_slider')
   ip <- reactiveValuesToList(ip)
   ip <- unlist(ip)
@@ -103,10 +104,6 @@ create_slider <- function(item_name,
   
   sliderInput(paste0(item_name, '_slider'),
               'Score (1-7)',
-              # label = div(style='width:330px;align=right', 
-              #             div(style='float:left;', 'Formative'), 
-              #             # div(style='float:middle;', 'Emerging'), 
-              #             div(style='float:right;', 'Developed')),
               min = 0, 
               max = 7,
               value = val,

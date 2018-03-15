@@ -107,8 +107,7 @@ load_client <- function(selected_client_id)
 {
 
   client_info <- subset(x=get_client_listing(),subset=client_id==selected_client_id)
-  print(get_client_listing())
-  print(client_info)
+  get_client_listing()
   if (nrow(client_info) != 1) return(message(paste0("Warning: unable to load client_id==",selected_client_id," as ID does not exist in get_client_listing()")))
   
 

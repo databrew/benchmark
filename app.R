@@ -94,6 +94,7 @@ body <- dashboardBody(
                               'Create new assessment',
                               icon = icon('address-card', 'fa-3x')))
         ),
+        br(), br(), br(),
         fluidRow(
           column(6,
                  h4('Client data', align = 'center'),
@@ -799,6 +800,18 @@ server <- function(input, output, session) {
     UI_SELECTED_ASSESSMENT_ID <- input$assessment
     message("You selected client_assessment_id=",UI_SELECTED_ASSESSMENT_ID)
     assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID) #CLIENT$client_info and LISTINGS$client_assessment_listing set in load_client()
+    message('assessment_info has ', nrow(assessment_info), ' rows and is' )
+    print(head(assessment_info %>%
+                 dplyr::select(category_id,
+                               question_id,
+                               combined_name, score,
+                               client_id, 
+                               assessment_id)))
+
+    # assessment_data <- get_current_assessment_data()
+    # message('assessment data has ', nrow(assessment_data), ' rows and is ')
+    # print(head(assessment_data))
+
   })
   
   # Table of client info
@@ -913,8 +926,7 @@ server <- function(input, output, session) {
     print(paste0("Client ",UI_CLIENT_FORM$name," has been added as client_id=",new_client_id))
     refresh_client_listing()
   })
-  
-  
+
   # On session end, close the pool
   session$onSessionEnded(function() {
     message('Session ended. Closing the connection pool.')
