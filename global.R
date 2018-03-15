@@ -13,6 +13,16 @@ for (i in 1:length(functions)){
 }
 source('session_functions.R', local = TRUE)
 
+# Define function for converting numeric values to 1 of the 3 categories
+convert_to_category <- function(number = 0){
+  ifelse(number < 1,
+         0,
+         ifelse(number <=3,
+                1,
+                ifelse(number <= 5,
+                       2, 
+                       3)))
+}
 
 # Create a dictionary of tab names / numbers
 tab_names_full <- c('Instructions',
@@ -174,7 +184,7 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
              submissions$', tab_name, '_', competencies[i], '_submit <- TRUE
              # Colors
              x <- input$', tab_name, '_', competencies[i], '_slider
-             new_value <- ceiling(x / 2.4)
+             new_value <- convert_to_category(x)
              lt <- letters[new_value]
              other_letters <- letters[1:3][letters[1:3] != lt]
              ', tab_name, '_', competencies[i], '_colors[[lt]] <- ifelse(new_value == 1, "red", ifelse(new_value == 2, "orange", "green"))

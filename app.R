@@ -323,6 +323,9 @@ server <- function(input, output, session) {
   observeEvent(input$launch_assessment, {
     li <- logged_in()
     if(li){
+      # The below commented out section picks the first non-finished tab.
+      # But it's slow, and sometimes gets into infinite back and forths
+      # so currently commenting out.
       # # Get submissions
       # subs <- reactiveValuesToList(submissions)
       # subs <- unlist(subs)
