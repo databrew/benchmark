@@ -967,6 +967,8 @@ server <- function(input, output, session) {
         updateSliderInput(session = session,
                           inputId = this_slider,
                           value = the_value)
+        # Update the submissions tracker
+        submissions[[paste0(this_name, '_submit')]] <- TRUE
       }
     }
   })
