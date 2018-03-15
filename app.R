@@ -756,13 +756,12 @@ server <- function(input, output, session) {
     if(difference < -0.5){
       message('Tab change was slow enough to assume that it was human. Setting the main_tab object to: ', it)
       main_tab(it)
-      # Save data
-      li <- logged_in()
-      if(li){
-        message('Saving data because of tab change.')
-        save_assessment_data()
-      }
-      
+      # # Save data
+      # li <- logged_in()
+      # if(li){
+      #   message('Saving data because of tab change.')
+      #   save_assessment_data()
+      # }
     }
   })
   
@@ -912,17 +911,45 @@ server <- function(input, output, session) {
   
   # Observe the create new assessment button and show modal for it
   observeEvent(input$create_assessment,{
+    
     showModal(
       modalDialog(
         title = "Create a new assessment",
         fluidPage(
-          h4('Under construction')
+          textInput('create_assessment_name',
+                    'Name',
+                    placeholder = 'e.g. Initial assessment')
         ),
         easyClose = TRUE,
         footer = action_modal_button('create_assessment_confirm', "Submit", icon = icon('check-circle')),
         size = 'l'
       )
     )
+  })
+  
+  # Upon creation of a new assessment, update the databas
+  observeEvent(input$create_assessment_confirm, {
+    # Get the time
+    new_date <- now()
+    # Get the assessment name
+    assessment_name <- input$create_assessment_name
+    if(length(assessment_name) == 0){
+      assessment_name <- paste0(paste0(sample(c(letters, LETTERS, 0:9), 5), collapse = ''),' - ', as.character(new_date))
+    }
+    
+    # Define the form
+    UI_ASSESSMENT_FORM <- 
+      data.frame(assessment_id=-1,
+                 client_id=get_current_client_id(),
+                 assessment_name=assessment_name,
+                 assessment_date=new_date,
+                 stringsAsFactors = F)
+    new_assessment_id <- db_edit_client_assessment(get_db_session_id(),
+                                                   UI_ASSESSMENT_FORM$assessment_id,
+                                                   UI_ASSESSMENT_FORM)
+    
+    print(paste0("Assessment ",UI_ASSESSMENT_FORM$name," for ",get_current_client_info()$name," has been added as assessment_id=",new_assessment_id))
+    refresh_client_assessment_listing()
   })
   
   # Upon creation of a new client, unload the previous one and load the newly created on
@@ -948,7 +975,7 @@ server <- function(input, output, session) {
   
   # Observe changes to selected assessment, and update the sliders accordingly
   observeEvent(input$assessment, {
-    Sys.sleep(0.03) # this allows the submissions object to be cleared in generate_reactivity
+    Sys.sleep(0.1) # this allows the submissions object to be cleared in generate_reactivity
     # before the object gets updated. Has the effect of making sure that the finished/notfinished toggles are correct.
     as <- reactiveValuesToList(ASSESSMENT);
     as <- as$assessment_template %>% dplyr::select(combined_name, question_id, score, rationale,last_modified_time);
