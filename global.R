@@ -87,7 +87,6 @@ create_input_list <- function(){
     z[i] <- 
       paste0("observeEvent(",this_observation,", { ;
               if(", this_event, " > 0.5){
-                message('SAVING DATA FOR QUESTION ID ', ", this_question_id, "')
                 record_assessment_data_entry(question_id=",this_question_id, ",score=", this_event, ",rationale='Placeholder')
               }
   });\n")
@@ -204,7 +203,7 @@ sub_tab_completer <- function(){
         
         # Action button approach
         sm <- TRUE
-        message('SUBMISSION CLICKED!')
+        message('Clicked the -press here when done- button')
         
         if(is.null(sts)){
         mt <- main_tab(); 

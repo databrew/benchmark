@@ -72,10 +72,10 @@ record_assessment_data_entry <- function(question_id,score,rationale)
     assessment_data <- entry
     
   } else {
-    print('OLD ASSESSMENT CURRENT DATA ALREADY EXISTS')
-    print('DOES AN ENTRY SCORE ALREADY EXIST FOR THIS QUESTION -- SHOULD NAs FROM TEMPLATE-READ-IN?')
+    message('OLD ASSESSMENT CURRENT DATA ALREADY EXISTS')
+    message('DOES AN ENTRY SCORE ALREADY EXIST FOR THIS QUESTION -- SHOULD NAs FROM TEMPLATE-READ-IN?')
     filter <- assessment_data$client_id==client_id & assessment_data$assessment_id==assessment_id & assessment_data$question_id==question_id
-    print(paste('FILTER: ',any(filter)))
+    message(paste('FILTER: ',any(filter)))
     #Means dataset already has answers to this question that user is changing, need to replace; remove it.  
     
     if (any(filter, na.rm = TRUE)) assessment_data <- assessment_data[!filter,] 

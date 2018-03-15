@@ -313,6 +313,11 @@ server <- function(input, output, session) {
   
   # Observe the log out and clear the user
   observeEvent(input$log_out, {
+    # Save the data
+    save_assessment_data()
+    # Unload stuff
+    unload_client_assessment()
+    unload_client()
     # Reset the reactive values
     message('Logging out. Resetting reactive values.')
     USER <- reactiveValues(db_session_id=NULL,user_id=NULL,user_name=NULL,current_client_id=NULL,current_assessment_id=NULL)
@@ -324,6 +329,7 @@ server <- function(input, output, session) {
     user('')
     logged_in(FALSE)
   })
+  
   
   # Log in / out
   output$log_in_out <- renderUI({
@@ -739,11 +745,18 @@ server <- function(input, output, session) {
     it <- input$tabs
     new_time <- Sys.time()
     old_time <- the_time()
-    difference <- as.numeric(old_time - new_time)
+    difference <- round(as.numeric(old_time - new_time), digits = 3)
     message('difference is ', difference)
     if(difference < -0.5){
-      message('That was slow. Setting it to ', it)
+      message('Tab change was slow enough to assume that it was human. Setting the main_tab object to: ', it)
       main_tab(it)
+      # Save data
+      li <- logged_in()
+      if(li){
+        message('Saving data because of tab change.')
+        save_assessment_data()
+      }
+      
     }
   })
   
@@ -960,6 +973,7 @@ server <- function(input, output, session) {
 
   # On session end, close the pool
   session$onSessionEnded(function() {
+    message('Session ended. Saving all data')
     message('Session ended. Closing the connection pool.')
     tryCatch(pool::poolClose(pool), error = function(e) {message('')})
   })
