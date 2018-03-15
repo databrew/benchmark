@@ -44,6 +44,12 @@ body <- dashboardBody(
   ),
   tabItems(
     tabItem(
+      tabName = 'home',
+      fluidPage(
+        h3('Welcome!', align = 'center')
+      )
+    ),
+    tabItem(
       tabName="instructions",
       fluidPage(
         fluidRow(h1('Instructions', align = 'center')),
@@ -94,7 +100,9 @@ body <- dashboardBody(
                               'Create new assessment',
                               icon = icon('address-card', 'fa-3x')))
         ),
-        br(), br(), br(),
+        br(), 
+        uiOutput('launch_assessment_ui'),
+        br(), br(),
         fluidRow(
           column(6,
                  h4('Client data', align = 'center'),
@@ -311,6 +319,50 @@ server <- function(input, output, session) {
       updateTabItems(session, "tabs", 'configuration')
     }
   })
+  # Observe the launch button
+  observeEvent(input$launch_assessment, {
+    li <- logged_in()
+    if(li){
+      # # Get submissions
+      # subs <- reactiveValuesToList(submissions)
+      # subs <- unlist(subs)
+      # 
+      # # Get the most recent not finished part
+      # tab_names <- tab_dict$name
+      # tab_names <- tab_names[!tab_names %in% c('instructions', 'home', 'configuration', 'graphs', 'about')]
+      # done_list <- rep(NA, length(tab_names))
+      # for(i in 1:length(tab_names)){
+      #   i <- i + 1
+      #   tabName <- tab_names[i]
+      #     these_competencies <- competency_dict %>%
+      #       filter(tab_name == tabName) %>%
+      #       .$combined_name
+      #   these_competencies <- paste0(these_competencies, '_submit')
+      #   these_competencies <- subs[names(subs) %in% these_competencies]
+      #   all_ok <- all(these_competencies)
+      #   done <- FALSE
+      #   if(exists('these_competencies')){
+      #     if(length(these_competencies) > 0){
+      #       if(all_ok){
+      #         message('Everything is done for ', tabName, '.')
+      #         done <- TRUE
+      #       }
+      #     }
+      #   }
+      #   done_list[i] <- done
+      # }
+      # dones <- unlist(done_list)
+      # if(all(dones)){
+      #   this_one <- tab_names[1]
+      # } else {
+      #   this_one <- tab_names[(which(!dones))[1]]
+      # }
+      # 
+      # message('Launching assessment to first non-finished tab: ', this_one)
+      this_one <- 'strategy_and_execution'
+      updateTabItems(session, "tabs", this_one)
+    }
+  })
   
   # Observe the log out and clear the user
   observeEvent(input$log_out, {
@@ -344,7 +396,7 @@ server <- function(input, output, session) {
     if(logged_in_now){
       actionButton('log_out', 'Log out', icon = icon('sign-in'))
     } else {
-      actionButton('log_in', 'Log in', icon = icon('sign-in'))
+      actionButton('log_in', h1('Log in'), icon = icon('sign-in', 'fa-5x'))
     }
   })
   
@@ -442,7 +494,7 @@ server <- function(input, output, session) {
   }
   
   ## Get main tab
-  main_tab <- reactiveVal(value = 'instructions')
+  main_tab <- reactiveVal(value = 'home')
   
   # Create reactive values to observe the submissions
   submissions <- reactiveValues()
@@ -684,6 +736,12 @@ server <- function(input, output, session) {
     ss <- submissions
     
     sidebarMenu(
+      generate_menu(text="Home",
+                    tabName="home",
+                    icon=icon("home"),
+                    submissions = submissions, mt = mt,
+                    pass = TRUE, 
+                    loggedin = li),
       generate_menu(text="Instructions",
                     tabName="instructions",
                     icon=icon("leanpub"),
@@ -813,7 +871,6 @@ server <- function(input, output, session) {
     gccal <- get_current_client_assessment_listing()
     show_menu <- FALSE
     if(!is.null(gccal)){
-      message('gccal is ', gccal)
       assessments <- gccal$assessment_id 
       if(!is.null(assessments)){
         if(length(assessments) > 0){
@@ -1024,6 +1081,28 @@ server <- function(input, output, session) {
         submissions[[paste0(this_name, '_submit')]] <- TRUE
       }
     }
+  })
+  
+  # Launch assessment ui
+  output$launch_assessment_ui <- renderUI({
+    gccal <- get_current_client_assessment_listing()
+    show_menu <- FALSE
+    if(!is.null(gccal)){
+      assessments <- gccal$assessment_id 
+      if(!is.null(assessments)){
+        if(length(assessments) > 0){
+          show_menu <- TRUE
+          names(assessments) <- paste0(gccal$assessment_name, ' (id:', gccal$assessment_id, ')')      
+        }
+      }
+    }
+    if(show_menu){
+      fluidPage(fluidRow(column(12, align = 'center',
+                                actionButton('launch_assessment',
+                                             h2('Launch assessment', align = 'center'),
+                                             icon = icon('play-circle', 'fa-3x')))))
+    }
+    
   })
   
   # On session end, close the pool
