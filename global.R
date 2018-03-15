@@ -66,23 +66,36 @@ create_input_list <- function(){
     b[i] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
   }
   # Observe any changes and register them
-  z <- rep(NA, length(inputs))
+  x <- z <-  rep(NA, length(inputs))
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
+    this_cn <- gsub('_slider', '', this_input)
+    this_question_id <- competency_dict %>% dplyr::filter(combined_name == this_cn) %>% .$question_id;
     this_event <- paste0('input$', this_input)
     # # Observe buttons rather than sliders
     # this_observation <- gsub('_slider', '_submit', this_event)
     # Observe sliders rather than buttons
     this_observation <- this_event
     
-    z[i] <- 
+    # Update the input list
+    x[i] <- 
       paste0("observeEvent(",this_observation,", { ;
              input_list[['", this_input, "']] <- ", this_event,"
+  });\n")
+    
+    # Save the data
+    z[i] <- 
+      paste0("observeEvent(",this_observation,", { ;
+              if(", this_event, " > 0.5){
+                message('SAVING DATA FOR QUESTION ID ', ", this_question_id, "')
+                record_assessment_data_entry(question_id=",this_question_id, ",score=", this_event, ",rationale='Placeholder')
+              }
   });\n")
   }
   
   paste0(a,
          paste0(b,
+                x, 
                 z, collapse = ''),
          collapse = '')
 }
@@ -112,6 +125,7 @@ create_slider <- function(item_name,
               value = val,
               step = 0.5)
 }
+
 
 # Define function for creating a submit button to follow each slider
 create_submit <- function(item_name, show_icon = FALSE){

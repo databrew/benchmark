@@ -927,7 +927,7 @@ server <- function(input, output, session) {
     refresh_client_listing()
   })
   
-  # Observe changes to assessment, and update the sliders accordingly
+  # Observe changes to selected assessment, and update the sliders accordingly
   observeEvent(input$assessment, {
     as <- reactiveValuesToList(ASSESSMENT);
     as <- as$assessment_template %>% dplyr::select(combined_name, question_id, score, rationale,last_modified_time);
@@ -951,6 +951,11 @@ server <- function(input, output, session) {
                           value = the_value)
       }
     }
+  })
+  
+  # Observe changes to the inputs and save data accordingly
+  observeEvent(input_list, {
+    
   })
 
   # On session end, close the pool
