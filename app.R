@@ -1079,6 +1079,7 @@ server <- function(input, output, session) {
     if(show_menu){
       # Add a null value
       assessments <- c('', assessments)
+      cc <- counter()
       fluidPage(
         selectInput('assessment',
                     'Select an assessment', 
@@ -1239,6 +1240,8 @@ server <- function(input, output, session) {
     # Refersh the client assessment listing
     client_info <- load_client(input$client) #CLIENT$client_info and LISTINGS$client_assessment_listing set in load_client()
     refresh_client_assessment_listing()
+    cc <- counter() +1
+    counter(cc)
   })
   
   # Upon creation of a new client, unload the previous one and load the newly created on
