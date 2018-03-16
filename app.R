@@ -34,7 +34,7 @@ body <- dashboardBody(
   useShinyjs(),
   
   fluidRow(
-    column(4,
+    column(8,
            hidden(
              lapply(seq(n_tabs), function(i) {
                div(class = "page",
@@ -42,8 +42,7 @@ body <- dashboardBody(
                    paste("Tab", i, 'of', nrow(tab_dict)),
                    style = "font-size: 140%;")
              })
-           )),
-    column(4,
+           ),
            align = 'center',
            uiOutput('log_in_button')),
     column(4,
@@ -406,8 +405,13 @@ server <- function(input, output, session) {
       logged_in_now <- FALSE
     }
     if(!logged_in_now){
-      actionButton('log_in', h1('Log in'), icon = icon('sign-in', 'fa-5x'))
-    } 
+      fluidRow(column(8),
+               column(4,
+                      align = 'left',
+                      actionButton('log_in', h1('Log in'), icon = icon('sign-in', 'fa-5x'))))
+    } else {
+      h4(textOutput('assessment_text'))
+    }
   })
   
   output$log_out_button <- renderUI({
@@ -1119,6 +1123,53 @@ server <- function(input, output, session) {
                                              icon = icon('play-circle', 'fa-3x')))))
     }
     
+  })
+  
+  # Text in upper left
+  output$assessment_text <- renderText({
+    li <- logged_in()
+    if(li){
+      
+      # Get client name
+      this_client_id <- input$client
+      gcl <- get_client_listing()
+      if(is.null(gcl)){
+        client_name <- ''
+      } else {
+        clients <- gcl$client_id
+        clients_names <- gcl$name
+        client_name <- clients_names[as.numeric(clients) == as.numeric(this_client_id)]
+      }
+      
+      # Get assessment name
+      this_assessment_id <- input$assessment
+      gccal <- get_current_client_assessment_listing()
+      has_ass <- FALSE
+      if(!is.null(gccal)){
+        assessments <- gccal$assessment_id 
+        if(!is.null(assessments)){
+          if(length(assessments) > 0){
+            has_ass <- TRUE
+            assessment_name <- gccal$assessment_name[as.numeric(gccal$assessment_id) == as.numeric(this_assessment_id)]
+          }
+        }
+      }
+      
+      # Current date
+      assessment_date <- Sys.Date()
+      
+      # Return text
+      if(has_ass){
+        paste0('Assessment for ', client_name, 
+               ': ',
+               assessment_name,
+               ', as of ', 
+               format(assessment_date, '%B %d, %Y'), '.')
+      } else {
+        NULL
+      }
+      
+    }
   })
   
   # On session end, close the pool
