@@ -1114,14 +1114,15 @@ server <- function(input, output, session) {
       message("You selected client_assessment_id=",UI_SELECTED_ASSESSMENT_ID)
       assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID) #CLIENT$client_info and LISTINGS$client_assessment_listing set in load_client()
       if(!is.null(assessment_info)){
-        message('assessment_info has ', nrow(assessment_info), ' rows and is' )
-        print(head(assessment_info %>%
-                     dplyr::select(category_id,
-                                   question_id,
-                                   combined_name, score,
-                                   client_id, 
-                                   assessment_id)))
-        
+        if(is.data.frame(assessment_info)){
+          message('assessment_info has ', nrow(assessment_info), ' rows and is' )
+          print(head(assessment_info %>%
+                       dplyr::select(category_id,
+                                     question_id,
+                                     combined_name, score,
+                                     client_id, 
+                                     assessment_id)))
+        }
       }
     }
     
@@ -1286,27 +1287,29 @@ server <- function(input, output, session) {
       Sys.sleep(0.1) # this allows the submissions object to be cleared in generate_reactivity
       # before the object gets updated. Has the effect of making sure that the finished/notfinished toggles are correct.
       as <- reactiveValuesToList(ASSESSMENT);
-      as <- as$assessment_template %>% dplyr::select(combined_name, question_id, score, rationale,last_modified_time);
-      # message('as pre-filter is ')
-      # print(as)
-      as <- as %>% filter(!is.na(score));
-      # message('as post-filter is ')
-      # print(as)
-      # Go through each value in as and update the slider
-      if(nrow(as) > 0){
-        for(i in 1:nrow(as)){
-          this_name <- as$combined_name[i]
-          this_slider <- paste0(this_name, '_slider')
-          the_value <-as$score[i]
-          message('updating ', this_slider, ' to ', the_value)
-          # Update the input list
-          input_list[[this_slider]] <- the_value
-          # Update the slider
-          updateSliderInput(session = session,
-                            inputId = this_slider,
-                            value = the_value)
-          # Update the submissions tracker
-          submissions[[paste0(this_name, '_submit')]] <- TRUE
+      if(!is.null(as)){
+        as <- as$assessment_template %>% dplyr::select(combined_name, question_id, score, rationale,last_modified_time);
+        # message('as pre-filter is ')
+        # print(as)
+        as <- as %>% filter(!is.na(score));
+        # message('as post-filter is ')
+        # print(as)
+        # Go through each value in as and update the slider
+        if(nrow(as) > 0){
+          for(i in 1:nrow(as)){
+            this_name <- as$combined_name[i]
+            this_slider <- paste0(this_name, '_slider')
+            the_value <-as$score[i]
+            message('updating ', this_slider, ' to ', the_value)
+            # Update the input list
+            input_list[[this_slider]] <- the_value
+            # Update the slider
+            updateSliderInput(session = session,
+                              inputId = this_slider,
+                              value = the_value)
+            # Update the submissions tracker
+            submissions[[paste0(this_name, '_submit')]] <- TRUE
+          }
         }
       }
     }
