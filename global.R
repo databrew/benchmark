@@ -628,7 +628,8 @@ generate_menu <- function(done = FALSE,
                           pass = FALSE,
                           selected = NULL,
                           mt = '',
-                          loggedin = TRUE){
+                          loggedin = TRUE,
+                          sub = FALSE){
   if(!loggedin & !pass){
     return(NULL)
   } else if(!loggedin & (grepl('graph', tabName) | grepl('configur', tabName))){
@@ -642,7 +643,7 @@ generate_menu <- function(done = FALSE,
     
     if(pass){
       menuItem(
-        text = text,
+        text = paste0(ifelse(sub, '-----', ''), text),
         tabName = tabName,
         icon = icon,
         selected = selected)
@@ -677,7 +678,7 @@ generate_menu <- function(done = FALSE,
         bc <- 'red'
       }
       menuItem(
-        text = text,
+        text = paste0(ifelse(sub, '-----', ''), text),
         tabName = tabName,
         icon = icon,
         badgeLabel = bl,
