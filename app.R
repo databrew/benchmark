@@ -261,7 +261,10 @@ body <- dashboardBody(
               fluidRow(helpText("Joe is a data scientist for", a(href = 'http://databrew.cc/', 'DataBrew.'), "He has a background in epidemiology and development economics. He works in both industry as a consultant as well as academia. His research focuses on the economics of malaria elimination programs in Sub-Saharan Africa."))
             ),
             width = 3)
-        )
+        ),
+        fluidRow(column(12,
+                        align = 'right',
+                        uiOutput('db_info')))
       )
     )
   )
@@ -272,6 +275,17 @@ ui <- dashboardPage(header, sidebar, body, skin="blue")
 
 # Server
 server <- function(input, output, session) {
+  
+  # data base info
+  output$db_info <- renderUI({
+    creds <- credentials_extract()
+    fluidPage(
+      fluidRow(
+        helpText(paste0('db: ', creds$dbname)),
+        helpText(paste0('host: ', creds$host))
+      )
+    )
+  })
   
   counter <- reactiveVal(0)
   # Define some reactive values for later update
