@@ -12,7 +12,7 @@
  Target Server Version : 100003
  File Encoding         : 65001
 
- Date: 16/03/2018 16:41:15
+ Date: 16/03/2018 20:11:00
 */
 
 
@@ -318,6 +318,69 @@ INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (62, 11, '2018-03-16 1
 INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (62, 12, '2018-03-16 16:05:36', 1, 5.0, 'Placeholder');
 INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (62, 13, '2018-03-16 16:05:44', 1, 5.0, 'Placeholder');
 INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (62, 14, '2018-03-16 16:05:51', 1, 5.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 2, '2018-03-16 14:18:51', 6, 7.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 3, '2018-03-16 14:18:55', 6, 5.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 4, '2018-03-16 14:18:58', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 5, '2018-03-16 14:19:01', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 6, '2018-03-16 14:19:04', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 7, '2018-03-16 14:19:07', 6, 5.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 8, '2018-03-16 14:19:10', 6, 5.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 9, '2018-03-16 14:19:13', 6, 5.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 10, '2018-03-16 14:19:15', 6, 6.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 11, '2018-03-16 14:19:19', 6, 5.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:22', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 2, '2018-03-16 15:42:48', 6, 7.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:23', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 3, '2018-03-16 15:42:48', 6, 5.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 4, '2018-03-16 15:42:48', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:24', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 5, '2018-03-16 15:42:48', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:25', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:26', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:27', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:28', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:29', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:30', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:31', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:32', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:33', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:34', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 12, '2018-03-16 14:19:35', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 13, '2018-03-16 14:19:41', 6, 7.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 14, '2018-03-16 14:19:44', 6, 7.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 15, '2018-03-16 14:19:48', 6, 6.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 16, '2018-03-16 14:19:51', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 17, '2018-03-16 14:19:54', 6, 5.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 18, '2018-03-16 14:19:57', 6, 6.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 19, '2018-03-16 14:20:00', 6, 6.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 20, '2018-03-16 14:20:03', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 21, '2018-03-16 14:20:24', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 22, '2018-03-16 14:20:28', 6, 5.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 23, '2018-03-16 14:20:31', 6, 6.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 24, '2018-03-16 14:21:30', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 25, '2018-03-16 14:21:33', 6, 6.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 26, '2018-03-16 14:21:40', 6, 5.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 27, '2018-03-16 14:21:49', 6, 6.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 28, '2018-03-16 14:21:52', 6, 6.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 29, '2018-03-16 14:21:55', 6, 5.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 30, '2018-03-16 14:21:59', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 31, '2018-03-16 14:22:02', 6, 3.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 32, '2018-03-16 14:22:05', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 33, '2018-03-16 14:22:09', 6, 5.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 34, '2018-03-16 14:22:13', 6, 5.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 35, '2018-03-16 14:22:19', 6, 7.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 36, '2018-03-16 14:22:22', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 37, '2018-03-16 14:22:25', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 38, '2018-03-16 14:22:28', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 39, '2018-03-16 14:22:32', 6, 5.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 40, '2018-03-16 14:22:36', 6, 4.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 41, '2018-03-16 14:22:41', 6, 7.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 42, '2018-03-16 14:22:44', 6, 6.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 43, '2018-03-16 14:22:50', 6, 5.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 2, '2018-03-16 15:41:48', 6, 7.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 3, '2018-03-16 15:41:48', 6, 5.5, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 4, '2018-03-16 15:41:48', 6, 4.0, 'Placeholder');
+INSERT INTO "pd_dfsbenchmarking"."assessment_data" VALUES (72, 5, '2018-03-16 15:41:48', 6, 4.5, 'Placeholder');
 
 -- ----------------------------
 -- Table structure for assessment_question_categories
@@ -865,6 +928,14 @@ INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (1, 1, 'Assessment Name Up
 INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (61, 19, 'New Assessment 16', '2018-02-26', 1, '2018-03-14 06:27:13.578576');
 INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (62, 20, 'Test Assessment', '2018-03-15', 1, '2018-03-15 16:57:56.495275');
 INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (64, 20, 'test', '2018-03-16', 1, '2018-03-16 12:29:11.968409');
+INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (69, 20, 'Test 5', '2018-03-08', 1, '2018-03-16 12:46:30.499354');
+INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (70, 20, 'test4', '2018-03-05', 1, '2018-03-16 12:46:52.584635');
+INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (71, 22, 'Oleksiy1', '2018-03-16', 1, '2018-03-16 12:59:32.92856');
+INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (72, 25, 'Oleksiy3', '2018-03-16', 6, '2018-03-16 14:08:41.751332');
+INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (75, 26, 'Oleksiy4', '2018-03-16', 6, '2018-03-16 14:25:12.934597');
+INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (76, 27, 'Oleksiy5', '2018-03-16', 6, '2018-03-16 15:00:36.396673');
+INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (77, 27, 'Oleksiy5-1', '2018-10-29', 6, '2018-03-16 15:01:00.3513');
+INSERT INTO "pd_dfsbenchmarking"."assessments" VALUES (78, 27, 'oleksiy55', '2018-12-28', 6, '2018-03-16 15:39:42.354478');
 
 -- ----------------------------
 -- Table structure for clients
@@ -901,6 +972,12 @@ INSERT INTO "pd_dfsbenchmarking"."clients" VALUES (2, NULL, 'Is Bankasi', 'Is Ba
 INSERT INTO "pd_dfsbenchmarking"."clients" VALUES (1, 261537, 'Garanti Bankasi', 'Garanti', 'bank', 'NA', 'Istanbul', 'Turkey', 1, '2018-03-09 18:55:04.741104');
 INSERT INTO "pd_dfsbenchmarking"."clients" VALUES (19, 50, 'New Bank 50', 'NBC50', 'Bank', '111 Main St.', 'SomePlace', 'USA', 1, '2018-03-14 06:27:08.223354');
 INSERT INTO "pd_dfsbenchmarking"."clients" VALUES (20, 19, 'SorenBank', 'SB', 'Bank', '111 Main Street', 'Anytown ', 'USA', 1, '2018-03-15 16:57:09.503213');
+INSERT INTO "pd_dfsbenchmarking"."clients" VALUES (22, 90, 'Oleksiy1', 'Oleksiy1', 'Bank1', 'Address1', 'City1', 'Country1', 1, '2018-03-16 12:55:06.841985');
+INSERT INTO "pd_dfsbenchmarking"."clients" VALUES (23, 72, 'BigBank', 'BB', 'Bank', 'asd', 'ada', 'asda', 1, '2018-03-16 13:02:09.033592');
+INSERT INTO "pd_dfsbenchmarking"."clients" VALUES (24, 8, 'bb2', 'bb2', 'ban', 'asd', 'asd', 'asd', 1, '2018-03-16 13:16:45.371016');
+INSERT INTO "pd_dfsbenchmarking"."clients" VALUES (25, 26, 'Oleksiy3', 'Oleksiy3', 'Bank3', 'Address3', 'City3', 'Country3', 6, '2018-03-16 14:08:33.096641');
+INSERT INTO "pd_dfsbenchmarking"."clients" VALUES (26, 38, 'Oleksiy4', 'Oleksiy4', 'Bank4', 'Address4', 'City4', 'Country4', 6, '2018-03-16 14:24:16.350001');
+INSERT INTO "pd_dfsbenchmarking"."clients" VALUES (27, 43, 'Oleksiy5', 'Oleksiy5', 'Bank5', 'Address5', 'City5', 'Country5', 6, '2018-03-16 15:00:11.025244');
 
 -- ----------------------------
 -- Table structure for user_groups
@@ -943,12 +1020,12 @@ CREATE TABLE "pd_dfsbenchmarking"."users" (
 -- ----------------------------
 -- Records of users
 -- ----------------------------
+INSERT INTO "pd_dfsbenchmarking"."users" VALUES (1, 'MEL', '$1$HkYw/QoW$jgCgz.iirtmVRZJB.b0ks/', 'MEL Team', NULL, NULL, 't', '2018-03-16 13:39:17.023437', '5a879ff3-3759-4d55-9b19-48c9e97a9a9c', 'f', 1);
+INSERT INTO "pd_dfsbenchmarking"."users" VALUES (6, 'mbiallas', '$1$.lhd9MZu$rIcbEgx9fkvKIitld6Y.c.', 'Margarete Biallas', 'MBiallas@ifc.org', 230984, 't', '2018-03-16 16:09:46.813693', '5e57f681-6f89-46d7-895f-0645da2ce557', 'f', 2);
 INSERT INTO "pd_dfsbenchmarking"."users" VALUES (0, 'SYSTEM', 'SYSTEM', 'SYSTEM', NULL, NULL, 'f', NULL, NULL, 'f', 0);
 INSERT INTO "pd_dfsbenchmarking"."users" VALUES (5, 'joe', '$1$aTc/PFPD$d8mVat5rcZ/nSK3xXFjQy.', 'Joe Brew', NULL, NULL, 't', '2018-03-10 12:24:43.881231', '81a1c607-6c92-44b7-aac9-3a39cd9b2573', 'f', 1);
 INSERT INTO "pd_dfsbenchmarking"."users" VALUES (4, 'test2', '$1$YYIcDwCS$0cZ25s4EaWquXYvq96Cs9.', 'Soren test1', NULL, NULL, 't', NULL, NULL, 'f', 3);
 INSERT INTO "pd_dfsbenchmarking"."users" VALUES (3, 'test1', '$1$aGstpxLZ$wmVnQLxF.70AMpQ51ftFN0', 'Soren test1', NULL, NULL, 't', '2018-03-10 07:46:08.379318', '81a1c607-6c92-44b7-aac9-3a39cd9b2587', 'f', 3);
-INSERT INTO "pd_dfsbenchmarking"."users" VALUES (6, 'mbiallas', '$1$.lhd9MZu$rIcbEgx9fkvKIitld6Y.c.', 'Margarete Biallas', 'MBiallas@ifc.org', 230984, 't', '2018-03-16 12:19:58.16583', 'b63381b0-ae50-4676-856c-bd960b6dec4b', 'f', 2);
-INSERT INTO "pd_dfsbenchmarking"."users" VALUES (1, 'MEL', '$1$HkYw/QoW$jgCgz.iirtmVRZJB.b0ks/', 'MEL Team', NULL, NULL, 't', '2018-03-16 12:40:15.834311', '2f6e10da-496f-4f82-8b50-27d400e11506', 'f', 1);
 
 -- ----------------------------
 -- Function structure for assessment_load
@@ -993,8 +1070,8 @@ BEGIN
 	vacd.score::numeric,
 	vacd.rationale::text
 	from pd_dfsbenchmarking.view_assessment_questions_list vaql
-	left join pd_dfsbenchmarking.view_assessments_current_data vacd on vacd.question_id = vaql.question_id
-	where coalesce(vacd.assessment_id,v_assessment_id)=v_assessment_id and v_has_access = true;
+	left join pd_dfsbenchmarking.view_assessments_current_data vacd on vacd.question_id = vaql.question_id and 
+		vacd.assessment_id=v_assessment_id;
 
 END;
 $BODY$
@@ -1059,7 +1136,7 @@ begin
 	
 	IF coalesce(v_assessment_id,-1) = -1 THEN
 		insert into pd_dfsbenchmarking.assessments(client_id,assessment_name,assessment_date,created_by_user_id)
-		select v_client_id,v_assessment_name,v_assessment_date,users.user_id
+		select v_client_id,left(v_assessment_name,50),v_assessment_date,users.user_id
 		from pd_dfsbenchmarking.users
 		where users.session_id = v_session_id::uuid and 
 					pd_dfsbenchmarking.user_has_client_access(v_client_id,pd_dfsbenchmarking.user_id_session_chain(v_session_id))
@@ -1067,7 +1144,7 @@ begin
 
 	ELSE
 	
-		update pd_dfsbenchmarking.assessments set(assessment_name,assessment_date) = (v_assessment_name,v_assessment_date)
+		update pd_dfsbenchmarking.assessments set(assessment_name,assessment_date) = (left(v_assessment_name,50),v_assessment_date)
 		where assessments.assessment_id = v_assessment_id and
 			assessments.client_id = v_client_id and
 			pd_dfsbenchmarking.user_has_client_access(assessments.client_id,pd_dfsbenchmarking.user_id_session_chain(v_session_id))
@@ -1319,10 +1396,10 @@ OWNED BY "pd_dfsbenchmarking"."assessment_questions"."question_id";
 SELECT setval('"pd_dfsbenchmarking"."assessment_questions_question_id_seq"', 44, true);
 ALTER SEQUENCE "pd_dfsbenchmarking"."assessments_assessment_id_seq"
 OWNED BY "pd_dfsbenchmarking"."assessments"."assessment_id";
-SELECT setval('"pd_dfsbenchmarking"."assessments_assessment_id_seq"', 69, true);
+SELECT setval('"pd_dfsbenchmarking"."assessments_assessment_id_seq"', 79, true);
 ALTER SEQUENCE "pd_dfsbenchmarking"."clients_client_id_seq"
 OWNED BY "pd_dfsbenchmarking"."clients"."client_id";
-SELECT setval('"pd_dfsbenchmarking"."clients_client_id_seq"', 22, true);
+SELECT setval('"pd_dfsbenchmarking"."clients_client_id_seq"', 28, true);
 ALTER SEQUENCE "pd_dfsbenchmarking"."user_groups_group_id_seq"
 OWNED BY "pd_dfsbenchmarking"."user_groups"."group_id";
 SELECT setval('"pd_dfsbenchmarking"."user_groups_group_id_seq"', 4, true);
