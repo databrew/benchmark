@@ -418,25 +418,11 @@ server <- function(input, output, session) {
   })
   # Observe the log out and clear the user
   observeEvent(input$save_and_close, {
-    # Reset the failed log in attempt counter
-    failed_log_in(0)
-    # Save the data
-    save_assessment_data()
-    # Unload stuff
     unload_client_assessment()
-    unload_client()
-    # Reset the reactive values
-    message('Logging out. Resetting reactive values.')
-    USER <- reactiveValues(db_session_id=NULL,user_id=NULL,user_name=NULL,current_client_id=NULL,current_assessment_id=NULL)
-    LISTINGS <- reactiveValues(client_listing=NULL,client_assessment_listing=NULL)
-    ASSESSMENT <- reactiveValues(assessment_template=NULL,assessment_data=NULL) #Will take two data.frames: one, layout of questions and categores; two, the data to go along
-    # Clear the submissions
-    submissions <- reactiveValues()
-    STATUS("Please login")
-    logged_in(FALSE)
-    failed_log_in <- reactiveVal(value = 0)
-    user('')
-    logged_in(FALSE)
+    updateSelectInput(session = session,
+                      inputId = 'assessment',
+                      selected = '')
+    
   })
   
   
@@ -493,11 +479,7 @@ server <- function(input, output, session) {
       message('Logging out. Re-setting the failed log in attempt text.')
       failed_log_in_text('')
   })
-  observeEvent(input$save_and_close, {
-    fli <- failed_log_in()
-    message('Logging out. Re-setting the failed log in attempt text.')
-    failed_log_in_text('')
-  })
+  
   output$failed_log_in_text <-
     renderText({
       ok <- FALSE
