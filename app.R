@@ -1203,9 +1203,11 @@ server <- function(input, output, session) {
       modalDialog(
         title = "Create a new assessment",
         fluidPage(
-          textInput('create_assessment_name',
-                    'Name',
-                    placeholder = 'e.g. Initial assessment')
+          fluidRow(textInput('create_assessment_name',
+                             'Name',
+                             placeholder = 'e.g. Initial assessment'),
+                   dateInput('create_assessment_date',
+                             'Date'))
         ),
         easyClose = TRUE,
         footer = action_modal_button('create_assessment_confirm', "Submit", icon = icon('check-circle')),
@@ -1217,7 +1219,8 @@ server <- function(input, output, session) {
   # Upon creation of a new assessment, update the databas
   observeEvent(input$create_assessment_confirm, {
     # Get the time
-    new_date <- now()
+    new_date <- input$create_assessment_date
+    new_date <- paste(new_date, ' 01:00:00 CET')
     # Get the assessment name
     assessment_name <- input$create_assessment_name
     if(length(assessment_name) == 0){
