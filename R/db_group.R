@@ -90,6 +90,7 @@ db_edit_client <- function(db_session_id,client_id,client_info)
 db_get_client_assessment_listing <- function(db_session_id,client_id)
 {
   #  if (!loggedin()) return(message("Warning: Not logged in"));
+  if (is.null(db_session_id) || is.na(db_session_id) || !is.numeric(as.numeric(client_id))) return(warning(paste("Invlaid input values to db_get_client_assessment_listing: db_session_id=",db_session_id,"; client_id=",client_id)))
   
   conn <- poolCheckout(db_get_pool())
   
@@ -179,6 +180,8 @@ db_save_client_assessment_data <- function(db_session_id,assessment_data)
 db_get_client_assessment_data <- function(db_session_id,client_id,assessment_id)
 {
   #if (!loggedin()) return(message("Warning: Not logged in"));
+  
+  if (is.null(db_session_id) || is.na(db_session_id) || !is.numeric(as.numeric(client_id)) || !is.numeric(as.numeric(assessment_id))) return(warning(paste("Invlaid input values to db_get_client_asessment_data: db_session_id=",db_session_id,"; client_id=",client_id,"; assessment_id=",assessment_id)))
   
   conn <- poolCheckout(db_get_pool())
   

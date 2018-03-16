@@ -108,6 +108,7 @@ refresh_client_assessment_listing <- function()
 #sort of a useless function, kept to keep align with the .txt -- but we're basically loading all data with the client_listing
 load_client <- function(selected_client_id)
 {
+  if (is.null(selected_client_id) || !is.numeric(as.numeric(selected_client_id))) return(warning(paste0("Warning: load_client bad input parameters for selected_client_id=",selected_client_id)))
 
   client_info <- subset(x=get_client_listing(),subset=client_id==selected_client_id)
   get_client_listing()
@@ -131,6 +132,7 @@ unload_client <- function()
 
 load_client_assessment <- function(selected_assessment_id)
 {
+  if (is.null(selected_assessment_id) || !is.numeric(as.numeric(selected_assessment_id))) return(warning(paste0("Warning: load_client bad input parameters for selected_assessment_id=",selected_assessment_id)))
   
   if (is.null(get_current_client_id())) return(message("Error: No client is loaded.  Load client before loading assessment."))
   
