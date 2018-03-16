@@ -33,7 +33,7 @@ body <- dashboardBody(
   useShinyjs(),
   
   fluidRow(
-    column(8,
+    column(12,
            hidden(
              lapply(seq(n_tabs), function(i) {
                div(class = "page",
@@ -44,16 +44,14 @@ body <- dashboardBody(
            ),
            align = 'center',
            uiOutput('log_in_button')),
-    column(4),
+    # column(4),
     height = '50px'
     
   ),
   tabItems(
     tabItem(
       tabName = 'home',
-      fluidPage(
-        h3('Welcome!', align = 'center')
-      )
+      fluidPage()
     ),
     tabItem(
       tabName="instructions",
@@ -393,6 +391,8 @@ server <- function(input, output, session) {
   
   # Observe the log out and clear the user
   observeEvent(input$log_out, {
+    # Reset the failed log in attempt counter
+    failed_log_in(0)
     # Save the data
     save_assessment_data()
     # Unload stuff
@@ -421,10 +421,20 @@ server <- function(input, output, session) {
       logged_in_now <- FALSE
     }
     if(!logged_in_now){
-      fluidRow(column(8),
-               column(4,
-                      align = 'left',
-                      actionButton('log_in', h1('Log in'), icon = icon('sign-in', 'fa-5x'))))
+      fluidPage(
+        fluidRow(column(12,
+                        textInput('user_name', 'User name', value = 'MEL')),
+                 column(12,
+                        textInput('password', 'Password', value = 'FIGSSAMEL'))),
+        fluidRow(
+          column(12,
+                 textOutput('failed_log_in_text'))
+        ),
+        fluidRow(
+          column(12,
+                 action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')))
+        )
+      )
     } else {
       h4(textOutput('assessment_text'))
     }
@@ -442,20 +452,36 @@ server <- function(input, output, session) {
       NULL
     }
   })
-  
-  # Observe the log in button and do a modal
-  observeEvent(input$log_in, {
-    showModal(log_in_modal)
-  })
-  
-  observeEvent(failed_log_in(), {
+
+  failed_log_in_text <- reactiveVal(value = '')
+  observeEvent(c(failed_log_in()), {
     fli <- failed_log_in()
     if(fli > 0){
-      message('Failed log in attempt. Re-prompting the log-in modal')
-      showModal(log_in_modal)
+      message('Failed log in attempt. Re-prompting the log-in.')
+      failed_log_in_text('Incorrect user name / password combination.')
     }
   })
-  
+  observeEvent(input$log_out, {
+    fli <- failed_log_in()
+      message('Logging out. Re-setting the failed log in attempt text.')
+      failed_log_in_text('')
+  })
+  output$failed_log_in_text <-
+    renderText({
+      ok <- FALSE
+      x <- failed_log_in_text()
+      if(!is.null(x)){
+        if(length(x) > 0){
+          if(x != ''){
+            ok <- TRUE
+          }
+        }
+      }
+      if(ok){
+        return(x)
+      }
+    })
+
   
   # Generate logged in text
   output$log_in_text <- renderText({
