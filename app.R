@@ -45,8 +45,7 @@ body <- dashboardBody(
            ),
            align = 'center',
            uiOutput('log_in_button')),
-    column(4,
-           plotOutput('progress_plot', height = '50px')),
+    column(4),
     height = '50px'
     
   ),
@@ -704,13 +703,14 @@ server <- function(input, output, session) {
           scale_fill_manual(name = '', values = c('darkorange', 'lightblue')) +
           theme(legend.position = 'none') +
           labs(title = paste0(p, '% completed')) +
-          theme(plot.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5')) +
-          theme(panel.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5'))
+          theme(plot.background = element_rect(fill = '#222d32', colour = '#222d32')) +
+          theme(panel.background = element_rect(fill = '#222d32', colour = '#222d32')) +
+          theme(plot.title = element_text(colour = "#b8c7ce"))
       } else {
         ggplot() +
           ggthemes::theme_map() +
-          theme(plot.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5')) +
-          theme(panel.background = element_rect(fill = '#ecf0f5', colour = '#ecf0f5'))
+          theme(plot.background = element_rect(fill = '#222d32', colour = '#222d32')) +
+          theme(panel.background = element_rect(fill = '#222d32', colour = '#222d32'))
       }
     })
   
@@ -763,6 +763,7 @@ server <- function(input, output, session) {
     ss <- submissions
     
     sidebarMenu(
+      plotOutput('progress_plot', height = '50px'),
       generate_menu(text="Home",
                     tabName="home",
                     icon=icon("home"),
