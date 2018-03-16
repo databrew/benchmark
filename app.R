@@ -166,6 +166,10 @@ body <- dashboardBody(
       uiOutput('graphs_ui')
     ),
     tabItem(
+      tabName="assessment",
+      uiOutput('assessment_ui')
+    ),
+    tabItem(
       tabName = 'about',
       fluidPage(
         fluidRow(h4("The dashboard was developed as a part of activities under the ", 
@@ -615,6 +619,11 @@ server <- function(input, output, session) {
   # Observe any clicks on the sub-tabs, and update the subtab accordingly
   eval(parse(text = observe_sub_tab()))
   
+  # Assessment ui 
+  output$assessment_ui <- renderUI({
+    fluidPage(h3('Nothing here.'))
+  })
+  
   # Create the graphs page
   output$graphs_ui <-
     renderUI({
@@ -762,6 +771,42 @@ server <- function(input, output, session) {
     mt <- main_tab()
     ss <- submissions
     
+    # Get the assessment name:
+    assessment_menu <- NULL
+    if(li){
+      this_assessment_id <- input$assessment
+      gccal <- get_current_client_assessment_listing()
+      has_ass <- FALSE
+      if(!is.null(gccal)){
+        assessments <- gccal$assessment_id 
+        if(!is.null(assessments)){
+          if(length(assessments) > 0){
+            has_ass <- TRUE
+            assessment_name <- gccal$assessment_name[as.numeric(gccal$assessment_id) == as.numeric(this_assessment_id)]
+          }
+        }
+      }
+      
+      # Return text
+      if(has_ass){
+        assessment_name <- paste0('Assessment name: ', assessment_name)
+      } else {
+        assessment_name <- NULL
+      }
+      
+      if(is.null(assessment_name)){
+        assessment_menu <- NULL
+      } else {
+        assessment_menu <- 
+          generate_menu(text=assessment_name,
+                        tabName="assessment",
+                        icon=icon("check-circle"),
+                        pass = TRUE,
+                        submissions = submissions, mt = mt,
+                        loggedin = li)
+      }
+    }
+    
     sidebarMenu(
       plotOutput('progress_plot', height = '50px'),
       generate_menu(text="Home",
@@ -782,6 +827,7 @@ server <- function(input, output, session) {
                     pass = TRUE,
                     submissions = submissions, mt = mt,
                     loggedin = lo),
+      assessment_menu,
       generate_menu(text="Strategy and execution",
                     tabName="strategy_and_execution",
                     icon=icon("crosshairs"),
