@@ -35,7 +35,7 @@ credentials_extract <- function(credentials_path = NULL,
                                 credentials_file = 'credentials.yaml',
                                 credentials_search_limit = 10,
                                 all_in_file = FALSE,
-                                debug=FALSE){
+                                debug=TRUE){
 
   if(all_in_file){
     credentials_path <- credentials_file
