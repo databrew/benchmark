@@ -710,6 +710,12 @@ pool <- create_pool(options_list = credentials_extract(),
 # # Get the data from the db into memory
 db_to_memory(pool = pool)
 
+# # Fix the agile process / agile processes inconsistency
+# if('agile_process' %in% view_assessment_questions_list$competency){
+#   view_assessment_questions_list$competency[view_assessment_questions_list$competency == 'agile_process'] <-
+#     'agile_processes'
+# }
+
 # get the question ids into the competency dict
 competency_dict <-
   left_join(competency_dict,

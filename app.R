@@ -871,6 +871,9 @@ server <- function(input, output, session) {
   })
   
   output$configuration_ui_right <- renderUI({
+    input$client
+    input$create_client_confirm
+    input$create_assessment_confirm
     gccal <- get_current_client_assessment_listing()
     show_menu <- FALSE
     if(!is.null(gccal)){
@@ -1032,6 +1035,8 @@ server <- function(input, output, session) {
                                                    UI_ASSESSMENT_FORM)
     
     print(paste0("Assessment ",UI_ASSESSMENT_FORM$name," for ",get_current_client_info()$name," has been added as assessment_id=",new_assessment_id))
+    # Refersh the client assessment listing
+    client_info <- load_client(input$client) #CLIENT$client_info and LISTINGS$client_assessment_listing set in load_client()
     refresh_client_assessment_listing()
   })
   
@@ -1062,11 +1067,11 @@ server <- function(input, output, session) {
     # before the object gets updated. Has the effect of making sure that the finished/notfinished toggles are correct.
     as <- reactiveValuesToList(ASSESSMENT);
     as <- as$assessment_template %>% dplyr::select(combined_name, question_id, score, rationale,last_modified_time);
-    message('as pre-filter is ')
-    print(as)
+    # message('as pre-filter is ')
+    # print(as)
     as <- as %>% filter(!is.na(score));
-    message('as post-filter is ')
-    print(as)
+    # message('as post-filter is ')
+    # print(as)
     # Go through each value in as and update the slider
     if(nrow(as) > 0){
       for(i in 1:nrow(as)){

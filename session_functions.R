@@ -43,6 +43,9 @@ assessment_has_new_data <- function()
 ##TODO: Ensure only records changes if changes are actually made.  Ie, not setting 4 to 4 and same-text to same-text
 record_assessment_data_entry <- function(question_id,score,rationale)
 {
+  if(is.na(question_id)){
+    stop('question_id must not be NA.')
+  }
 
   if (!loggedin()) return(message("Warning: Not logged in"))
   
