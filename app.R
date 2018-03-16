@@ -450,9 +450,9 @@ server <- function(input, output, session) {
     if(!logged_in_now){
       fluidPage(
         fluidRow(column(12,
-                        textInput('user_name', 'User name', value = 'MEL')),
+                        textInput('user_name', 'User name', value = 'mbiallas')),
                  column(12,
-                        textInput('password', 'Password', value = 'FIGSSAMEL'))),
+                        textInput('password', 'Password', value = '230984'))),
         fluidRow(
           column(12,
                  textOutput('failed_log_in_text'))
@@ -1044,17 +1044,20 @@ server <- function(input, output, session) {
   
   # Configuration uis
   output$configuration_ui_left <- renderUI({
-    h3('Configuration goes here')
-    
+
     # Pickable clients
     gcl <- get_client_listing()
-    print(head(gcl))
-    clients <- gcl$client_id
-    clients_names <- gcl$name
-    names(clients) <- paste0(clients_names, ' (id:', clients,')')
-    selectInput('client',
-                'Select a client',
-                choices = clients)
+    if(!is.null(gcl)){
+      clients <- gcl$client_id
+      clients_names <- gcl$name
+      names(clients) <- paste0(clients_names, ' (id:', clients,')')
+      selectInput('client',
+                  'Select a client',
+                  choices = clients)
+    } else {
+      h3('No clients yet exist for this user.')
+    }
+    
   })
   # Load the selected client
   observeEvent(input$client, {
@@ -1118,16 +1121,18 @@ server <- function(input, output, session) {
   # Table of client info
   output$client_table <- DT::renderDataTable({
     UI_SELECTED_CLIENT_ID <- input$client
-    message('Selected client ', UI_SELECTED_CLIENT_ID)
-    client_info <- load_client(UI_SELECTED_CLIENT_ID)
-    if(!is.null(client_info)){
-      if(is.data.frame(client_info)){
-        prettify(client_info %>%
-                   dplyr::select(name,
-                                 short_name,
-                                 firm_type,
-                                 city),
-                 download_options = TRUE)
+    message('Selected client: ', UI_SELECTED_CLIENT_ID)
+    if(!is.null(UI_SELECTED_CLIENT_ID)){
+      client_info <- load_client(UI_SELECTED_CLIENT_ID)
+      if(!is.null(client_info)){
+        if(is.data.frame(client_info)){
+          prettify(client_info %>%
+                     dplyr::select(name,
+                                   short_name,
+                                   firm_type,
+                                   city),
+                   download_options = TRUE)
+        }
       }
     }
   })
