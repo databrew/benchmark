@@ -8,6 +8,15 @@ header <- dashboardHeader(title="DFS Benchmarking Tool",
                           tags$li(class = 'dropdown',  
                                   tags$style(type='text/css', "#log_out_button {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: 10px}"),
                                   tags$style(type='text/css', "#log_in_text { width:100%; margin-top: 14px; margin-left: 10px; margin-right: 10px; font-size:100%}"),
+                                  tags$style(type='text/css', "#save_and_close_ui {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: 10px}"),
+                                  tags$li(tags$li(class = 'dropdown',
+                                                  uiOutput('save_and_close_ui'))),
+                                  tags$li(class = 'dropdown',
+                                          img(src='blue.png', align = "center", width = '200px', height = '10px')),
+                                  tags$li(class = 'dropdown',
+                                          img(src='blue.png', align = "center", width = '20px')),
+                                  tags$li(class = 'dropdown',
+                                          img(src='blue.png', align = "center", width = '20px')),
                                   tags$li(class = 'dropdown',
                                           uiOutput('log_in_text')),
                                   tags$li(class = 'dropdown',
@@ -390,7 +399,7 @@ server <- function(input, output, session) {
   })
   
   # Observe the log out and clear the user
-  observeEvent(input$log_out, {
+  observeEvent(c(input$log_out, input$save_and_close), {
     # Reset the failed log in attempt counter
     failed_log_in(0)
     # Save the data
@@ -461,7 +470,7 @@ server <- function(input, output, session) {
       failed_log_in_text('Incorrect user name / password combination.')
     }
   })
-  observeEvent(input$log_out, {
+  observeEvent(c(input$log_out, input$save_and_close), {
     fli <- failed_log_in()
       message('Logging out. Re-setting the failed log in attempt text.')
       failed_log_in_text('')
@@ -1346,6 +1355,26 @@ server <- function(input, output, session) {
       
     }
   })
+  
+  # Save and close button for header bar
+  output$save_and_close_ui <-
+    renderUI({
+      li <- logged_in()
+      if(!is.null(input$assessment)){
+        if(input$assessment == ''){
+          li <- FALSE
+        }
+      } else {
+        li <- FALSE
+      }
+      if(li){
+        actionButton('save_and_close',
+                     'Save and close',
+                     icon = icon('sign-in'))
+      } else {
+        NULL
+      }
+    })
   
   # On session end, close the pool
   session$onSessionEnded(function() {
