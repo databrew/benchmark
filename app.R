@@ -5,6 +5,16 @@ source('global.R')
 
 the_width <- 350
 header <- dashboardHeader(title="DFS Benchmarking Tool",
+                          tags$li(class = 'dropdown',  
+                                  tags$style(type='text/css', "#log_out_button {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: 10px}"),
+                                  tags$style(type='text/css', "#log_in_text { width:100%; margin-top: 14px; margin-left: 10px; margin-right: 10px; font-size:100%}"),
+                                  
+                                  tags$li(class = 'dropdown',
+                                          uiOutput('log_in_text')),
+                                  tags$li(class = 'dropdown',
+                                          img(src='blue.png', align = "center", width = '20px')),
+                                  tags$li(tags$li(class = 'dropdown',
+                                                  uiOutput('log_out_button')))),
                           titleWidth = the_width)
 # sidebar <- uiOutput('dashboard_sidebar')
 sidebar <- dashboardSidebar(
@@ -32,11 +42,10 @@ body <- dashboardBody(
                    paste("Tab", i, 'of', nrow(tab_dict)),
                    style = "font-size: 140%;")
              })
-           ),
-           uiOutput('log_in_text')),
+           )),
     column(4,
            align = 'center',
-           uiOutput('log_in_out')),
+           uiOutput('log_in_button')),
     column(4,
            plotOutput('progress_plot', height = '50px')),
     height = '50px'
@@ -390,7 +399,18 @@ server <- function(input, output, session) {
   
   
   # Log in / out
-  output$log_in_out <- renderUI({
+  output$log_in_button <- renderUI({
+    # Get whether currently logged in
+    logged_in_now <- logged_in()
+    if(is.null(logged_in_now)){
+      logged_in_now <- FALSE
+    }
+    if(!logged_in_now){
+      actionButton('log_in', h1('Log in'), icon = icon('sign-in', 'fa-5x'))
+    } 
+  })
+  
+  output$log_out_button <- renderUI({
     # Get whether currently logged in
     logged_in_now <- logged_in()
     if(is.null(logged_in_now)){
@@ -399,7 +419,7 @@ server <- function(input, output, session) {
     if(logged_in_now){
       actionButton('log_out', 'Log out', icon = icon('sign-in'))
     } else {
-      actionButton('log_in', h1('Log in'), icon = icon('sign-in', 'fa-5x'))
+      NULL
     }
   })
   
