@@ -1047,14 +1047,23 @@ server <- function(input, output, session) {
 
     # Pickable clients
     gcl <- get_client_listing()
+    message('gcl is ----------------------')
+    print(gcl)
+    show_client_selection <- FALSE
     if(!is.null(gcl)){
+      if(nrow(gcl) > 0){
+        show_client_selection <- TRUE
+      }
+      
+    }
+    if(show_client_selection){
       clients <- gcl$client_id
       clients_names <- gcl$name
       names(clients) <- paste0(clients_names, ' (id:', clients,')')
       selectInput('client',
                   'Select a client',
                   choices = clients)
-    } else {
+      } else {
       h3('No clients yet exist for this user.')
     }
     
