@@ -740,7 +740,7 @@ server <- function(input, output, session) {
         numerator <- length(which(the_submissions))
         denominator <- length(the_submissions)
         df <- data.frame(key = c('Finished', 'All'),
-                         value = c(numerator, denominator),
+                         value = c(numerator, denominator - numerator),
                          dummy = 'a')
         p <- numerator / denominator * 100 
         p <- round(p, digits = 1)
@@ -758,10 +758,17 @@ server <- function(input, output, session) {
           # cowplot::theme_nothing() +
           scale_fill_manual(name = '', values = c('darkorange', 'lightblue')) +
           theme(legend.position = 'none') +
-          labs(title = paste0(p, '% completed')) +
+          # labs(title = paste0(p, '% completed')) +
           theme(plot.background = element_rect(fill = '#222d32', colour = '#222d32')) +
           theme(panel.background = element_rect(fill = '#222d32', colour = '#222d32')) +
-          theme(plot.title = element_text(colour = "#b8c7ce"))
+          geom_text(aes(x = dummy[1],
+                         y= value[1],
+                         fill = NA,
+                         label = paste0(p, '% completed')),
+                     hjust = ifelse(df$value[1] < df$value[2], 0, 1),
+                     size = 5,
+                     border = NA)
+          # theme(plot.title = element_text(colour = "#b8c7ce"))
       } else {
         ggplot() +
           ggthemes::theme_map() +
@@ -772,8 +779,16 @@ server <- function(input, output, session) {
   output$progress_plot_ui <-
     renderUI({
       li <- logged_in()
+      if(!is.null(input$assessment)){
+        if(input$assessment == ''){
+          li <- FALSE
+        }
+      } else {
+        li <- FALSE
+      }
       if(li){
-        plotOutput('progress_plot', height = '50px')
+        div(style="margin-left:20px;margin-bottom: 10px; margin-right: 10px",
+            plotOutput('progress_plot', height = '35px'))
       } else {
         NULL
       }
@@ -891,7 +906,6 @@ server <- function(input, output, session) {
     }
     
     sidebarMenu(
-      uiOutput('progress_plot_ui'),
       generate_menu(text="Home",
                     tabName="home",
                     icon=icon("home"),
@@ -906,6 +920,7 @@ server <- function(input, output, session) {
                     submissions = submissions, mt = mt,
                     loggedin = lo),
       assessment_menu,
+      uiOutput('progress_plot_ui'),
       generate_menu(text="Strategy and execution",
                     tabName="strategy_and_execution",
                     icon=icon("crosshairs"),
