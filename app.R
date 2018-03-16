@@ -821,11 +821,7 @@ server <- function(input, output, session) {
                     loggedin = li)
     )
   })
-  # isolate({
-  #   mt <- main_tab()
-  #   updateTabItems(session, "tabs", mt)
-  # })
-  
+
   the_time <- reactiveVal(value = Sys.time())
   observeEvent(input$tabs, {
     it <- input$tabs
@@ -836,12 +832,6 @@ server <- function(input, output, session) {
     if(difference < -0.5){
       message('Tab change was slow enough to assume that it was human. Setting the main_tab object to: ', it)
       main_tab(it)
-      # # Save data
-      # li <- logged_in()
-      # if(li){
-      #   message('Saving data because of tab change.')
-      #   save_assessment_data()
-      # }
     }
   })
   
@@ -900,18 +890,16 @@ server <- function(input, output, session) {
     UI_SELECTED_ASSESSMENT_ID <- input$assessment
     message("You selected client_assessment_id=",UI_SELECTED_ASSESSMENT_ID)
     assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID) #CLIENT$client_info and LISTINGS$client_assessment_listing set in load_client()
-    message('assessment_info has ', nrow(assessment_info), ' rows and is' )
-    print(head(assessment_info %>%
-                 dplyr::select(category_id,
-                               question_id,
-                               combined_name, score,
-                               client_id, 
-                               assessment_id)))
-
-    # assessment_data <- get_current_assessment_data()
-    # message('assessment data has ', nrow(assessment_data), ' rows and is ')
-    # print(head(assessment_data))
-
+    if(!is.null(assessment_info)){
+      message('assessment_info has ', nrow(assessment_info), ' rows and is' )
+      print(head(assessment_info %>%
+                   dplyr::select(category_id,
+                                 question_id,
+                                 combined_name, score,
+                                 client_id, 
+                                 assessment_id)))
+      
+    }
   })
   
   # Table of client info
