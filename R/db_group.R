@@ -19,7 +19,7 @@ db_get_pool <- function()
   {
     print('Creating Global Pool Object')
     db_disconnect()    
-    GLOBAL_DB_POOL <<- create_pool(options_list = credentials_extract(),T)
+    GLOBAL_DB_POOL <<- create_pool(options_list = credentials_extract(),FALSE)
   }
   get("GLOBAL_DB_POOL")
 }
