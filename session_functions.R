@@ -167,8 +167,11 @@ load_client_assessment <- function(selected_assessment_id)
           
     return (assessment_template)
   }
-  else print("NOT LOADED")
-  
+  else
+  {
+    print(paste0("NOT LOADED: Client assessment is NA selected_assessmen_id=",selected_assessment_id))
+    return (NA)
+  }
 }
 
 save_assessment_data <- function()
