@@ -1136,18 +1136,25 @@ server <- function(input, output, session) {
     x <- submissions
     x <- input_list
     x <- counter()
+    gccal <- get_current_client_assessment_listing()
     UI_SELECTED_ASSESSMENT_ID <- input$assessment
     show_table <- FALSE
-    if(!is.null(UI_SELECTED_ASSESSMENT_ID)){
-      if(length(UI_SELECTED_ASSESSMENT_ID) > 0){
-        assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID)
-        if(!is.null(assessment_info)){
-          if(length(assessment_info) > 0){
-            show_table <- TRUE
+    if(!is.null(gccal)){
+      assessments <- gccal$assessment_id
+      if(length(assessments) > 0){
+        if(!is.null(UI_SELECTED_ASSESSMENT_ID)){
+          if(length(UI_SELECTED_ASSESSMENT_ID) > 0){
+            assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID)
+            if(!is.null(assessment_info)){
+              if(length(assessment_info) > 0){
+                show_table <- TRUE
+              }
+            }
           }
         }
       }
     }
+    
     if(show_table){
       if(is.data.frame(assessment_info)){
         if(nrow(assessment_info) > 0){
@@ -1269,7 +1276,7 @@ server <- function(input, output, session) {
   observeEvent(input$assessment, {
     ia <- input$assessment
     if(ia != ''){
-      Sys.sleep(0.1) # this allows the submissions object to be cleared in generate_reactivity
+      Sys.sleep(0.2) # this allows the submissions object to be cleared in generate_reactivity
       # before the object gets updated. Has the effect of making sure that the finished/notfinished toggles are correct.
       as <- reactiveValuesToList(ASSESSMENT);
       if(!is.null(as)){
