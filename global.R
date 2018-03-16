@@ -643,7 +643,7 @@ generate_menu <- function(done = FALSE,
     
     if(pass){
       menuItem(
-        text = paste0(ifelse(sub, '-----', ''), text),
+        text = text,
         tabName = tabName,
         icon = icon,
         selected = selected)
@@ -677,13 +677,27 @@ generate_menu <- function(done = FALSE,
         bl <- 'Not finished'
         bc <- 'red'
       }
-      menuItem(
-        text = paste0(ifelse(sub, '-----', ''), text),
-        tabName = tabName,
-        icon = icon,
-        badgeLabel = bl,
-        badgeColor = bc,
-        selected = selected)
+      if(sub){
+        div(style="margin-left:45px;margin-bottom: 10px; margin-right: 10px",
+            menuItem(
+              text = text,
+              tabName = tabName,
+              icon = icon,
+              badgeLabel = bl,
+              badgeColor = bc,
+              selected = selected)
+            
+            )
+      } else {
+        menuItem(
+          text = text,
+          tabName = tabName,
+          icon = icon,
+          badgeLabel = bl,
+          badgeColor = bc,
+          selected = selected)
+      }
+      
     }
   }
 }

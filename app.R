@@ -3,14 +3,11 @@ library(shinydashboard)
 library(shinyjs)
 source('global.R')
 
-the_width <- 350
+the_width <- 370
 header <- dashboardHeader(title="DFS Benchmarking Tool",
                           tags$li(class = 'dropdown',  
                                   tags$style(type='text/css', "#log_out_button {margin-right: 10px; margin-left: 10px; font-size:80%; margin-top: 10px}"),
                                   tags$style(type='text/css', "#log_in_text { width:100%; margin-top: 14px; margin-left: 10px; margin-right: 10px; font-size:100%}"),
-                                  # Menu item left padding
-                                  tags$style(type='text/css', "#home {margin-left: 10px; font-size:70%}"),
-                                  
                                   tags$li(class = 'dropdown',
                                           uiOutput('log_in_text')),
                                   tags$li(class = 'dropdown',
@@ -629,8 +626,8 @@ server <- function(input, output, session) {
   observeEvent(input$tabs, {
     it <- input$tabs
     if(it == 'assessment'){
-      message('Clicked on assessment sidebar menu. Bringing to configuration')
-      updateTabItems(session, "tabs", 'configuration')
+      message('Clicked on assessment sidebar menu. Bringing to strategy and execution')
+      updateTabItems(session, "tabs", 'strategy_and_execution')
     }
   })
   
@@ -732,6 +729,15 @@ server <- function(input, output, session) {
           theme(panel.background = element_rect(fill = '#222d32', colour = '#222d32'))
       }
     })
+  output$progress_plot_ui <-
+    renderUI({
+      li <- logged_in()
+      if(li){
+        plotOutput('progress_plot', height = '50px')
+      } else {
+        NULL
+      }
+    })
   
   # Download visualizations
   output$download_visualizations <-
@@ -818,7 +824,7 @@ server <- function(input, output, session) {
     }
     
     sidebarMenu(
-      plotOutput('progress_plot', height = '50px'),
+      uiOutput('progress_plot_ui'),
       generate_menu(text="Home",
                     tabName="home",
                     icon=icon("home"),
