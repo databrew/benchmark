@@ -787,6 +787,16 @@ server <- function(input, output, session) {
     mt <- main_tab()
     ss <- submissions
     
+    # Instructions menu
+    # (gets hidden once an assessment is selected)
+    instructions_menu <- 
+      generate_menu(text="Instructions",
+                  tabName="instructions",
+                  icon=icon("leanpub"),
+                  submissions = submissions, mt = mt,
+                  pass = TRUE, 
+                  loggedin = li)
+    
     # Get the assessment name:
     assessment_menu <- NULL
     if(li){
@@ -820,6 +830,8 @@ server <- function(input, output, session) {
                         pass = TRUE,
                         submissions = submissions, mt = mt,
                         loggedin = li)
+        instructions_menu <-
+          NULL
       }
     }
     
@@ -831,12 +843,7 @@ server <- function(input, output, session) {
                     submissions = submissions, mt = mt,
                     pass = TRUE, 
                     loggedin = li),
-      generate_menu(text="Instructions",
-                    tabName="instructions",
-                    icon=icon("leanpub"),
-                    submissions = submissions, mt = mt,
-                    pass = TRUE, 
-                    loggedin = li),
+      instructions_menu,
       generate_menu(text="Configuration",
                     tabName="configuration",
                     icon=icon("gears"),
