@@ -88,7 +88,7 @@ create_input_list <- function(){
     # Observe sliders rather than buttons
     this_observation <- this_event
     
-    # Update the input list
+    # Observe the sliders and update the input list
     x[i] <- 
       paste0("observeEvent(",this_observation,", { ;
              input_list[['", this_input, "']] <- ", this_event,"

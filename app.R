@@ -1061,6 +1061,8 @@ server <- function(input, output, session) {
     print(head(get_client_listing(), 3))
   })
   
+  
+  
   output$configuration_ui_right <- renderUI({
     input$client
     input$create_client_confirm
@@ -1091,9 +1093,11 @@ server <- function(input, output, session) {
   })
   # Load the selected assessment
   observeEvent(input$assessment,{
+    # Unload the previous assessment data
+    unload_client_assessment()
     ia <- input$assessment
     if(ia != ''){
-      UI_SELECTED_ASSESSMENT_ID <- input$assessment
+      UI_SELECTED_ASSESSMENT_ID <- ia
       message("You selected client_assessment_id=",UI_SELECTED_ASSESSMENT_ID)
       assessment_info <- load_client_assessment(UI_SELECTED_ASSESSMENT_ID) #CLIENT$client_info and LISTINGS$client_assessment_listing set in load_client()
       if(!is.null(assessment_info)){
@@ -1275,31 +1279,40 @@ server <- function(input, output, session) {
   # Observe changes to selected assessment, and update the sliders accordingly
   observeEvent(input$assessment, {
     ia <- input$assessment
+    unload_client_assessment()
     if(ia != ''){
+      load_client_assessment(ia)
       Sys.sleep(0.2) # this allows the submissions object to be cleared in generate_reactivity
       # before the object gets updated. Has the effect of making sure that the finished/notfinished toggles are correct.
       as <- reactiveValuesToList(ASSESSMENT);
       if(!is.null(as)){
-        as <- as$assessment_template %>% dplyr::select(combined_name, question_id, score, rationale,last_modified_time);
-        # message('as pre-filter is ')
-        # print(as)
+        as <- as$assessment_data %>% dplyr::select(question_id, score, rationale,last_modified_time) %>%
+          # get the combined named
+          left_join(competency_dict %>%
+                      dplyr::select(question_id, combined_name),
+                    by = 'question_id')
         as <- as %>% filter(!is.na(score));
-        # message('as post-filter is ')
-        # print(as)
+        message('as is --------------------- ')
+        print(as)
         # Go through each value in as and update the slider
-        if(nrow(as) > 0){
-          for(i in 1:nrow(as)){
-            this_name <- as$combined_name[i]
-            this_slider <- paste0(this_name, '_slider')
+        # if the item is not in as, set to 0
+        for (i in 1:nrow(competency_dict)){
+          this_name <- competency_dict$combined_name[i]
+          this_slider <- paste0(this_name, '_slider')
+          if(this_name %in% as$combined_name){
             the_value <-as$score[i]
-            message('updating ', this_slider, ' to ', the_value)
-            # Update the input list
-            input_list[[this_slider]] <- the_value
-            # Update the slider
-            updateSliderInput(session = session,
-                              inputId = this_slider,
-                              value = the_value)
-            # Update the submissions tracker
+          } else{
+            the_value <- 0
+          }
+          message('updating ', this_slider, ' to ', the_value)
+          # Update the input list
+          input_list[[this_slider]] <- the_value
+          # Update the slider
+          updateSliderInput(session = session,
+                            inputId = this_slider,
+                            value = the_value)
+          # Update the submissions tracker
+          if(the_value > 0){
             submissions[[paste0(this_name, '_submit')]] <- TRUE
           }
         }
