@@ -1216,7 +1216,7 @@ server <- function(input, output, session) {
                              'Name',
                              placeholder = 'e.g. Initial assessment'),
                    dateInput('create_assessment_date',
-                             'Date'))
+                             'Date of assessment'))
         ),
         easyClose = TRUE,
         footer = action_modal_button('create_assessment_confirm', "Submit", icon = icon('check-circle')),
