@@ -671,10 +671,10 @@ generate_menu <- function(done = FALSE,
       }
       
       if(done){
-        bl <- 'Finished'
+        bl <- 'Done'
         bc <- 'green'
       } else {
-        bl <- 'Not finished'
+        bl <- 'To do'
         bc <- 'red'
       }
       if(sub){
