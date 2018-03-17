@@ -296,7 +296,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
     colors_two <- paste0(tab_name, '_', competencies[i], '_colors[["b"]]')
     colors_three <- paste0(tab_name, '_', competencies[i], '_colors[["c"]]')
     
-    b[i] <- paste0("box(title = p(paste0('", this_title, "', ifelse(", competency_done, ", ' (Completed)', ''))),        width = 12,
+    b[i] <- paste0("box(title = p(paste0('", this_title, "', ifelse(", competency_done, ", ' (Done)', ''))),        width = 12,
                    solidHeader = TRUE,
                    collapsible = TRUE,
                    collapsed = ", collapsed,  ",
