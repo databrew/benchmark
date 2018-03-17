@@ -500,6 +500,33 @@ ALTER SEQUENCE pd_dfsbenchmarking.clients_client_id_seq OWNED BY pd_dfsbenchmark
 
 
 --
+-- Name: user_groups_group_id_seq; Type: SEQUENCE; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+CREATE SEQUENCE pd_dfsbenchmarking.user_groups_group_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    MAXVALUE 2147483647
+    CACHE 1;
+
+
+ALTER TABLE pd_dfsbenchmarking.user_groups_group_id_seq OWNER TO joebrew;
+
+--
+-- Name: user_groups; Type: TABLE; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+CREATE TABLE pd_dfsbenchmarking.user_groups (
+    group_id integer DEFAULT nextval('pd_dfsbenchmarking.user_groups_group_id_seq'::regclass) NOT NULL,
+    parent_group_id integer DEFAULT 0 NOT NULL,
+    group_name character varying(255)
+);
+
+
+ALTER TABLE pd_dfsbenchmarking.user_groups OWNER TO joebrew;
+
+--
 -- Name: users; Type: TABLE; Schema: pd_dfsbenchmarking; Owner: joebrew
 --
 
@@ -1100,16 +1127,35 @@ SELECT pg_catalog.setval('pd_dfsbenchmarking.clients_client_id_seq', 28, true);
 
 
 --
+-- Data for Name: user_groups; Type: TABLE DATA; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+COPY pd_dfsbenchmarking.user_groups (group_id, parent_group_id, group_name) FROM stdin;
+3	2	Global Users
+2	1	Global Admin
+1	0	SUPER USER
+0	-1	SYSTEM
+\.
+
+
+--
+-- Name: user_groups_group_id_seq; Type: SEQUENCE SET; Schema: pd_dfsbenchmarking; Owner: joebrew
+--
+
+SELECT pg_catalog.setval('pd_dfsbenchmarking.user_groups_group_id_seq', 1, false);
+
+
+--
 -- Data for Name: users; Type: TABLE DATA; Schema: pd_dfsbenchmarking; Owner: joebrew
 --
 
 COPY pd_dfsbenchmarking.users (user_id, username, password, name, email, upi, can_login, last_login, session_id, is_admin, user_group_id) FROM stdin;
 1	MEL	$1$HkYw/QoW$jgCgz.iirtmVRZJB.b0ks/	MEL Team	\N	\N	t	2018-03-16 13:39:17.023437	5a879ff3-3759-4d55-9b19-48c9e97a9a9c	f	1
-6	mbiallas	$1$.lhd9MZu$rIcbEgx9fkvKIitld6Y.c.	Margarete Biallas	MBiallas@ifc.org	230984	t	2018-03-16 16:09:46.813693	5e57f681-6f89-46d7-895f-0645da2ce557	f	2
 0	SYSTEM	SYSTEM	SYSTEM	\N	\N	f	\N	\N	f	0
 5	joe	$1$aTc/PFPD$d8mVat5rcZ/nSK3xXFjQy.	Joe Brew	\N	\N	t	2018-03-10 12:24:43.881231	81a1c607-6c92-44b7-aac9-3a39cd9b2573	f	1
 4	test2	$1$YYIcDwCS$0cZ25s4EaWquXYvq96Cs9.	Soren test1	\N	\N	t	\N	\N	f	3
 3	test1	$1$aGstpxLZ$wmVnQLxF.70AMpQ51ftFN0	Soren test1	\N	\N	t	2018-03-10 07:46:08.379318	81a1c607-6c92-44b7-aac9-3a39cd9b2587	f	3
+6	mbiallas	$1$.lhd9MZu$rIcbEgx9fkvKIitld6Y.c.	Margarete Biallas	MBiallas@ifc.org	230984	t	2018-03-17 09:33:15.233117	61b37940-6f15-4815-8956-1c45e7bd1603	f	2
 \.
 
 
