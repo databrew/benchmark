@@ -36,7 +36,6 @@ body <- dashboardBody(
   # ),
   
   useShinyjs(),
-  
   fluidRow(
     column(12,
            hidden(
@@ -422,7 +421,8 @@ server <- function(input, output, session) {
     updateSelectInput(session = session,
                       inputId = 'assessment',
                       selected = '')
-    
+    updateTabItems(session, "tabs", 'configuration')
+
   })
   
   
@@ -1312,8 +1312,12 @@ server <- function(input, output, session) {
                             inputId = this_slider,
                             value = the_value)
           # Update the submissions tracker
-          if(the_value > 0){
-            submissions[[paste0(this_name, '_submit')]] <- TRUE
+          if(!is.null(the_value)){
+            if(!is.na(the_value)){
+              if(the_value > 0){
+                submissions[[paste0(this_name, '_submit')]] <- TRUE
+              }
+            }
           }
         }
       }
