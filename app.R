@@ -1083,7 +1083,7 @@ server <- function(input, output, session) {
     } 
     if(show_menu){
       # # Add a null value
-      # assessments <- c('', assessments)
+      assessments <- c('', assessments)
       cc <- counter()
       fluidPage(
         selectInput('assessment',
