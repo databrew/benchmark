@@ -629,7 +629,8 @@ generate_menu <- function(done = FALSE,
                           selected = NULL,
                           mt = '',
                           loggedin = TRUE,
-                          sub = FALSE){
+                          sub = FALSE,
+                          it = NULL){
   if(!loggedin & !pass){
     return(NULL)
   } else if(!loggedin & (grepl('graph', tabName) | grepl('configur', tabName))){
@@ -676,6 +677,12 @@ generate_menu <- function(done = FALSE,
       } else {
         bl <- 'To do'
         bc <- 'red'
+      }
+      # Color the selected tab orange
+      if(!is.null(it)){
+        if(it == tabName){
+          text <- span(text, style = 'color:orange')
+        }
       }
       if(sub){
         div(style="margin-left:45px;margin-bottom: 10px; margin-right: 10px",

@@ -449,7 +449,8 @@ server <- function(input, output, session) {
         )
       )
     } else {
-      h4(textOutput('assessment_text'))
+      fluidPage(h4(textOutput('assessment_text')),
+                h3(textOutput('section_text')))
     }
   })
   
@@ -855,11 +856,13 @@ server <- function(input, output, session) {
     
     mt <- main_tab()
     ss <- submissions
-    
-    # Instructions menu
+    # message('SUBMISSIONS IS -----------------------------')
+    # x <- reactiveValuesToList(ss)
+    # print(x)
+    # # Instructions menu
     # (gets hidden once an assessment is selected)
     instructions_menu <- 
-      generate_menu(text="Instructions",
+      generate_menu(it = input$tabs, text="Instructions",
                   tabName="instructions",
                   icon=icon("leanpub"),
                   submissions = submissions, mt = mt,
@@ -900,7 +903,7 @@ server <- function(input, output, session) {
         assessment_menu <- NULL
       } else {
         assessment_menu <- 
-          generate_menu(text=assessment_name,
+          generate_menu(it = input$tabs, text=assessment_name,
                         tabName="assessment",
                         icon=icon("check-circle"),
                         pass = TRUE,
@@ -920,14 +923,14 @@ server <- function(input, output, session) {
     }
     
     sidebarMenu(
-      generate_menu(text="Home",
+      generate_menu(it = input$tabs, text="Home",
                     tabName="home",
                     icon=icon("home"),
                     submissions = submissions, mt = mt,
                     pass = TRUE, 
                     loggedin = li),
       instructions_menu,
-      generate_menu(text="Configuration",
+      generate_menu(it = input$tabs, text="Configuration",
                     tabName="configuration",
                     icon=icon("gears"),
                     pass = TRUE,
@@ -935,74 +938,74 @@ server <- function(input, output, session) {
                     loggedin = lo),
       assessment_menu,
       uiOutput('progress_plot_ui'),
-      generate_menu(text="Strategy and execution",
+      generate_menu(it = input$tabs, text="Strategy and execution",
                     tabName="strategy_and_execution",
                     icon=icon("crosshairs"),
                     submissions = submissions, mt = mt, 
                     loggedin = li,
                     sub = TRUE),
-      generate_menu(text="Organization and governance",
+      generate_menu(it = input$tabs, text="Organization and governance",
                     tabName="organization_and_governance",
                     icon=icon("sitemap"),
                     submissions = submissions, mt = mt, 
                     loggedin = li,
                     sub = TRUE),
-      generate_menu(text="Partnerships",
+      generate_menu(it = input$tabs, text="Partnerships",
                     tabName="partnerships",
                     icon=icon("asterisk"),
                     submissions = submissions, mt = mt, 
                     loggedin = li,
                     sub = TRUE),
-      generate_menu(text="Products",
+      generate_menu(it = input$tabs, text="Products",
                     tabName="products",
                     icon=icon("gift"),
                     submissions = submissions, mt = mt, 
                     loggedin = li,
                     sub = TRUE),
-      generate_menu(text="Marketing",
+      generate_menu(it = input$tabs, text="Marketing",
                     tabName="marketing",
                     icon=icon("shopping-cart"),
                     submissions = submissions, mt = mt, 
                     loggedin = li,
                     sub = TRUE),
-      generate_menu(text="Distribution and channels",
+      generate_menu(it = input$tabs, text="Distribution and channels",
                     tabName="distribution_and_channels",
                     icon=icon("exchange"),
                     submissions = submissions, mt = mt, 
                     loggedin = li,
                     sub = TRUE),
-      generate_menu(text="Risk management",
+      generate_menu(it = input$tabs, text="Risk management",
                     tabName="risk_management",
                     icon=icon("tasks"),
                     submissions = submissions, mt = mt, 
                     loggedin = li,
                     sub = TRUE),
-      generate_menu(text="IT and MIS",
+      generate_menu(it = input$tabs, text="IT and MIS",
                     tabName="it_and_mis",
                     icon=icon("laptop"),
                     submissions = submissions, mt = mt, 
                     loggedin = li,
                     sub = TRUE),
-      generate_menu(text="Operations and customer service",
+      generate_menu(it = input$tabs, text="Operations and customer service",
                     tabName="operations_and_customer_service",
                     icon=icon("users"),
                     submissions = submissions, mt = mt, 
                     loggedin = li,
                     sub = TRUE),
-      generate_menu(text="Responsible finance",
+      generate_menu(it = input$tabs, text="Responsible finance",
                     tabName="responsible_finance",
                     icon=icon("thumbs-up"),
                     submissions = submissions, mt = mt, 
                     loggedin = li,
                     sub = TRUE),
-      generate_menu(text="Graphs",
+      generate_menu(it = input$tabs, text="Graphs",
                     tabName="graphs",
                     icon=icon("signal"),
                     submissions = submissions, mt = mt,
                     pass = TRUE, 
                     loggedin = li,
                     sub = TRUE),
-      generate_menu(text = 'About',
+      generate_menu(it = input$tabs, text = 'About',
                     tabName = 'about',
                     icon = icon('book'),
                     submissions = submissions, mt = mt,
@@ -1079,8 +1082,8 @@ server <- function(input, output, session) {
       }
     } 
     if(show_menu){
-      # Add a null value
-      assessments <- c('', assessments)
+      # # Add a null value
+      # assessments <- c('', assessments)
       cc <- counter()
       fluidPage(
         selectInput('assessment',
@@ -1353,7 +1356,58 @@ server <- function(input, output, session) {
     
   })
   
-  # Text in upper left
+  # Text indicating section
+  output$section_text <- renderText({
+    li <- logged_in()
+    if(li){
+      
+      # Get client name
+      this_client_id <- input$client
+      gcl <- get_client_listing()
+      if(is.null(gcl)){
+        client_name <- ''
+      } else {
+        clients <- gcl$client_id
+        clients_names <- gcl$name
+        client_name <- clients_names[as.numeric(clients) == as.numeric(this_client_id)]
+      }
+      
+      # Get assessment name
+      this_assessment_id <- input$assessment
+      gccal <- get_current_client_assessment_listing()
+      has_ass <- FALSE
+      if(!is.null(gccal)){
+        assessments <- gccal$assessment_id 
+        if(!is.null(assessments)){
+          if(length(assessments) > 0){
+            has_ass <- TRUE
+            assessment_name <- gccal$assessment_name[as.numeric(gccal$assessment_id) == as.numeric(this_assessment_id)]
+          }
+        }
+      }
+      if(!is.null(input$assessment)){
+        if(input$assessment == ''){
+          has_ass <- FALSE
+        }
+      } else {
+        has_ass <- FALSE
+      }
+      it <- input$tabs
+      if(it %in% c('home', 'configuration', 'assessment',
+                   'graphs', 'about')){
+        has_ass <- FALSE
+      }
+      # Return text
+      if(has_ass){
+        paste0(convert_capitalization(simple_cap(gsub('_', ' ', it))))
+      } else {
+        NULL
+      }
+    }
+  })
+  
+  
+  # Text stating which assessment
   output$assessment_text <- renderText({
     li <- logged_in()
     if(li){
@@ -1404,7 +1458,6 @@ server <- function(input, output, session) {
       } else {
         NULL
       }
-      
     }
   })
   
