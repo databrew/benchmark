@@ -1284,8 +1284,9 @@ server <- function(input, output, session) {
     ia <- input$assessment
     unload_client_assessment()
     if(ia != ''){
-      load_client_assessment(ia)
+      
       Sys.sleep(0.2) # this allows the submissions object to be cleared in generate_reactivity
+      load_client_assessment(ia)
       # before the object gets updated. Has the effect of making sure that the finished/notfinished toggles are correct.
       as <- reactiveValuesToList(ASSESSMENT);
       if(!is.null(as)){
@@ -1300,10 +1301,11 @@ server <- function(input, output, session) {
         # Go through each value in as and update the slider
         # if the item is not in as, set to 0
         for (i in 1:nrow(competency_dict)){
+          this_question_id <- competency_dict$question_id[i]
           this_name <- competency_dict$combined_name[i]
           this_slider <- paste0(this_name, '_slider')
           if(this_name %in% as$combined_name){
-            the_value <-as$score[i]
+            the_value <-as$score[as$question_id == this_question_id]
           } else{
             the_value <- 0
           }
