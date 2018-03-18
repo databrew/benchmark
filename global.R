@@ -1,5 +1,8 @@
 # Libraries
-library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(readr)
 library(radarchart)
 library(shinyWidgets)
 library(DBI)
