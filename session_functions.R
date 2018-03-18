@@ -110,8 +110,12 @@ load_client <- function(selected_client_id)
 {
   if (is.null(selected_client_id) || is.na(selected_client_id) || selected_client_id == "" || !is.numeric(as.numeric(selected_client_id))) 
     return(warning(paste0("Warning: load_client bad input parameters for selected_client_id=",selected_client_id)))
-
-  client_info <- subset(x=get_client_listing(),subset=client_id==selected_client_id)
+  
+  listing <- get_client_listing()
+  
+  if (is.null(listing) || nrow(listing)==0) return(NULL)
+  
+  client_info <- subset(x=listing,subset=client_id==selected_client_id)
   get_client_listing()
   if (nrow(client_info) != 1) return(message(paste0("Warning: unable to load client_id==",selected_client_id," as ID does not exist in get_client_listing()")))
   
