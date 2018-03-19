@@ -87,7 +87,7 @@ create_input_list <- function(){
     b[counter] <- paste0("input_list[['", this_qualy, "']] <- '';\n")
   }
   # Observe any changes to slider and then register  them
-  x <- z <- y <-  rep(NA, length(inputs))
+  x <- z <- y <- v <- u <-    rep(NA, length(inputs))
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
     this_qualy <- qualys[i]
@@ -107,17 +107,17 @@ create_input_list <- function(){
       paste0("observeEvent(",this_observation,", { ;
              input_list[['", this_input, "']] <- ", this_event,"});\n")
     
-    # # Observe the press here when done and update the input list for text
-    # y[i] <- 
-    #   paste0("observeEvent(",this_button,", { ;
-    #          input_list[['", this_qualy, "']] <- ", this_event_qualy,"});\n")
+    # Observe the press here when done and update the input list for text
+    v[i] <-
+      paste0("observeEvent(",this_button,", { ;
+             input_list[['", this_qualy, "']] <- ", this_event_qualy,"});\n")
     # Observe the sliders and update the input list for text
     y[i] <- 
       paste0("observeEvent(",this_observation,", { ;
              input_list[['", this_qualy, "']] <- ", this_event_qualy,"});\n")
     
     
-    # Save the data
+    # Save the data upon slider move
     z[i] <- 
       paste0("observeEvent(",this_observation,", { ;
               if(", this_event, " > 0.5){
@@ -130,11 +130,26 @@ create_input_list <- function(){
                 save_assessment_data()
               }
   });\n")
+    
+    # Save the data upon next competency button click move
+    u[i] <- 
+      paste0("observeEvent(",this_button,", { ;
+                record_assessment_data_entry(question_id=",this_question_id, ",score=", this_event, ",rationale=", this_event_qualy,");
+                # Force a re-load of assessment data
+                cc <- counter()
+                cc <- cc + 1
+                counter(cc)
+                message('Counter increased to ', cc)
+                save_assessment_data()
+
+  });\n")
   }
   
   paste0(a,
          paste0(b,
                 x, 
+                v,
+                u,
                 y,
                 z, collapse = ''),
          collapse = '')
@@ -174,7 +189,7 @@ create_qualy <- function(item_name,
   ip <- reactiveValuesToList(ip)
   ip <- unlist(ip)
   
-  # print(ip[grepl('qualy', names(ip))])
+  print(ip[grepl('qualy', names(ip))])
 
   if(list_name %in% names(ip)){
     val <- ip[names(ip) == list_name]

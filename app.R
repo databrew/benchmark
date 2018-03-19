@@ -1279,6 +1279,7 @@ server <- function(input, output, session) {
   })
   
   # Observe changes to selected assessment, and update the sliders accordingly
+  # and the text input
   observeEvent(input$assessment, {
     ia <- input$assessment
     unload_client_assessment()
@@ -1303,10 +1304,13 @@ server <- function(input, output, session) {
           this_question_id <- competency_dict$question_id[i]
           this_name <- competency_dict$combined_name[i]
           this_slider <- paste0(this_name, '_slider')
+          this_qualy <- paste0(this_name, '_qualy')
           if(this_name %in% as$combined_name){
             the_value <-as$score[as$question_id == this_question_id]
+            the_qualy <- as$rationale[as$question_id == this_question_id]
           } else{
             the_value <- 0
+            the_qualy <- ''
           }
           message('updating ', this_slider, ' to ', the_value)
           # Update the input list
@@ -1315,6 +1319,15 @@ server <- function(input, output, session) {
           updateSliderInput(session = session,
                             inputId = this_slider,
                             value = the_value)
+          
+          message('updating ', this_qualy, ' to ', the_qualy)
+          # Update the input list
+          input_list[[this_qualy]] <- the_qualy
+          # Update the slider
+          updateTextAreaInput(session = session,
+                            inputId = this_qualy,
+                            value = the_qualy)
+          
           # Update the submissions tracker
           if(!is.null(the_value)){
             if(!is.na(the_value)){
