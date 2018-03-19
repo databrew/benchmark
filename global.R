@@ -189,8 +189,6 @@ create_qualy <- function(item_name,
   ip <- reactiveValuesToList(ip)
   ip <- unlist(ip)
   
-  print(ip[grepl('qualy', names(ip))])
-
   if(list_name %in% names(ip)){
     val <- ip[names(ip) == list_name]
   } else {
@@ -261,6 +259,10 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
              ', tab_name, '_', competencies[i], '_colors[[lt]] <- ifelse(new_value == 1, "red", ifelse(new_value == 2, "orange", "green"))
              ', tab_name, '_', competencies[i], '_colors[[other_letters[1]]] <- "black"
              ', tab_name, '_', competencies[i], '_colors[[other_letters[2]]] <- "black"
+             } else {
+              ', tab_name, '_', competencies[i], '_colors[["a"]] <- "black"
+              ', tab_name, '_', competencies[i], '_colors[["b"]] <- "black"
+              ', tab_name, '_', competencies[i], '_colors[["c"]] <- "black"
              }
              })
              
