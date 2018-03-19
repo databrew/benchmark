@@ -173,26 +173,6 @@ body <- dashboardBody(
     tabItem(
       tabName = 'about',
       fluidPage(
-        fluidRow(h4("The dashboard was developed as a part of activities under the ", 
-                    a(href = 'http://www.ifc.org/wps/wcm/connect/region__ext_content/ifc_external_corporate_site/sub-saharan+africa/priorities/financial+inclusion/za_ifc_partnership_financial_inclusion',
-                      target='_blank',
-                      "Partnership for Financial Inclusion"),
-                    " (a $37.4 million joint initiative of the ",
-                    a(href = "http://www.ifc.org/wps/wcm/connect/corp_ext_content/ifc_external_corporate_site/home",
-                      target='_blank',
-                      'IFC'),
-                    " and the ",
-                    a(href = "http://www.mastercardfdn.org/",
-                      target='_blank',
-                      'MasterCard Foundation'),
-                    " to expand microfinance and advance digital financial services in Sub-Saharan Africa) by the FIG Africa Digital Financial Services unit (the MEL team).")),
-        br(),
-        fluidRow(div(img(src='partnershiplogo.png', 
-                         align = "center",
-                         height = '90'), style="text-align: center;"),
-                 br(), 
-                 style = 'text-align:center;'
-        ),
         br(),
         fluidRow(
           shinydashboard::box(
@@ -266,6 +246,13 @@ body <- dashboardBody(
         ),
         fluidRow(column(12,
                         align = 'right',
+                        br(),
+                        fluidRow(div(img(src='partnershiplogo.png', 
+                                         align = "right",
+                                         height = '90'), style="text-align: right;"),
+                                 br(), 
+                                 style = 'text-align:right;'
+                        ),
                         uiOutput('db_info')))
       )
     )
@@ -437,11 +424,12 @@ server <- function(input, output, session) {
     # Don't show on the instructions or about tab
     it <- input$tabs
     if(!is.null(it)){
-      if(it %in% c('about', 'instructions')){
+      if(it %in% c('about', 'instructions', 'configuration')){
         logged_in_now <- TRUE
-      } else {
-        logged_in_now <- FALSE
-      }
+      } 
+      # if(it == 'home'){
+      #   logged_in_now <- FALSE
+      # }
     }
     
     if(!logged_in_now){
