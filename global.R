@@ -107,10 +107,15 @@ create_input_list <- function(){
       paste0("observeEvent(",this_observation,", { ;
              input_list[['", this_input, "']] <- ", this_event,"});\n")
     
-    # Observe the press here when done and update the input list for text
+    # # Observe the press here when done and update the input list for text
+    # y[i] <- 
+    #   paste0("observeEvent(",this_button,", { ;
+    #          input_list[['", this_qualy, "']] <- ", this_event_qualy,"});\n")
+    # Observe the sliders and update the input list for text
     y[i] <- 
-      paste0("observeEvent(",this_button,", { ;
+      paste0("observeEvent(",this_observation,", { ;
              input_list[['", this_qualy, "']] <- ", this_event_qualy,"});\n")
+    
     
     # Save the data
     z[i] <- 
