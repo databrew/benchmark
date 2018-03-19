@@ -73,35 +73,50 @@ create_input_list <- function(){
 
   a <- paste0("input_list <- reactiveValues();\n")
   inputs <- paste0(competency_dict$combined_name, '_slider')
+  qualys <- paste0(competency_dict$combined_name, '_qualy')
+  buttons <- paste0(competency_dict$combined_name, '_next_competency')
   b <- rep(NA, length(inputs))
+  counter <- 0
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
+    this_qualy <- qualys[i]
     v <- 0
-    b[i] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
+    counter <- counter + 1
+    b[counter] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
+    counter <- counter + 1
+    b[counter] <- paste0("input_list[['", this_qualy, "']] <- '';\n")
   }
-  # Observe any changes and register them
-  x <- z <-  rep(NA, length(inputs))
+  # Observe any changes to slider and then register  them
+  x <- z <- y <-  rep(NA, length(inputs))
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
+    this_qualy <- qualys[i]
     this_cn <- gsub('_slider', '', this_input)
     this_question_id <- competency_dict %>% dplyr::filter(combined_name == this_cn) %>% .$question_id;
     this_event <- paste0('input$', this_input)
+    this_event_qualy <- gsub('_slider', '_qualy', this_event)
     # # Observe buttons rather than sliders
     # this_observation <- gsub('_slider', '_submit', this_event)
     # Observe sliders rather than buttons
     this_observation <- this_event
+    this_observation_qualy <- this_event_qualy
+    this_button <- paste0('input$',buttons[i])
     
-    # Observe the sliders and update the input list
+    # Observe the sliders and update the input list for scores
     x[i] <- 
       paste0("observeEvent(",this_observation,", { ;
-             input_list[['", this_input, "']] <- ", this_event,"
-  });\n")
+             input_list[['", this_input, "']] <- ", this_event,"});\n")
+    
+    # Observe the press here when done and update the input list for text
+    y[i] <- 
+      paste0("observeEvent(",this_button,", { ;
+             input_list[['", this_qualy, "']] <- ", this_event_qualy,"});\n")
     
     # Save the data
     z[i] <- 
       paste0("observeEvent(",this_observation,", { ;
               if(", this_event, " > 0.5){
-                record_assessment_data_entry(question_id=",this_question_id, ",score=", this_event, ",rationale='Placeholder');
+                record_assessment_data_entry(question_id=",this_question_id, ",score=", this_event, ",rationale=", this_event_qualy,");
                 # Force a re-load of assessment data
                 cc <- counter()
                 cc <- cc + 1
@@ -115,6 +130,7 @@ create_input_list <- function(){
   paste0(a,
          paste0(b,
                 x, 
+                y,
                 z, collapse = ''),
          collapse = '')
 }
@@ -153,6 +169,8 @@ create_qualy <- function(item_name,
   ip <- reactiveValuesToList(ip)
   ip <- unlist(ip)
   
+  # print(ip[grepl('qualy', names(ip))])
+
   if(list_name %in% names(ip)){
     val <- ip[names(ip) == list_name]
   } else {
@@ -160,14 +178,17 @@ create_qualy <- function(item_name,
     message(' this is list name: ', list_name)
     message('it is not in names of ip: ')
     # print(sort(names(ip)))
-    val <- 0
+    val <- ''
   }
   
   textAreaInput(paste0(item_name, '_qualy'),
-              'Qualitative rationale',
+            label = 'Qualitative rationale',
             cols = 6,
             rows = 2,
-            placeholder = 'Add a reason or commentary pertaining to the selected score.',
+            value = val,
+            # placeholder = ifelse(val == '',
+            #                      'Add a reason or commentary pertaining to the selected score.',
+            #                      NULL),
             resize = 'vertical')
 }
 
