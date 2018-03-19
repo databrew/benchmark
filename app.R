@@ -437,7 +437,7 @@ server <- function(input, output, session) {
         fluidRow(column(12,
                         textInput('user_name', 'User name', value = 'mbiallas')),
                  column(12,
-                        textInput('password', 'Password', value = '230984'))),
+                        passwordInput('password', 'Password', value = '230984'))),
         fluidRow(
           column(12,
                  textOutput('failed_log_in_text'))
