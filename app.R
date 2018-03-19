@@ -433,6 +433,17 @@ server <- function(input, output, session) {
     if(is.null(logged_in_now)){
       logged_in_now <- FALSE
     }
+    
+    # Don't show on the instructions or about tab
+    it <- input$tabs
+    if(!is.null(it)){
+      if(it %in% c('about', 'instructions')){
+        logged_in_now <- TRUE
+      } else {
+        logged_in_now <- FALSE
+      }
+    }
+    
     if(!logged_in_now){
       fluidPage(
         fluidRow(column(12,
