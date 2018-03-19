@@ -145,6 +145,33 @@ create_slider <- function(item_name,
               step = 0.5)
 }
 
+# Define function for creating text input below slider (qualitative )
+create_qualy <- function(item_name,
+                          ip){
+  
+  list_name <- paste0(item_name, '_qualy')
+  ip <- reactiveValuesToList(ip)
+  ip <- unlist(ip)
+  
+  if(list_name %in% names(ip)){
+    val <- ip[names(ip) == list_name]
+  } else {
+    message('PROBLEM')
+    message(' this is list name: ', list_name)
+    message('it is not in names of ip: ')
+    # print(sort(names(ip)))
+    val <- 0
+  }
+  
+  textAreaInput(paste0(item_name, '_qualy'),
+              'Qualitative rationale',
+            cols = 6,
+            rows = 2,
+            placeholder = 'Add a reason or commentary pertaining to the selected score.',
+            resize = 'vertical')
+}
+
+
 
 # Define function for creating a submit button to follow each slider
 create_submit <- function(item_name, show_icon = FALSE){
@@ -306,12 +333,13 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
                    ",
                    # collapsed = ", competency_done, ",
                    "style = \"overflow-y:scroll; max-height: 400px\",fluidPage(",
-                   "fluidRow(column(3, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Click to add comment')), column(6), ",
+                   "fluidRow(column(3), ",
                    # "column(3)",
-                   "column(3, actionButton('", paste0(tab_name, "_", this_competency, "_next_competency"), "', 'Press here when done'))",
+                   "column(6, align = 'center', actionButton('", paste0(tab_name, "_", this_competency, "_next_competency"), "', 'Press here when done')), column(3)",
                    "),",
                    "fluidRow(column(1), column(10,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(1, create_submit('", tab_name, "_", this_competency, "', 
                    show_icon = ", competency_done, "))),",
+                   "fluidRow(column(12, create_qualy('", tab_name, "_", this_competency, "', ip = input_list))),",
                    
                    
                    "fluidRow(column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (1-2)'), "'), style= paste0('color:',", colors_one, "))), 
