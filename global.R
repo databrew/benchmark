@@ -511,7 +511,7 @@ convert_capitalization <- function(x){
 # Define function for making radar chart
 make_radar_chart <- function(data,
                              tn = 'organization_and_governance',
-                             label_size = 11,
+                             label_size = 9,
                              height = NULL,
                              gg = FALSE){
   # Subset to the tab in question
@@ -550,16 +550,34 @@ make_radar_chart <- function(data,
     
     
   } else {
-    chartJSRadar(scores = scores, labs = labs, maxScale = 7,
-                 height = height,
-                 scaleStepWidth = 1,
-                 scaleStartValue = 0,
-                 responsive = TRUE,
-                 labelSize = label_size,
-                 showLegend = TRUE,
-                 addDots = TRUE,
-                 showToolTipLabel = TRUE,
-                 colMatrix = t(matrix(c(col2rgb('darkorange'), col2rgb('lightblue')), nrow = 2, byrow = TRUE)))
+    # load('~/Desktop/chart.RData')
+    labsx <- rep(NA, length(labs))
+    for(i in 1:length(labs)){
+      out <- labs[i]
+      splote <- unlist(strsplit(out, ' '))
+      n_words <- length(splote)
+      if(n_words > 2){
+        out <- paste0(paste0(splote[1:2], collapse = ' '), '...', collapse = '')
+      }
+      labsx[i] <- out
+      # out <- gsub(' ', '\n', labs[i])
+      # words <- strsplit(labs[i], ' ')
+      # out <- lapply(words, function(x){paste0('["', x, '"]')})
+      # out <- unlist(out)
+      # out <- paste0('[', paste0(out, collapse = ','), ']')
+      labsx[i] <- out
+    }
+    show_legend <- tn == 'strategy_and_execution'
+  chartJSRadar(scores = scores, labs = labsx, maxScale = 7,
+                      height = height,
+                      scaleStepWidth = 1,
+                      scaleStartValue = 0,
+                      responsive = TRUE,
+                      labelSize = label_size,
+                      showLegend = show_legend,
+                      addDots = TRUE,
+                      showToolTipLabel = TRUE,
+                      colMatrix = t(matrix(c(col2rgb('darkorange'), col2rgb('lightblue')), nrow = 2, byrow = TRUE)))
   }
   
 }
