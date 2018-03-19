@@ -435,9 +435,15 @@ server <- function(input, output, session) {
     if(!logged_in_now){
       fluidPage(
         fluidRow(column(12,
-                        textInput('user_name', 'User name', value = 'mbiallas')),
+                        textInput(inputId = 'user_name',
+                                  value = '',
+                                  # value = 'mbiallas',
+                                  label = 'User name')),
                  column(12,
-                        passwordInput('password', 'Password', value = '230984'))),
+                        passwordInput(inputId = 'password', 
+                                      value = '',
+                                      # value = '230984',
+                                      label = 'Password'))),
         fluidRow(
           column(12,
                  textOutput('failed_log_in_text'))
