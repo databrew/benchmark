@@ -10,6 +10,7 @@ library(RPostgreSQL)
 library(yaml)
 library(pool)
 library(lubridate)
+library(shiny)
 functions <- dir('R')
 for (i in 1:length(functions)){
   source(paste0('R/', functions[i]), chdir = TRUE)
@@ -155,6 +156,9 @@ create_input_list <- function(){
          collapse = '')
 }
 
+slider_label_values <- list(A = c('Unrated', 'Emerging', '&nbsp;', '&nbsp;' , '&nbsp;' , '&nbsp;','Formative','&nbsp;','&nbsp;','Developed','&nbsp;','Best Practice'),
+               B = c('&nbsp;', 'Emerging', '&nbsp;', '&nbsp;' , '&nbsp;' , '&nbsp;','Formative','&nbsp;','&nbsp;','Developed','&nbsp;','&nbsp;'))
+
 # Define function for creating a slider for a given item
 create_slider <- function(item_name,
                           ip){
@@ -177,8 +181,7 @@ create_slider <- function(item_name,
               'Score (1-7)',
               min = 0, 
               max = 7,
-              value = val,
-              step = 0.5)
+              value = val)
 }
 
 # Define function for creating text input below slider (qualitative )
@@ -353,6 +356,7 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
   a <- ''
   # Each box
   b <- rep(NA, n_competencies)
+  g <- b
   for(i in 1:n_competencies){
     this_competency <- competencies[i]
     this_combined_name <- paste0(tab_name, '_', this_competency)
@@ -370,6 +374,9 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
     colors_two <- paste0(tab_name, '_', competencies[i], '_colors[["b"]]')
     colors_three <- paste0(tab_name, '_', competencies[i], '_colors[["c"]]')
     
+    g[i] <- 
+      paste0("tags$head(tags$script(HTML(make_js_slider('", this_combined_name,  "')))),")
+    
     b[i] <- paste0("box(title = p(paste0('", this_title, "', ifelse(", competency_done, ", ' (Done)', ''))),        width = 12,
                    solidHeader = TRUE,
                    collapsible = TRUE,
@@ -377,7 +384,10 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
                    ",
                    # collapsed = ", competency_done, ",
                    "style = \"overflow-y:scroll; max-height: 400px\",fluidPage(",
-                   "fluidRow(column(1), column(10,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(1, create_submit('", tab_name, "_", this_competency, "', 
+                   "fluidRow(column(1), 
+                    
+                    column(10,create_slider('", tab_name, "_", this_competency, "', 
+                            ip = input_list)), column(1, create_submit('", tab_name, "_", this_competency, "', 
                    show_icon = ", competency_done, "))),",
                    "fluidRow(column(12, create_qualy('", tab_name, "_", this_competency, "', ip = input_list))),",
                    "fluidRow(column(3), ",
@@ -395,6 +405,9 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
                    "))")
   }
   b <- paste0(b, collapse = ',')
+  g <- paste0(g, collapse = '\n')
+  # in g, replace the last character (comma) with a semi colon
+  
   
   out <- 
     paste0("output$",tab_name, "_ui <- ",
@@ -405,11 +418,13 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
            x <- competency_dict %>% filter(tab_name == mt) %>% mutate(competency = convert_capitalization(simple_cap(gsub('_', ' ', competency)))) %>% .$competency;
            sts <- x[1]
            };",
+           'div(',
+           g,
             # "if(length(sts) < 1){sts <- convert_capitalization(simple_cap(gsub('_', ' ', competencies)))[1]};",
            "fluidPage(",
            a,
            b,
-           ")})")
+           "))})")
   return(out)
 }
 
@@ -838,3 +853,20 @@ competency_dict <-
               dplyr::select(combined_name,
                             question_id),
             by = 'combined_name')
+
+# Define some javascript for the categorical sliders
+make_js_slider <- function(tn){
+  tn <- paste0(tn, '_slider')
+      paste0(
+        "$(function() {
+setTimeout(function(){
+var names = ['Unrated', 'Emerging (1)', '(2)',  'Formative (3)', '(4)', '(5)', 'Developed (6)', '(7)'];
+var vals = [];
+for (i = 0; i < names.length; i++) {
+  var val = names[i];
+  vals.push(val);
+}
+$('#", tn, "').data('ionRangeSlider').update({'values':vals})
+}, 7)})"
+      )
+}
