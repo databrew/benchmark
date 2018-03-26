@@ -1,31 +1,46 @@
 # Libraries
-library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(readr)
 library(radarchart)
 library(shinyWidgets)
 library(DBI)
 library(RPostgreSQL)
 library(yaml)
 library(pool)
-library(shiny)
+library(lubridate)
 functions <- dir('R')
 for (i in 1:length(functions)){
   source(paste0('R/', functions[i]), chdir = TRUE)
 }
+source('session_functions.R', local = TRUE)
+
+# Define function for converting numeric values to 1 of the 3 categories
+convert_to_category <- function(number = 0){
+  ifelse(number < 1,
+         0,
+         ifelse(number <=3,
+                1,
+                ifelse(number <= 5,
+                       2, 
+                       3)))
+}
 
 # Create a dictionary of tab names / numbers
 tab_names_full <- c('Instructions',
-               'Strategy and Execution',
-               'Organization and Governance',
-               'Partnerships',
-               'Products',
-               'Marketing',
-               'Distribution and Channels',
-               'Risk Management',
-               'IT and MIS',
-               'Operations and Customer Service',
-               'Responsible Finance',
-               'Graphs',
-               'About')
+                    'Strategy and Execution',
+                    'Organization and Governance',
+                    'Partnerships',
+                    'Products',
+                    'Marketing',
+                    'Distribution and Channels',
+                    'Risk Management',
+                    'IT and MIS',
+                    'Operations and Customer Service',
+                    'Responsible Finance',
+                    'Graphs',
+                    'About')
 tab_names <- tolower(gsub(' ', '_', tab_names_full))
 tab_dict <- data_frame(number = 1:length(tab_names),
                        name = tab_names,
@@ -55,86 +70,148 @@ get_ui_text <- function(item_name){
 
 # Define function for keeping an eye on inputs, so that they don't get reset when the ui gets re-rendered
 create_input_list <- function(){
-  
-  gcai <- get_current_assessment_id()
 
-  # Get pool
-  conn <- poolCheckout(db_get_pool())
-  # Get assessment data
-  ad <- dbGetQuery(conn,
-                   paste0("SELECT * FROM pd_dfsbenchmarking.assessment_data" ))
-  poolReturn(conn)
-  right <- ad
-  if(!is.null(gcai)){
-    right <- right %>% filter(assessment_id == gcai)
-  }
-  right <- right %>%
-    arrange(desc(entry_time)) %>%
-    dplyr::distinct(question_id, .keep_all = TRUE) %>%
-    dplyr::select(question_id, score)
-  left <- view_assessment_questions_list %>%
-    mutate(combined_name = paste0(tab_name, '_', competency)) %>%
-        dplyr::select(question_id, combined_name) 
-  x <- left_join(left, right, by = 'question_id') %>%
-    mutate(score = ifelse(is.na(score), 0, score))
-    
   a <- paste0("input_list <- reactiveValues();\n")
-  inputs <- paste0(x$combined_name, '_slider')
+  inputs <- paste0(competency_dict$combined_name, '_slider')
+  qualys <- paste0(competency_dict$combined_name, '_qualy')
+  buttons <- paste0(competency_dict$combined_name, '_next_competency')
   b <- rep(NA, length(inputs))
+  counter <- 0
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
-    v <- x$score[i]
-    b[i] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
+    this_qualy <- qualys[i]
+    v <- 0
+    counter <- counter + 1
+    b[counter] <- paste0("input_list[['", this_input, "']] <- ", v, ";\n")
+    counter <- counter + 1
+    b[counter] <- paste0("input_list[['", this_qualy, "']] <- '';\n")
   }
-  # Observe any changes and register them
-  z <- rep(NA, length(inputs))
+  # Observe any changes to slider and then register  them
+  x <- z <- y <- v <- u <-    rep(NA, length(inputs))
   for(i in 1:length(inputs)){
     this_input <- inputs[i]
+    this_qualy <- qualys[i]
+    this_cn <- gsub('_slider', '', this_input)
+    this_question_id <- competency_dict %>% dplyr::filter(combined_name == this_cn) %>% .$question_id;
     this_event <- paste0('input$', this_input)
+    this_event_qualy <- gsub('_slider', '_qualy', this_event)
     # # Observe buttons rather than sliders
     # this_observation <- gsub('_slider', '_submit', this_event)
     # Observe sliders rather than buttons
     this_observation <- this_event
+    this_observation_qualy <- this_event_qualy
+    this_button <- paste0('input$',buttons[i])
+    
+    # Observe the sliders and update the input list for scores
+    x[i] <- 
+      paste0("observeEvent(",this_observation,", { ;
+             input_list[['", this_input, "']] <- ", this_event,"});\n")
+    
+    # Observe the press here when done and update the input list for text
+    v[i] <-
+      paste0("observeEvent(",this_button,", { ;
+             input_list[['", this_qualy, "']] <- ", this_event_qualy,"});\n")
+    # Observe the sliders and update the input list for text
+    y[i] <- 
+      paste0("observeEvent(",this_observation,", { ;
+             input_list[['", this_qualy, "']] <- ", this_event_qualy,"});\n")
+    
+    
+    # Save the data upon slider move
     z[i] <- 
       paste0("observeEvent(",this_observation,", { ;
- input_list[['", this_input, "']] <- ", this_event,"
-    });\n")
+              if(", this_event, " > 0.5){
+                record_assessment_data_entry(question_id=",this_question_id, ",score=", this_event, ",rationale=", this_event_qualy,");
+                # Force a re-load of assessment data
+                cc <- counter()
+                cc <- cc + 1
+                counter(cc)
+                message('Counter increased to ', cc)
+                save_assessment_data()
+              }
+  });\n")
+    
+    # Save the data upon next competency button click move
+    u[i] <- 
+      paste0("observeEvent(",this_button,", { ;
+                record_assessment_data_entry(question_id=",this_question_id, ",score=", this_event, ",rationale=", this_event_qualy,");
+                # Force a re-load of assessment data
+                cc <- counter()
+                cc <- cc + 1
+                counter(cc)
+                message('Counter increased to ', cc)
+                save_assessment_data()
+
+  });\n")
   }
+  
   paste0(a,
          paste0(b,
-         z, collapse = ''),
+                x, 
+                v,
+                u,
+                y,
+                z, collapse = ''),
          collapse = '')
 }
 
-
-
-# Define function for creating a 1-5 slider for a given item
+# Define function for creating a slider for a given item
 create_slider <- function(item_name,
                           ip){
+
   list_name <- paste0(item_name, '_slider')
   ip <- reactiveValuesToList(ip)
   ip <- unlist(ip)
+
   if(list_name %in% names(ip)){
     val <- ip[names(ip) == list_name]
   } else {
     message('PROBLEM')
     message(' this is list name: ', list_name)
     message('it is not in names of ip: ')
-    print(sort(names(ip)))
+    # print(sort(names(ip)))
     val <- 0
   }
-
+  
   sliderInput(paste0(item_name, '_slider'),
               'Score (1-7)',
-              # label = div(style='width:330px;align=right', 
-              #             div(style='float:left;', 'Formative'), 
-              #             # div(style='float:middle;', 'Emerging'), 
-              #             div(style='float:right;', 'Developed')),
               min = 0, 
               max = 7,
               value = val,
               step = 0.5)
 }
+
+# Define function for creating text input below slider (qualitative )
+create_qualy <- function(item_name,
+                          ip){
+  
+  list_name <- paste0(item_name, '_qualy')
+  ip <- reactiveValuesToList(ip)
+  ip <- unlist(ip)
+  
+  if(list_name %in% names(ip)){
+    val <- ip[names(ip) == list_name]
+  } else {
+    message('PROBLEM')
+    message(' this is list name: ', list_name)
+    message('it is not in names of ip: ')
+    # print(sort(names(ip)))
+    val <- ''
+  }
+  
+  textAreaInput(paste0(item_name, '_qualy'),
+            label = 'Qualitative rationale',
+            cols = 6,
+            rows = 2,
+            value = val,
+            placeholder = 'Type here a rationale for your evaluation score.',
+            # placeholder = ifelse(val == '',
+            #                      'Add a reason or commentary pertaining to the selected score.',
+            #                      NULL),
+            resize = 'vertical')
+}
+
+
 
 # Define function for creating a submit button to follow each slider
 create_submit <- function(item_name, show_icon = FALSE){
@@ -159,57 +236,45 @@ generate_reactivity <- function(tab_name = 'strategy_and_execution',
              
              # Create reactive values
              submissions$', tab_name, '_', competencies[i], '_submit <- FALSE; # NEW ONE!
-
-            # Create reactive colors
-            ', tab_name, '_', competencies[i], '_colors <- reactiveValues()
-            ', tab_name, '_', competencies[i], '_colors[["a"]] <- "black"
-            ', tab_name, '_', competencies[i], '_colors[["b"]] <- "black"
-            ', tab_name, '_', competencies[i], '_colors[["c"]] <- "black"
-
-             # Observe either slider move or comment modal submit
-            observeEvent(c(input$', tab_name, '_', competencies[i], '_slider, 
-                           input$submit_comment_', tab_name, '_', competencies[i], '),{
-                # Get the question id
-                tn <- "', tab_name, '"
-                cm <- "', competencies[i], '"
-                qid <- view_assessment_questions_list %>%
-                      filter(tab_name == tn, competency == cm) %>%
-                      .$question_id
-                if(input$', tab_name, '_', competencies[i], '_slider >= 1){
-                  submissions$', tab_name, '_', competencies[i], '_submit <- TRUE
-                  # Update the data base
-                  message("updating the database with new submission for question id ", qid)
-                  rr <- input$comment_', tab_name, '_', competencies[i],'
-                  if(length(rr) == 0){rr <- NA}
-                  message("Rationale is ", rr)
-                  record_assessment_data_entry(
-                            question_id=qid,
-                            score= input$', tab_name, '_', competencies[i], '_slider,
-                            rationale = rr)
-
-                  # Save
-                  get_current_assessment_data()
-                  db_save_client_assessment_data()
-                  message("_________database successfully updated")
-                  # Colors
-                  x <- input$', tab_name, '_', competencies[i], '_slider
-                  new_value <- ceiling(x / 2.4)
-                  lt <- letters[new_value]
-                  other_letters <- letters[1:3][letters[1:3] != lt]
-                  ', tab_name, '_', competencies[i], '_colors[[lt]] <- ifelse(new_value == 1, "red", ifelse(new_value == 2, "orange", "green"))
-                  ', tab_name, '_', competencies[i], '_colors[[other_letters[1]]] <- "black"
-                  ', tab_name, '_', competencies[i], '_colors[[other_letters[2]]] <- "black"
-                }
-              })
+             
+            # Upon change of assessment, set all submissions back to false 
+            observeEvent(c(input$assessment), { 
+                submissions$', tab_name, '_', competencies[i], '_submit <- FALSE
+            })
+  
+             # Create reactive colors
+             ', tab_name, '_', competencies[i], '_colors <- reactiveValues()
+             ', tab_name, '_', competencies[i], '_colors[["a"]] <- "black"
+             ', tab_name, '_', competencies[i], '_colors[["b"]] <- "black"
+             ', tab_name, '_', competencies[i], '_colors[["c"]] <- "black"
+             
+             # Observe submissions
+             observeEvent(input$', tab_name, '_', competencies[i], '_slider,{
+             if(input$', tab_name, '_', competencies[i], '_slider >= 1){
+             submissions$', tab_name, '_', competencies[i], '_submit <- TRUE
+             # Colors
+             x <- input$', tab_name, '_', competencies[i], '_slider
+             new_value <- convert_to_category(x)
+             lt <- letters[new_value]
+             other_letters <- letters[1:3][letters[1:3] != lt]
+             ', tab_name, '_', competencies[i], '_colors[[lt]] <- ifelse(new_value == 1, "red", ifelse(new_value == 2, "orange", "green"))
+             ', tab_name, '_', competencies[i], '_colors[[other_letters[1]]] <- "black"
+             ', tab_name, '_', competencies[i], '_colors[[other_letters[2]]] <- "black"
+             } else {
+              ', tab_name, '_', competencies[i], '_colors[["a"]] <- "black"
+              ', tab_name, '_', competencies[i], '_colors[["b"]] <- "black"
+              ', tab_name, '_', competencies[i], '_colors[["c"]] <- "black"
+             }
+             })
              
              # Reactives saying whether the entire competency has been submitted
              ', tab_name, '_', competencies[i], '_submitted <- reactive({
-            x <- submissions$', tab_name, '_', competencies[i], '_submit;
-            x
+             x <- submissions$', tab_name, '_', competencies[i], '_submit;
+             x
              })')
   }
   paste0(out, collapse = '\n')
-}
+  }
 
 # Function to observe when an entire sub_tab gets submitted and move the sub_tab accordingly
 sub_tab_completer <- function(){
@@ -231,42 +296,42 @@ sub_tab_completer <- function(){
         
         sts <- sub_tab_selected();
         # sm <- ", submission_objects[i], "
-
+        
         # Action button approach
         sm <- TRUE
-          message('PRESS HERE WHEN DONE CLICKED!')
-
+        message('Clicked the -press here when done- button')
+        
         if(is.null(sts)){
-          mt <- main_tab(); 
-          x <- competency_dict %>% 
-            filter(tab_name == mt) %>% 
-            mutate(competency = convert_capitalization(simple_cap(gsub('_', ' ', competency)))) %>% 
-            .$competency;
-          sts <- x[1]
-          message('---new sts is ', sts)
-
+        mt <- main_tab(); 
+        x <- competency_dict %>% 
+        filter(tab_name == mt) %>% 
+        mutate(competency = convert_capitalization(simple_cap(gsub('_', ' ', competency)))) %>% 
+        .$competency;
+        sts <- x[1]
+        message('---new sts is ', sts)
+        
         }
         if(!is.null(sts)){
-          if(sm & sts == '", sub_tabs[i], "'){
-          this_tab <- '", tabs[i], "'
-          this_sub_tab <- '", sub_tabs[i], "'
-          next_tab <- '", tabs[i + 1], "'
-          next_sub_tab <- '", sub_tabs[i + 1], "'
-          df <- data.frame(name = c('this_tab', 'this_sub_tab', 'next_tab', 'next_sub_tab'), val = this_tab, this_sub_tab, next_tab, next_sub_tab);
-          if(next_tab != this_tab){
-            main_tab(next_tab);# navPage(1)
-            sub_tab_selected(next_sub_tab)
-          } else {
-            sub_tab_selected(next_sub_tab)
-          }
+        if(sm & sts == '", sub_tabs[i], "'){
+        this_tab <- '", tabs[i], "'
+        this_sub_tab <- '", sub_tabs[i], "'
+        next_tab <- '", tabs[i + 1], "'
+        next_sub_tab <- '", sub_tabs[i + 1], "'
+        df <- data.frame(name = c('this_tab', 'this_sub_tab', 'next_tab', 'next_sub_tab'), val = this_tab, this_sub_tab, next_tab, next_sub_tab);
+        if(next_tab != this_tab){
+        main_tab(next_tab);# navPage(1)
+        sub_tab_selected(next_sub_tab)
+        } else {
+        sub_tab_selected(next_sub_tab)
+        }
         }
         } else {
-          message('WEIRD, STS IS NULL')
+        message('WEIRD, STS IS NULL')
         }
         
-      })"
+  })"
       )
-  }
+}
   out <- unlist(out)
   out <- paste0(out, collapse = ';\n')
   return(out)
@@ -299,51 +364,52 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
     if(length(collapsed) < 1){
       collapsed <- 'FALSE'
     }
-
+    
     # Define colors
     colors_one <- paste0(tab_name, '_', competencies[i], '_colors[["a"]]')
     colors_two <- paste0(tab_name, '_', competencies[i], '_colors[["b"]]')
     colors_three <- paste0(tab_name, '_', competencies[i], '_colors[["c"]]')
     
-    b[i] <- paste0("box(title = paste0('", this_title, "', ifelse(", competency_done, ", ' (Completed)', '')),        width = 12,
-        solidHeader = TRUE,
-        collapsible = TRUE,
-        collapsed = ", collapsed,  ",
+    b[i] <- paste0("box(title = p(paste0('", this_title, "', ifelse(", competency_done, ", ' (Done)', ''))),        width = 12,
+                   solidHeader = TRUE,
+                   collapsible = TRUE,
+                   collapsed = ", collapsed,  ",
                    ",
-        # collapsed = ", competency_done, ",
-        "style = \"overflow-y:scroll; max-height: 400px\",fluidPage(",
-        "fluidRow(column(3, actionButton('", paste0('show_', tab_name, "_", this_competency), "', 'Click to add comment')), column(6), ",
-        # "column(3)",
-        "column(3, actionButton('", paste0(tab_name, "_", this_competency, "_next_competency"), "', 'Press here when done'))",
-        "),",
-        "fluidRow(column(1), column(10,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(1, create_submit('", tab_name, "_", this_competency, "', 
-                             show_icon = ", competency_done, "))),",
-
-
-        "fluidRow(column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (1-2)'), "'), style= paste0('color:',", colors_one, "))), 
-                  column(4, span(h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (3-5)'), "'), style= paste0('color:',", colors_two, "))),
-                  column(4, span(h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (6-7)'), "'), style= paste0('color:',", colors_three, ")))),",
-        "fluidRow(column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_1')), style= paste0('color:',", colors_one, "))), 
-                  column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_2')), style= paste0('color:',", colors_two, "))),
-                  column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_3')), style= paste0('color:',", colors_three, "))))",
-        "))")
+                   # collapsed = ", competency_done, ",
+                   "style = \"overflow-y:scroll; max-height: 400px\",fluidPage(",
+                   "fluidRow(column(1), column(10,create_slider('", tab_name, "_", this_competency, "', ip = input_list)), column(1, create_submit('", tab_name, "_", this_competency, "', 
+                   show_icon = ", competency_done, "))),",
+                   "fluidRow(column(12, create_qualy('", tab_name, "_", this_competency, "', ip = input_list))),",
+                   "fluidRow(column(3), ",
+                   # "column(3)",
+                   "column(6, align = 'center', actionButton('", paste0(tab_name, "_", this_competency, "_next_competency"), "', 'Press here when done')), column(3)",
+                   "),",
+                   
+                   
+                   "fluidRow(column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (1-2)'), "'), style= paste0('color:',", colors_one, "))), 
+                   column(4, span(h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (3-5)'), "'), style= paste0('color:',", colors_two, "))),
+                   column(4, span(h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (6-7)'), "'), style= paste0('color:',", colors_three, ")))),",
+                   "fluidRow(column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_1')), style= paste0('color:',", colors_one, "))), 
+                   column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_2')), style= paste0('color:',", colors_two, "))),
+                   column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_3')), style= paste0('color:',", colors_three, "))))",
+                   "))")
   }
   b <- paste0(b, collapse = ',')
-
+  
   out <- 
     paste0("output$",tab_name, "_ui <- ",
            "renderUI({",
            "sts<- sub_tab_selected(); 
-            # if going to next tab, sts will be nothing...
-            if(length(sts) < 1){mt <- main_tab(); 
-              x <- competency_dict %>% filter(tab_name == mt) %>% mutate(competency = convert_capitalization(simple_cap(gsub('_', ' ', competency)))) %>% .$competency;
-              sts <- x[1]
+           # if going to next tab, sts will be nothing...
+           if(length(sts) < 1){mt <- main_tab(); 
+           x <- competency_dict %>% filter(tab_name == mt) %>% mutate(competency = convert_capitalization(simple_cap(gsub('_', ' ', competency)))) %>% .$competency;
+           sts <- x[1]
            };",
             # "if(length(sts) < 1){sts <- convert_capitalization(simple_cap(gsub('_', ' ', competencies)))[1]};",
            "fluidPage(",
-          a,
-          b,
-          ")})")
+           a,
+           b,
+           ")})")
   return(out)
 }
 
@@ -354,17 +420,12 @@ generate_modals <- function(){
   for(i in 1:length(button_names)){
     this_tab_name <- button_names[i]
     comment_name <- paste0('comment_', this_tab_name)
-    submit_name <- paste0('submit_comment_', this_tab_name)
-    out[[i]] <- paste0('observeEvent(input$show_', this_tab_name, ', { message("Showing free text modal");
-    x <- sub_tab_selected()
-message("Sub tab selected worked and it is ", x);
-    showModal(modalDialog(title = paste0("Entering a qualitative rationale on the rating for ", x), 
-      easyClose = TRUE, 
-      fluidPage(fluidRow(textInput("', comment_name, '", label = "")),
-                fluidRow(
-                  action_modal_button("',submit_name,'", "Submit", icon = icon("check-circle"))
-
-                ))))
+    out[[i]] <- paste0('observeEvent(input$show_', this_tab_name, ', { message("MODAL TIME");
+                       x <- sub_tab_selected()
+                       message("Sub tab selected worked and it is ", x);
+                       showModal(modalDialog(title = paste0("Entering a qualitative rationale on the rating for ", x), footer = modalButton("Submit"),
+                       easyClose = TRUE, 
+                       fluidPage(fluidRow(textInput("', comment_name, '", label = "")))))
   })')
   }
   out <- unlist(out)
@@ -383,11 +444,11 @@ observe_sub_tab <- function(){
     this_sub_tab <- sub_tabs[i]
     this_name <- cnt[i]
     out[[i]] <- paste0("observeEvent({",this_sub_tab,"; input$tabs}, { #message('The following sub_tab id was just clicked: ", cnt[i],"' );
-        sub_tab_selected(", this_sub_tab,");
-        #message('---Overwriting the sub_tab_selected with: ', sub_tab_selected())
-      });"
+                       sub_tab_selected(", this_sub_tab,");
+                       #message('---Overwriting the sub_tab_selected with: ', sub_tab_selected())
+  });"
     )
-  }
+}
   out <- unlist(out)
   out <- paste0(out, collapse = '\n')
   return(out)
@@ -403,15 +464,13 @@ simple_cap <- Vectorize(simple_cap)
 
 # Define function for radar charts
 make_radar_data <- function(ip){
-  message('MAKING RADAR DATA')
   require(radarchart)
-
+  
   ip <- reactiveValuesToList(ip)
   ip <- unlist(ip)
   
-
   combined_names <- competency_dict$combined_name
-
+  
   # Get values for each of the combined names
   vals_df <-
     data.frame(combined_name = combined_names)
@@ -425,11 +484,9 @@ make_radar_data <- function(ip){
     the_name <- vals_df$value_name[[i]]
     the_value <- ip[names(ip) == the_name]
     the_value <- as.numeric(the_value)
-    the_value <- ifelse(is.na(the_value), 0, the_value)
-    the_value <- ifelse(length(the_value) == 0, 0, the_value)
     vals_df$value[i] <- the_value
   }
-
+  
   # Group by competency and get weighted score
   out <- vals_df %>%
     dplyr::select(tab_name, competency, value)
@@ -455,7 +512,7 @@ convert_capitalization <- function(x){
 # Define function for making radar chart
 make_radar_chart <- function(data,
                              tn = 'organization_and_governance',
-                             label_size = 11,
+                             label_size = 9,
                              height = NULL,
                              gg = FALSE){
   # Subset to the tab in question
@@ -494,16 +551,34 @@ make_radar_chart <- function(data,
     
     
   } else {
-    chartJSRadar(scores = scores, labs = labs, maxScale = 7,
-                 height = height,
-                 scaleStepWidth = 1,
-                 scaleStartValue = 0,
-                 responsive = TRUE,
-                 labelSize = label_size,
-                 showLegend = TRUE,
-                 addDots = TRUE,
-                 showToolTipLabel = TRUE,
-                 colMatrix = t(matrix(c(col2rgb('darkorange'), col2rgb('lightblue')), nrow = 2, byrow = TRUE)))
+    # load('~/Desktop/chart.RData')
+    labsx <- rep(NA, length(labs))
+    for(i in 1:length(labs)){
+      out <- labs[i]
+      splote <- unlist(strsplit(out, ' '))
+      n_words <- length(splote)
+      if(n_words > 2){
+        out <- paste0(paste0(splote[1:2], collapse = ' '), '...', collapse = '')
+      }
+      labsx[i] <- out
+      # out <- gsub(' ', '\n', labs[i])
+      # words <- strsplit(labs[i], ' ')
+      # out <- lapply(words, function(x){paste0('["', x, '"]')})
+      # out <- unlist(out)
+      # out <- paste0('[', paste0(out, collapse = ','), ']')
+      labsx[i] <- out
+    }
+    show_legend <- tn == 'strategy_and_execution'
+  chartJSRadar(scores = scores, labs = labsx, maxScale = 7,
+                      height = height,
+                      scaleStepWidth = 1,
+                      scaleStartValue = 0,
+                      responsive = TRUE,
+                      labelSize = label_size,
+                      showLegend = show_legend,
+                      addDots = TRUE,
+                      showToolTipLabel = TRUE,
+                      colMatrix = t(matrix(c(col2rgb('darkorange'), col2rgb('lightblue')), nrow = 2, byrow = TRUE)))
   }
   
 }
@@ -512,12 +587,10 @@ make_radar_chart <- function(data,
 # Define function for generating all the radar charts in the server
 generate_radar_server <- function(tab_name = 'organization_and_governance'){
   paste0("output$", tab_name, "_chart <- renderChartJSRadar({
-    data <- radar_data()
-    message('RADAR DATA IS')
-    print(head(data))
-    make_radar_chart(data,
-                     tn = '", tab_name, "')
-  })")
+         data <- radar_data()
+         make_radar_chart(data,
+         tn = '", tab_name, "')
+})")
 }
 
 
@@ -625,18 +698,18 @@ generate_radar_ui <- function(tab_name = 'organization_and_governance'){
   title <- simple_cap(gsub('_', ' ', tab_name))
   title <- convert_capitalization(title)
   paste0("box(title = '",title, "',
-              status = 'info',
-              collapsible = TRUE,
-              width = 6,
-              chartJSRadarOutput('", tab_name, "_chart'))")
+         status = 'info',
+         collapsible = TRUE,
+         width = 6,
+         chartJSRadarOutput('", tab_name, "_chart'))")
 }
 
 
 # Define function for generating all the radar charts in the html
 generate_radar_html <- function(rd, # radar data
                                 tab_name = 'organization_and_governance'){
-    make_radar_chart(rd,
-                     tn = '", tab_name, "')
+  make_radar_chart(rd,
+                   tn = '", tab_name, "')
 }
 
 # Define functions for generating menus
@@ -648,10 +721,12 @@ generate_menu <- function(done = FALSE,
                           pass = FALSE,
                           selected = NULL,
                           mt = '',
-                          loggedin = TRUE){
+                          loggedin = TRUE,
+                          sub = FALSE,
+                          it = NULL){
   if(!loggedin & !pass){
     return(NULL)
-  } else if(grepl('graph', tabName) | grepl('settings', tabName)){
+  } else if(!loggedin & (grepl('graph', tabName) | grepl('configur', tabName))){
     return(NULL)
   } else {
     if(mt == tabName){
@@ -690,46 +765,76 @@ generate_menu <- function(done = FALSE,
       }
       
       if(done){
-        bl <- 'Finished'
+        bl <- 'Done'
         bc <- 'green'
       } else {
-        bl <- 'Not finished'
+        bl <- 'To do'
         bc <- 'red'
       }
-      menuItem(
-        text = text,
-        tabName = tabName,
-        icon = icon,
-        badgeLabel = bl,
-        badgeColor = bc,
-        selected = selected)
+      # Color the selected tab orange
+      if(!is.null(it)){
+        if(it == tabName){
+          text <- span(text, style = 'color:orange')
+        }
+      }
+      if(sub){
+        div(style="margin-left:45px;margin-bottom: 10px; margin-right: 10px",
+            menuItem(
+              text = text,
+              tabName = tabName,
+              icon = icon,
+              badgeLabel = bl,
+              badgeColor = bc,
+              selected = selected)
+            
+            )
+      } else {
+        menuItem(
+          text = text,
+          tabName = tabName,
+          icon = icon,
+          badgeLabel = bl,
+          badgeColor = bc,
+          selected = selected)
+      }
+      
     }
   }
 }
 
-# Define the log-in modal
-log_in_modal <- modalDialog(
-  title = "Log in",
-  fluidPage(
-    fluidRow(column(12,
-                    textInput('user_name', 'User name',
-                              value = 'MEL')),
-             column(12,
-                    textInput('password', 'Password',
-                              value = 'FIGSSAMEL')))#,
-  ),
-  easyClose = TRUE,
-  footer = action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')),
-  size = 's'
-)
-
+# Define the log in modal
+log_in_modal <- 
+  modalDialog(
+    title = "Log in",
+    fluidPage(
+      fluidRow(column(12,
+                      textInput('user_name', 'User name', value = 'MEL')),
+               column(12,
+                      textInput('password', 'Password', value = 'FIGSSAMEL')))
+    ),
+    easyClose = TRUE,
+    footer = action_modal_button('log_in_submit', "Submit", icon = icon('check-circle')),
+    size = 's'
+  )
+   
 
 
 # Database set-up
 pool <- create_pool(options_list = credentials_extract(),
                     use_sqlite = FALSE)
-# Get the data from the db into memory
+# # Get the data from the db into memory
 db_to_memory(pool = pool)
 
-# function to turn NULL to NA
-nn <- function(x){ifelse(is.null(x), as.character(NA), x)}
+# # Fix the agile process / agile processes inconsistency
+# if('agile_process' %in% view_assessment_questions_list$competency){
+#   view_assessment_questions_list$competency[view_assessment_questions_list$competency == 'agile_process'] <-
+#     'agile_processes'
+# }
+
+# get the question ids into the competency dict
+competency_dict <-
+  left_join(competency_dict,
+            view_assessment_questions_list %>%
+              dplyr::select(combined_name,
+                            question_id),
+            by = 'combined_name')

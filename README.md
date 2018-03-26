@@ -25,9 +25,15 @@ psql --host=databrewdb.cfejspjhdciw.us-east-2.rds.amazonaws.com --port=8080 --us
 CREATE SCHEMA pd_dfsbenchmarking
 ```
 
+Once database is in shape, dump this project's schema with data:
+
+```
+pg_dump -d dev -n pd_dfsbenchmarking -f data/2018-03-14_clean.sql
+```
+
 - Restore the locally created dump from within psql
 ``` 
-\i 'data/2018-03-10 - pd_dfsbenchmarking.sql'
+\i 'data/2018-03-14_clean.sql'
 ```
 
 - Grant relevant privileges

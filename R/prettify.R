@@ -30,7 +30,7 @@ prettify <- function (the_table, remove_underscores_columns = TRUE, cap_columns 
     unlist(class(x))[1]
   })
   if (cap_columns) {
-    names(the_table) <- Hmisc::capitalize(names(the_table))
+    names(the_table) <- Hmisc::capitalize(as.character(names(the_table)))
   }
   if (remove_underscores_columns) {
     names(the_table) <- gsub("_", " ", names(the_table))
