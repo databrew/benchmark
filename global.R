@@ -181,7 +181,8 @@ create_slider <- function(item_name,
               'Score (1-7)',
               min = 0, 
               max = 7,
-              value = val)
+              value = val,
+              step = 0.5)
 }
 
 # Define function for creating text input below slider (qualitative )
@@ -861,11 +862,7 @@ make_js_slider <- function(tn){
         "$(function() {
 setTimeout(function(){
 var names = ['Unrated', 'Emerging (1)', '(2)',  'Formative (3)', '(4)', '(5)', 'Developed (6)', '(7)'];
-var vals = [];
-for (i = 0; i < names.length; i++) {
-  var val = names[i];
-  vals.push(val);
-}
+var vals = names;
 $('#", tn, "').data('ionRangeSlider').update({'values':vals})
 }, 7)})"
       )
