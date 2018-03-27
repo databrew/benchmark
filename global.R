@@ -21,9 +21,9 @@ source('session_functions.R', local = TRUE)
 convert_to_category <- function(number = 0){
   ifelse(number < 1,
          0,
-         ifelse(number <=3,
+         ifelse(number <3,
                 1,
-                ifelse(number <= 5,
+                ifelse(number <= 5.5,
                        2, 
                        3)))
 }
