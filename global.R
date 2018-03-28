@@ -177,6 +177,8 @@ create_slider <- function(item_name,
     val <- 0
   }
   
+  
+  
   sliderInput(paste0(item_name, '_slider'),
               'Score (1-7)',
               min = 0, 
@@ -397,9 +399,9 @@ generate_ui <- function(tab_name = 'strategy_and_execution',
                    "),",
                    
                    
-                   "fluidRow(column(4, span(h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (0.5-3)'), "'), style= paste0('color:',", colors_one, "))), 
-                   column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (3.5-5)'), "'), style= paste0('color:',", colors_two, "))),
-                   column(4, span(h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ' (6-7)'), "'), style= paste0('color:',", colors_three, ")))),",
+                   "fluidRow(column(4, span(h4('", paste0('Emerging ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ''), "'), style= paste0('color:',", colors_one, "))), 
+                   column(4, span(h4('", paste0('Formative ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ''), "'), style= paste0('color:',", colors_two, "))),
+                   column(4, span(h4('", paste0('Developed ', convert_capitalization(simple_cap(gsub('_', ' ', this_competency))), ''), "'), style= paste0('color:',", colors_three, ")))),",
                    "fluidRow(column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_1')), style= paste0('color:',", colors_one, "))), 
                    column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_2')), style= paste0('color:',", colors_two, "))),
                    column(4, span(p(get_ui_text('", tab_name, "_", this_competency, "_3')), style= paste0('color:',", colors_three, "))))",
@@ -861,7 +863,7 @@ make_js_slider <- function(tn){
       paste0(
         "$(function() {
 setTimeout(function(){
-var names = ['Unrated', 'Emerging (1)', '(2)',  'Formative (3)', '(4)', '(5)', 'Developed (6)', '(7)'];
+var names = ['Unrated', 'Formative (1)', '(2)',  'Emerging (3)', '(4)', '(5)', 'Developed (6)', '(7)'];
 var vals = names;
 $('#", tn, "').data('ionRangeSlider').update({'values':vals})
 }, 7)})"
