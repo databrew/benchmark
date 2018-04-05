@@ -696,8 +696,7 @@ server <- function(input, output, session) {
   output$graphs_ui <-
     renderUI({
       fluidPage(
-        fluidRow(h3('Examine your results below:')),
-        fluidRow(downloadButton("download_visualizations", "Download all charts!")),
+        fluidRow(column(12, align = 'center', downloadButton("download_visualizations", "Download all charts!"))),
         br(),
         
         fluidRow(

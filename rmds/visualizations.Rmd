@@ -37,45 +37,47 @@ for (i in 1:length(params)){
 
 library(radarchart)
 source('../global.R', chdir = TRUE)
+
+# Define function for getting all qualy text associated with any tab name
+make_qualy_table <- function(data, tn = 'organization_and_governance'){
+  # Get the qualitative comments
+  sub_data <- data %>%
+    filter(grepl(tn, key)) %>%
+    filter(grepl('qualy', key)) %>%
+    dplyr::rename(`Qualitative assessment` = value)
+  # Clean up the keys
+  sub_data <-
+    sub_data %>%
+    mutate(key = gsub('_qualy', '', key)) %>%
+    mutate(key = convert_capitalization(simple_cap(gsub('_', ' ', key)))) %>%
+    dplyr::rename(Dimension = key)
+  return(kable(sub_data, type = 'latex'))
+}
 ```
 
 
 ## Radar charts
 
 ```{r}
-chunks <- rep(NA, length(tab_names))
-for (i in 1:length(tab_names)){
-  tab_name <- tab_names[i]
-  title <- simple_cap(gsub('_', ' ', tab_name))
-  title <- convert_capitalization(title)
-  chunks[i] <- paste0('### ', title, '\n\n```{r, fig.height = 6, fig.width = 7}\n',
-         'make_radar_chart(rd, tn = "', tab_name, '", label_size = 14, height = 250, gg = TRUE)\n```\n\n')
-}
-```
-
-```{r}
-chunks <- paste0(chunks, collapse = '')
-
-## Add raw data
+# Get raw data
 ip <- reactiveValuesToList(ip)
 ip <- unlist(ip)
 df <- data.frame(key = names(ip),
                  value = ip)
 df$key <- as.character(df$key)
-df$combined_name <- substr(df$key, 1, nchar(df$key) - 7)
-df <- left_join(df, competency_dict, by = 'combined_name') %>%
-  dplyr::select(tab_name, competency, value)
-names(df) <- c('Area', 'Competency','Score')
-df$Area <- simple_cap(gsub('_', ' ', df$Area))
-df$Area <- convert_capitalization(df$Area)
-df$Competency <- simple_cap(gsub('_', ' ', df$Competency))
-df$Competency <- convert_capitalization(df$Competency)
-df <- df %>% dplyr::arrange(Area, Competency)
-final_chunk <- paste0("### Raw data\n\n```{r}\nkable(df, row.names = FALSE)\n```\n"
-  
-)
-chunks <- paste0(chunks, final_chunk, collapse = '')
+
+chunks <- rep(NA, length(tab_names))
+for (i in 1:length(tab_names)){
+  tab_name <- tab_names[i]
+  title <- simple_cap(gsub('_', ' ', tab_name))
+  title <- convert_capitalization(title)
+  chunks[i] <- paste0('## ', title, '\n\n### Quantitative assessment\n\n```{r, fig.height = 6, fig.width = 7}\n',
+         'make_radar_chart(rd, tn = "', tab_name, '", label_size = 14, height = 250, gg = TRUE)\n```\n\n',
+         '### Qualitative assessment\n\n```{r, results = "asis"}\n',
+         'make_qualy_table(tn = "', tab_name, '",data = df)\n```\n\n')
+}
 ```
+
 
 ```{r}
 # Write our order / child-calls to a doc
