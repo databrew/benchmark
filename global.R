@@ -719,7 +719,20 @@ generate_radar_ui <- function(tab_name = 'organization_and_governance'){
          status = 'info',
          collapsible = TRUE,
          width = 6,
-         chartJSRadarOutput('", tab_name, "_chart'))")
+         fluidPage(fluidRow(column(12, align = 'center', chartJSRadarOutput('", tab_name, "_chart'), br(), downloadButton(paste0('download_', '", tab_name, "', '_chart'), 'Download chart')))))")
+}
+
+# Define function for generating the donwload handlers
+generate_download_handlers <- function(tab_name = 'organization_and_governance'){
+  paste0("output$download_", tab_name, "_chart <- downloadHandler(
+    filename = function() { paste('chart', '.png', sep='') },
+    content = function(file) {
+      rd <- radar_data()
+      make_radar_chart(rd, tn = '", tab_name, "', label_size = 14, height = 250, gg = TRUE)
+      device <- function(..., width, height) grDevices::png(..., width = width, height = height, res = 300, units = 'in')
+        ggsave(file, device = device)
+      
+         })")
 }
 
 

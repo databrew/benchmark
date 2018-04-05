@@ -656,6 +656,12 @@ server <- function(input, output, session) {
     eval(parse(text = generate_radar_server(tab_name = tab_names[i])))
   }
   
+  # Radar charts downloading
+  for(i in 1:length(tab_names)){
+    eval(parse(text = generate_download_handlers(tab_name = tab_names[i])))
+  }
+  
+  
   # Reactive objecting observing the selected sub tab
   sub_tab_selected <- reactiveVal(value = NULL)
   
@@ -696,7 +702,7 @@ server <- function(input, output, session) {
   output$graphs_ui <-
     renderUI({
       fluidPage(
-        fluidRow(column(12, align = 'center', downloadButton("download_visualizations", "Download all charts!"))),
+        fluidRow(column(12, align = 'center', downloadButton("download_visualizations", "Download a full report!"))),
         br(),
         
         fluidRow(
