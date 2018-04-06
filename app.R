@@ -437,13 +437,13 @@ server <- function(input, output, session) {
       fluidPage(
         fluidRow(column(12,
                         textInput(inputId = 'user_name',
-                                  value = '',
-                                  # value = 'mbiallas',
+                                  # value = '',
+                                  value = 'mbiallas',
                                   label = 'User name')),
                  column(12,
                         passwordInput(inputId = 'password', 
-                                      value = '',
-                                      # value = '230984',
+                                      # value = '',
+                                      value = '230984',
                                       label = 'Password'))),
         fluidRow(
           column(12,
