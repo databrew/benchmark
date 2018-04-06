@@ -535,7 +535,9 @@ make_radar_chart <- function(data,
                              gg = FALSE){
   # Subset to the tab in question
   data <- data %>%
-    filter(tab_name == tn)
+    filter(tab_name == tn) %>%
+    # Arrange alphabetically
+    arrange(labs)
   scores <- list(
     'This Bank' = data$scores,
     'Best Practice' = rep(7, nrow(data))
