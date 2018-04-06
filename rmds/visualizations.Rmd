@@ -6,8 +6,6 @@ title: "Benchmark report"
 output:
   pdf_document:
     latex_engine: xelatex
-    includes:
-      in_header: preamble.sty
 ---
 ```{r setup, include=FALSE}
 # output: 
