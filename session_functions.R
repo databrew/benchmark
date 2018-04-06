@@ -1,4 +1,3 @@
-print("LOADING SESSION FUNCTIONS")
 #HELPER FUNCTIONS: get/set
 #SESSION <- reactiveValues()
 ###LOGIN FUNCTIONS###
