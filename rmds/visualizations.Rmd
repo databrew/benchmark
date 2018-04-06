@@ -9,8 +9,6 @@ output:
       "-V", "classoption=twocolumn"
     ]
   html_document: default
-header-includes:
-- \usepackage{lipsum}  # just used for producing example text in document
 ---
 ```{r setup, include=FALSE}
 # output: 
