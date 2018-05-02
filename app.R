@@ -529,10 +529,10 @@ server <- function(input, output, session) {
     }
     
     fluidRow(column(4,
-                    h4(span('Formative staffing', style = paste0("color:", colors[1])), span('(score 1-3)', style = paste0("color:", colors[1]))),
+                    h4(span('Emergin staffing', style = paste0("color:", colors[1])), span('(score 1-3)', style = paste0("color:", colors[1]))),
                     p(span('The mobile banking operation is poorly-staffed.',style = paste0("color:", colors[1])))),
              column(4,
-                    h4(span('Emerging staffing', style = paste0("color:", colors[2])), span('(score 4-5)', style = paste0("color:", colors[2]))),
+                    h4(span('Formative staffing', style = paste0("color:", colors[2])), span('(score 4-5)', style = paste0("color:", colors[2]))),
                     p(span('The mobile banking operation has sufficient staff.', style=paste0("color:", colors[2])))),
              column(4,
                     h4(span('Developed staffing', style = paste0("color:", colors[3])), span('(score 6-7)', style = paste0("color:", colors[3]))),
@@ -543,11 +543,11 @@ server <- function(input, output, session) {
     x <- input$example
     dict <- data_frame(key = 0:7,
                        value = c('(no answer)',
-                                 'inimally formative',
-                                 'Formative',
                                  'Minimally emerging',
                                  'Emerging',
                                  'Emerged',
+                                 'Inimally formative',
+                                 'Formative',
                                  'Minimally developed',
                                  'Developed'))
     val <- dict %>% filter(key == round(x)) %>% .$value
