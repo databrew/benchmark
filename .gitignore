@@ -2,3 +2,6 @@ rsconnect/*
 credentials/credentials.yaml
 rmds/visualizations.pdf
 credentials/credentials.yaml
+.Rproj.user
+*.Rproj
+.DS_Store
